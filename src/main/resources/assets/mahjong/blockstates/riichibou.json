@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": {"model": "mahjong:riichibou"},
+    "facing=south": {"model": "mahjong:riichibou"},
+    "facing=east": {"model": "mahjong:riichibou", "y": 90},
+    "facing=west": {"model": "mahjong:riichibou", "y": 90}
+  }
+}

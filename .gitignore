@@ -34,3 +34,7 @@ gradlew
 gradle/wrapper/gradle-wrapper.properties
 gradle/wrapper/gradle-wrapper.jar
 CREDITS-fml.txt
+gradle/
+src/main/resources/assets/mahjong/textures/items/
+*.bat
+*.txt

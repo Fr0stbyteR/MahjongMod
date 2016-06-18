@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraftforge.fml.common.Mod;
@@ -12,6 +13,8 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 @Mod(modid = Mahjong.MODID, name = Mahjong.NAME, version = Mahjong.VERSION)
 public class Mahjong {
@@ -19,6 +22,7 @@ public class Mahjong {
     public static final String NAME = "Mahjong";
     public static final String VERSION = "0.1.0";
 
+    public static CreativeTabs tabMahjong;
     public static Block blockMjm1;
     public static Item itemMjm1;
     public static Block blockMjm2;
@@ -109,6 +113,8 @@ public class Mahjong {
     public static Item itemMjd2;
     public static Block blockMjd3;
     public static Item itemMjd3;
+    public static Block blockRiichibou;
+    public static Item itemRiichibou;
 
     private static void registerRender(Item item)
     {
@@ -120,6 +126,13 @@ public class Mahjong {
     }
     @EventHandler
     public void preLoad(FMLPreInitializationEvent event) {
+        tabMahjong = new CreativeTabs("mahjong") {
+            @Override
+            @SideOnly(Side.CLIENT)
+            public Item getTabIconItem() {
+                return Mahjong.itemMjm1;
+            }
+        };
         blockMjm1 = new BlockMj(Material.clay).setRegistryName("mjm1").setUnlocalizedName("1man");
         itemMjm1 = new ItemBlock(blockMjm1).setRegistryName("mjm1").setUnlocalizedName("1man");
         blockMjm2 = new BlockMj(Material.clay).setRegistryName("mjm2").setUnlocalizedName("2man");
@@ -210,6 +223,8 @@ public class Mahjong {
         itemMjd2 = new ItemBlock(blockMjd2).setRegistryName("mjd2").setUnlocalizedName("fa");
         blockMjd3 = new BlockMj(Material.clay).setRegistryName("mjd3").setUnlocalizedName("zhong");
         itemMjd3 = new ItemBlock(blockMjd3).setRegistryName("mjd3").setUnlocalizedName("zhong");
+        blockRiichibou = new BlockRiichibou(Material.clay).setRegistryName("riichibou").setUnlocalizedName("riichibou");
+        itemRiichibou = new ItemBlock(blockRiichibou).setRegistryName("riichibou").setUnlocalizedName("riichibou");
 
         GameRegistry.register(blockMjm1);
         GameRegistry.register(itemMjm1);
@@ -301,6 +316,8 @@ public class Mahjong {
         GameRegistry.register(itemMjd2);
         GameRegistry.register(blockMjd3);
         GameRegistry.register(itemMjd3);
+        GameRegistry.register(blockRiichibou);
+        GameRegistry.register(itemRiichibou);
 
     }
 
@@ -396,6 +413,8 @@ public class Mahjong {
         registerRender(itemMjd2);
         registerRender(blockMjd3);
         registerRender(itemMjd3);
+        registerRender(blockRiichibou);
+        registerRender(itemRiichibou);
 
     }
 

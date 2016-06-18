@@ -9,7 +9,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -18,8 +17,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class BlockMj extends Block {
     public static final PropertyDirection12 FACING = PropertyDirection12.create("facing");
@@ -35,7 +32,7 @@ public class BlockMj extends Block {
         super(material);
         this.setHardness(0.05f);
         this.setStepSound(SoundType.STONE);
-        this.setCreativeTab(tabMahjong);
+        this.setCreativeTab(Mahjong.tabMahjong);
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing12.NORTH));
     }
 
@@ -169,15 +166,6 @@ public class BlockMj extends Block {
     protected BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, new IProperty[]{FACING});
     }
-
-    // Creative tabs
-    public static CreativeTabs tabMahjong = new CreativeTabs("mahjong") {
-        @Override
-        @SideOnly(Side.CLIENT)
-        public Item getTabIconItem() {
-            return Mahjong.itemMjm1;
-        }
-    };
 
     // Flip
     @Override
