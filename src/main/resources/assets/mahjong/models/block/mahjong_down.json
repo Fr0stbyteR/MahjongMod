@@ -1,0 +1,38 @@
+{
+  "__comment": "Model generated using MrCrayfish's Model Creator (http://mrcrayfish.com/modelcreator/)",
+  "parent": "mahjong:block/mahjong_display",
+  "textures": {
+    "particle": "mahjong:blocks/#fff",
+    "mjface": "mahjong:blocks/#fff",
+    "white": "mahjong:blocks/#fff",
+    "green": "mahjong:blocks/#070"
+  },
+  "elements": [
+    {
+      "name": "White",
+      "from": [ 2.0, 0.0, 0.0 ],
+      "to": [ 14.0, 6.0, 16.0 ],
+      "faces": {
+        "north": { "texture": "#white", "uv": [ 0.0, 0.0, 10.0, 4.0 ] },
+        "east": { "texture": "#white", "uv": [ 0.0, 0.0, 16.0, 4.0 ] },
+        "south": { "texture": "#white", "uv": [ 0.0, 0.0, 10.0, 4.0 ] },
+        "west": { "texture": "#white", "uv": [ 0.0, 0.0, 16.0, 4.0 ] },
+        "up": { "texture": "#white", "uv": [ 2.5, 0.0, 13.5, 16.0 ] },
+        "down": { "texture": "#white", "uv": [ 0.0, 0.0, 10.0, 16.0 ] }
+      }
+    },
+    {
+      "name": "Back",
+      "from": [ 2.0, 6.0, 0.0 ],
+      "to": [ 14.0, 8.0, 16.0 ],
+      "faces": {
+        "north": { "texture": "#green", "uv": [ 0.0, 0.0, 10.0, 4.0 ] },
+        "east": { "texture": "#green", "uv": [ 0.0, 0.0, 16.0, 4.0 ] },
+        "south": { "texture": "#green", "uv": [ 0.0, 0.0, 10.0, 4.0 ] },
+        "west": { "texture": "#green", "uv": [ 0.0, 0.0, 16.0, 4.0 ] },
+        "up": { "texture": "#green", "uv": [ 2.5, 0.0, 13.5, 16.0 ] },
+        "down": { "texture": "#green", "uv": [ 0.0, 0.0, 10.0, 16.0 ] }
+      }
+    }
+  ]
+}

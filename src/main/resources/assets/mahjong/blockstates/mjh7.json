@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=northd": {"model": "mahjong:mahjong_down", "y": 180},
+    "facing=southd": {"model": "mahjong:mahjong_down"},
+    "facing=eastd": {"model": "mahjong:mahjong_down", "y": 270},
+    "facing=westd": {"model": "mahjong:mahjong_down", "y": 90},
+    "facing=northu": {"model": "mahjong:mjh7", "y": 180},
+    "facing=southu": {"model": "mahjong:mjh7"},
+    "facing=eastu": {"model": "mahjong:mjh7", "y": 270},
+    "facing=westu": {"model": "mahjong:mjh7", "y": 90},
+    "facing=north": {"model": "mahjong:mjh7", "x": 270, "y": 180},
+    "facing=south": {"model": "mahjong:mjh7", "x": 270},
+    "facing=east": {"model": "mahjong:mjh7", "x": 270, "y": 270},
+    "facing=west": {"model": "mahjong:mjh7", "x": 270, "y": 90}
+  }
+}

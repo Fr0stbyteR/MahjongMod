@@ -1,0 +1,6 @@
+{
+    "parent":  "mahjong:block/mahjong_all",
+    "textures": {
+        "mjface": "mahjong:blocks/mjm7"
+    }
+} 

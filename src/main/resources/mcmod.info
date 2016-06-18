@@ -1,0 +1,16 @@
+[
+{
+  "modid": "mahjong",
+  "name": "Mahjong",
+  "description": "弘子的麻将mod",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Fr0stbyteR"],
+  "credits": "教练我要打麻将",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": ["mod_MinecraftForge"]
+}
+]
