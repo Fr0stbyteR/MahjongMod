@@ -1,0 +1,6 @@
+{
+  "parent": "mahjong:item/mjFace_display",
+  "textures": {
+    "layer0": "mahjong:items/mjfaces1"
+  }
+}

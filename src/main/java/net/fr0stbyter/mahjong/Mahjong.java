@@ -1,12 +1,17 @@
 package net.fr0stbyter.mahjong;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockFlower;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -20,9 +25,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class Mahjong {
     public static final String MODID = "mahjong";
     public static final String NAME = "Mahjong";
-    public static final String VERSION = "0.1.0";
+    public static final String VERSION = "0.1.1";
 
     public static CreativeTabs tabMahjong;
+    public static Block blockMjBlank;
+    public static Item itemMjBlank;
     public static Block blockMjm1;
     public static Item itemMjm1;
     public static Block blockMjm2;
@@ -115,6 +122,12 @@ public class Mahjong {
     public static Item itemMjd3;
     public static Block blockRiichibou;
     public static Item itemRiichibou;
+    public static Item itemMjFacem1;
+    public static Item itemMjFacem9;
+    public static Item itemMjFacep1;
+    public static Item itemMjFacep9;
+    public static Item itemMjFaces1;
+    public static Item itemMjFaces9;
 
     private static void registerRender(Item item)
     {
@@ -133,6 +146,8 @@ public class Mahjong {
                 return Mahjong.itemMjm1;
             }
         };
+        blockMjBlank = new BlockMj(Material.clay).setRegistryName("mjBlank").setUnlocalizedName("blank_mahjong");
+        itemMjBlank = new ItemBlock(blockMjBlank).setRegistryName("mjBlank").setUnlocalizedName("blank_mahjong");
         blockMjm1 = new BlockMj(Material.clay).setRegistryName("mjm1").setUnlocalizedName("1man");
         itemMjm1 = new ItemBlock(blockMjm1).setRegistryName("mjm1").setUnlocalizedName("1man");
         blockMjm2 = new BlockMj(Material.clay).setRegistryName("mjm2").setUnlocalizedName("2man");
@@ -225,7 +240,15 @@ public class Mahjong {
         itemMjd3 = new ItemBlock(blockMjd3).setRegistryName("mjd3").setUnlocalizedName("zhong");
         blockRiichibou = new BlockRiichibou(Material.clay).setRegistryName("riichibou").setUnlocalizedName("riichibou");
         itemRiichibou = new ItemBlock(blockRiichibou).setRegistryName("riichibou").setUnlocalizedName("riichibou");
+        itemMjFacem1 = new ItemMjFace().setRegistryName("mjFacem1").setUnlocalizedName("mjFacem1");
+        itemMjFacem9 = new ItemMjFace().setRegistryName("mjFacem9").setUnlocalizedName("mjFacem9");
+        itemMjFacep1 = new ItemMjFace().setRegistryName("mjFacep1").setUnlocalizedName("mjFacep1");
+        itemMjFacep9 = new ItemMjFace().setRegistryName("mjFacep9").setUnlocalizedName("mjFacep9");
+        itemMjFaces1 = new ItemMjFace().setRegistryName("mjFaces1").setUnlocalizedName("mjFaces1");
+        itemMjFaces9 = new ItemMjFace().setRegistryName("mjFaces9").setUnlocalizedName("mjFaces9");
 
+        GameRegistry.register(blockMjBlank);
+        GameRegistry.register(itemMjBlank);
         GameRegistry.register(blockMjm1);
         GameRegistry.register(itemMjm1);
         GameRegistry.register(blockMjm2);
@@ -318,11 +341,19 @@ public class Mahjong {
         GameRegistry.register(itemMjd3);
         GameRegistry.register(blockRiichibou);
         GameRegistry.register(itemRiichibou);
+        GameRegistry.register(itemMjFacem1);
+        GameRegistry.register(itemMjFacem9);
+        GameRegistry.register(itemMjFacep1);
+        GameRegistry.register(itemMjFacep9);
+        GameRegistry.register(itemMjFaces1);
+        GameRegistry.register(itemMjFaces9);
 
     }
 
     @EventHandler
     public void load(FMLInitializationEvent event) {
+        registerRender(blockMjBlank);
+        registerRender(itemMjBlank);
         registerRender(blockMjm1);
         registerRender(itemMjm1);
         registerRender(blockMjm2);
@@ -415,7 +446,64 @@ public class Mahjong {
         registerRender(itemMjd3);
         registerRender(blockRiichibou);
         registerRender(itemRiichibou);
-
+        registerRender(itemMjFacem1);
+        registerRender(itemMjFacem9);
+        registerRender(itemMjFacep1);
+        registerRender(itemMjFacep9);
+        registerRender(itemMjFaces1);
+        registerRender(itemMjFaces9);
+        GameRegistry.addRecipe(new ItemStack(itemMjBlank, 1), new Object[] { "AAA", "BCB", "DDD", 'A', new ItemStack(Items.dye, 1, EnumDyeColor.WHITE.getDyeDamage()), 'B', Items.quartz, 'C', Blocks.stone, 'D', new ItemStack(Items.dye, 1, EnumDyeColor.GREEN.getDyeDamage())});
+        GameRegistry.addRecipe(new ItemStack(itemMjFacem9, 1), new Object[] { "AAA", "AAA", "AAA", 'A', itemMjFacem1});
+        GameRegistry.addRecipe(new ItemStack(itemMjFacep9, 1), new Object[] { "AAA", "AAA", "AAA", 'A', itemMjFacep1});
+        GameRegistry.addRecipe(new ItemStack(itemMjFaces9, 1), new Object[] { "AAA", "AAA", "AAA", 'A', itemMjFaces1});
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjFacem1, 1), Items.gold_nugget);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjm1, 1), blockMjBlank, itemMjFacem1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjm2, 1), blockMjBlank, itemMjFacem1, itemMjFacem1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjm3, 1), blockMjBlank, itemMjFacem1, itemMjFacem1, itemMjFacem1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjm4, 1), blockMjBlank, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjm5, 1), blockMjBlank, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjm5r, 1), itemMjm5, new ItemStack(Items.dye, 1, EnumDyeColor.RED.getDyeDamage()));
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjm6, 1), blockMjBlank, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjm7, 1), blockMjBlank, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjm8, 1), blockMjBlank, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1, itemMjFacem1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjm9, 1), blockMjBlank, itemMjFacem9);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjFacep1, 3), Items.cookie);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjp1, 1), blockMjBlank, itemMjFacep1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjp2, 1), blockMjBlank, itemMjFacep1, itemMjFacep1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjp3, 1), blockMjBlank, itemMjFacep1, itemMjFacep1, itemMjFacep1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjp4, 1), blockMjBlank, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjp5, 1), blockMjBlank, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjp5r, 1), itemMjp5, new ItemStack(Items.dye, 1, EnumDyeColor.RED.getDyeDamage()));
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjp6, 1), blockMjBlank, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjp7, 1), blockMjBlank, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjp8, 1), blockMjBlank, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1, itemMjFacep1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjm9, 1), blockMjBlank, itemMjFacep9);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjFaces1, 1), Items.reeds);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjs1, 1), blockMjBlank, itemMjFaces1, Items.feather);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjs2, 1), blockMjBlank, itemMjFaces1, itemMjFaces1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjs3, 1), blockMjBlank, itemMjFaces1, itemMjFaces1, itemMjFaces1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjs4, 1), blockMjBlank, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjs5, 1), blockMjBlank, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjs5r, 1), itemMjs5, new ItemStack(Items.dye, 1, EnumDyeColor.RED.getDyeDamage()));
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjs6, 1), blockMjBlank, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjs7, 1), blockMjBlank, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjs8, 1), blockMjBlank, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1, itemMjFaces1);
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjs9, 1), blockMjBlank, itemMjFaces9);
+        GameRegistry.addRecipe(new ItemStack(itemMjf1, 1), new Object[] { "  A", " BA", "  A", 'A', new ItemStack(Items.dye, 1, EnumDyeColor.BLACK.getDyeDamage()), 'B', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjf2, 1), new Object[] { "   ", " B ", "AAA", 'A', new ItemStack(Items.dye, 1, EnumDyeColor.BLACK.getDyeDamage()), 'B', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjf3, 1), new Object[] { "A  ", "AB ", "A  ", 'A', new ItemStack(Items.dye, 1, EnumDyeColor.BLACK.getDyeDamage()), 'B', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjf4, 1), new Object[] { "AAA", " B ", "   ", 'A', new ItemStack(Items.dye, 1, EnumDyeColor.BLACK.getDyeDamage()), 'B', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjd1, 1), new Object[] { "AAA", "ABA", "AAA", 'A', new ItemStack(Items.dye, 1, EnumDyeColor.WHITE.getDyeDamage()), 'B', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjd2, 1), new Object[] { "AAA", "ABA", "AAA", 'A', new ItemStack(Items.dye, 1, EnumDyeColor.GREEN.getDyeDamage()), 'B', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjd3, 1), new Object[] { "AAA", "ABA", "AAA", 'A', new ItemStack(Items.dye, 1, EnumDyeColor.RED.getDyeDamage()), 'B', itemMjBlank});
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjh1, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.RED_TULIP.getMeta()));
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjh2, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.ORANGE_TULIP.getMeta()));
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjh3, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.WHITE_TULIP.getMeta()));
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjh4, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.PINK_TULIP.getMeta()));
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjh5, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.ALLIUM.getMeta()));
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjh6, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.BLUE_ORCHID.getMeta()));
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjh7, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.POPPY.getMeta()));
+        GameRegistry.addShapelessRecipe(new ItemStack(itemMjh8, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.OXEYE_DAISY.getMeta()));
     }
 
     @EventHandler

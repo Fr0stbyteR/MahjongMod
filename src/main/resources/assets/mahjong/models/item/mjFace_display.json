@@ -1,0 +1,20 @@
+{
+  "parent": "builtin/generated",
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [ 45, 0, 0 ],
+      "translation": [ 0, 0, 0],
+      "scale": [ 0.25, 0.25, 0.25 ]
+    },
+    "firstperson_righthand": {
+      "rotation": [ 0, 10, 0 ],
+      "translation": [ 0, 2.5, 0 ],
+      "scale": [ 0.35, 0.35, 0.35 ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [ 0, 350, 0 ],
+      "translation": [ 0, 2.5, 0 ],
+      "scale": [ 0.35, 0.35, 0.35 ]
+    }
+  }
+}
