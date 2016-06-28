@@ -301,7 +301,6 @@ public class MahjongRegister {
         GameRegistry.addShapelessRecipe(new ItemStack(itemMjh6, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.BLUE_ORCHID.getMeta()));
         GameRegistry.addShapelessRecipe(new ItemStack(itemMjh7, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.POPPY.getMeta()));
         GameRegistry.addShapelessRecipe(new ItemStack(itemMjh8, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.OXEYE_DAISY.getMeta()));
-
-
+        GameRegistry.addRecipe(new ItemStack(itemRiichibou, 1), new Object[] { "BCB", "AAA", "   ",'A', Items.stick, 'B', new ItemStack(Items.dye, 1, EnumDyeColor.WHITE.getDyeDamage()), 'C', new ItemStack(Items.dye, 1, EnumDyeColor.RED.getDyeDamage())});
     }
 }
