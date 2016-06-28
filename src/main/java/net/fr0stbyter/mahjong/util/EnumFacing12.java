@@ -1,4 +1,4 @@
-package net.fr0stbyter.mahjong;
+package net.fr0stbyter.mahjong.util;
 
 import com.google.common.collect.Maps;
 import java.util.Map;

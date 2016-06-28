@@ -1,12 +1,13 @@
-package net.fr0stbyter.mahjong;
+package net.fr0stbyter.mahjong.blocks;
 
+import net.fr0stbyter.mahjong.util.EnumFacing12;
+import net.fr0stbyter.mahjong.util.PropertyDirection12;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -17,6 +18,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+
+import static net.fr0stbyter.mahjong.init.MahjongRegister.tabMahjong;
 
 public class BlockMj extends Block {
     public static final PropertyDirection12 FACING = PropertyDirection12.create("facing");
@@ -32,7 +35,7 @@ public class BlockMj extends Block {
         super(material);
         this.setHardness(0.05f);
         this.setStepSound(SoundType.STONE);
-        this.setCreativeTab(Mahjong.tabMahjong);
+        this.setCreativeTab(tabMahjong);
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing12.NORTH));
     }
 

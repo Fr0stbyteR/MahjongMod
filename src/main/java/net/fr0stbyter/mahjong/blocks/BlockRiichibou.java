@@ -1,4 +1,4 @@
-package net.fr0stbyter.mahjong;
+package net.fr0stbyter.mahjong.blocks;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -14,6 +14,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
+import static net.fr0stbyter.mahjong.init.MahjongRegister.tabMahjong;
+
 public class BlockRiichibou extends Block {
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
     // Define bounds
@@ -24,7 +26,7 @@ public class BlockRiichibou extends Block {
         super(material);
         this.setHardness(0.05f);
         this.setStepSound(SoundType.STONE);
-        this.setCreativeTab(Mahjong.tabMahjong);
+        this.setCreativeTab(tabMahjong);
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
     }
 

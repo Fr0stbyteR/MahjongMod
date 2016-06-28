@@ -2,13 +2,13 @@
 {
   "modid": "mahjong",
   "name": "Mahjong",
-  "description": "弘子的麻将mod",
+  "description": "hiroko's mahjong mod",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
   "authorList": ["Fr0stbyteR"],
-  "credits": "教练我要打麻将",
+  "credits": "",
   "logoFile": "",
   "screenshots": [],
   "dependencies": ["mod_MinecraftForge"]
