@@ -18,8 +18,6 @@ public class MahjongRenderer {
     }
     @SideOnly(Side.CLIENT)
     public static void render() {
-        registerRender(blockMjBlank);
-        registerRender(itemMjBlank);
         registerRender(blockMjm1);
         registerRender(itemMjm1);
         registerRender(blockMjm2);
@@ -110,6 +108,8 @@ public class MahjongRenderer {
         registerRender(itemMjd2);
         registerRender(blockMjd3);
         registerRender(itemMjd3);
+        registerRender(blockMjBlank);
+        registerRender(itemMjBlank);
         registerRender(blockRiichibou);
         registerRender(itemRiichibou);
         registerRender(itemMjFacem1);
@@ -118,5 +118,7 @@ public class MahjongRenderer {
         registerRender(itemMjFacep9);
         registerRender(itemMjFaces1);
         registerRender(itemMjFaces9);
+        registerRender(blockMjTable);
+        registerRender(itemMjTable);
     }
 }

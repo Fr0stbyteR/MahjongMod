@@ -37,6 +37,8 @@ public class MahjongRegister {
     public static Block blockMjBlank;
     public static Item itemMjBlank;
     public static Item itemMjFacem1, itemMjFacem9, itemMjFacep1, itemMjFacep9, itemMjFaces1, itemMjFaces9;
+    public static Block blockMjTable;
+    public static Item itemMjTable;
     public static void define() {
         tabMahjong = new CreativeTabs("mahjong") {
             @Override
@@ -145,6 +147,8 @@ public class MahjongRegister {
         itemMjFacep9 = new ItemMjFace().setRegistryName("mjFacep9").setUnlocalizedName("mjFacep9");
         itemMjFaces1 = new ItemMjFace().setRegistryName("mjFaces1").setUnlocalizedName("mjFaces1");
         itemMjFaces9 = new ItemMjFace().setRegistryName("mjFaces9").setUnlocalizedName("mjFaces9");
+        blockMjTable = new BlockMjTable(Material.clay).setRegistryName("mjTable").setUnlocalizedName("mahjong_table");
+        itemMjTable = new ItemBlock(blockMjTable).setRegistryName("mjTable").setUnlocalizedName("mahjong_table");
     }
     public static void register() {
         GameRegistry.register(blockMjm1);
@@ -247,6 +251,8 @@ public class MahjongRegister {
         GameRegistry.register(itemMjFacep9);
         GameRegistry.register(itemMjFaces1);
         GameRegistry.register(itemMjFaces9);
+        GameRegistry.register(blockMjTable);
+        GameRegistry.register(itemMjTable);
     }
     public static void registerRecipe() {
         GameRegistry.addRecipe(new ItemStack(itemMjBlank, 1), new Object[] { "AAA", "BCB", "DDD", 'A', new ItemStack(Items.dye, 1, EnumDyeColor.WHITE.getDyeDamage()), 'B', Items.quartz, 'C', Blocks.stone, 'D', new ItemStack(Items.dye, 1, EnumDyeColor.GREEN.getDyeDamage())});

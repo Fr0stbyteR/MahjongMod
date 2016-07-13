@@ -1,0 +1,49 @@
+{
+  "__comment": "Model generated using MrCrayfish's Model Creator (http://mrcrayfish.com/modelcreator/)",
+  "parent": "block/cube_all",
+  "textures": {
+    "Planks_Oak": "blocks/planks_oak",
+    "Green": "mahjong:blocks/#070"
+  },
+  "elements": [
+    {
+      "name": "Bottom",
+      "from": [ 5.0, 0.0, 5.0 ],
+      "to": [ 11.0, 2.0, 11.0 ],
+      "faces": {
+        "north": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 6.0, 2.0 ] },
+        "east": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 6.0, 2.0 ] },
+        "south": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 6.0, 2.0 ] },
+        "west": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 6.0, 2.0 ] },
+        "up": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 6.0, 6.0 ] },
+        "down": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 6.0, 6.0 ] }
+      }
+    },
+    {
+      "name": "Middle",
+      "from": [ 6.5, 2.0, 6.5 ],
+      "to": [ 9.5, 12.0, 9.5 ],
+      "faces": {
+        "north": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 2.0, 10.0 ] },
+        "east": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 2.0, 10.0 ] },
+        "south": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 2.0, 10.0 ] },
+        "west": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 2.0, 10.0 ] },
+        "up": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 2.0, 2.0 ] },
+        "down": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 2.0, 2.0 ] }
+      }
+    },
+    {
+      "name": "Top",
+      "from": [ 0.0, 12.0, 0.0 ],
+      "to": [ 16.0, 16.0, 16.0 ],
+      "faces": {
+        "north": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 16.0, 4.0 ] },
+        "east": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 16.0, 4.0 ] },
+        "south": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 16.0, 4.0 ] },
+        "west": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 16.0, 4.0 ] },
+        "up": { "texture": "#Green", "uv": [ 0.0, 0.0, 16.0, 16.0 ] },
+        "down": { "texture": "#Planks_Oak", "uv": [ 0.0, 0.0, 16.0, 16.0 ] }
+      }
+    }
+  ]
+}
