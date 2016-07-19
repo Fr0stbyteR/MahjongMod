@@ -9,18 +9,12 @@ import java.util.Collections;
 
 public class Hand implements Cloneable {
     private boolean hasGet = false;
-    private int countGang = 0;
     private ArrayList<EnumTile> tileGang = new ArrayList<EnumTile>();
-    private int countPeng = 0;
     private ArrayList<EnumTile> tilePeng = new ArrayList<EnumTile>();
-    private int countChi = 0;
     private ArrayList<EnumTile> tileChi = new ArrayList<EnumTile>();
     private int countKita = 0;
-    private int countAnGang = 0;
     private ArrayList<EnumTile> tileAnGang = new ArrayList<EnumTile>();
-    private int countKe = 0;
     private ArrayList<EnumTile> tileKe = new ArrayList<EnumTile>();
-    private int countShun = 0;
     private ArrayList<EnumTile> tileShun = new ArrayList<EnumTile>();
     private boolean hasEye = false;
     private EnumTile tileEye = null;
@@ -47,6 +41,7 @@ public class Hand implements Cloneable {
             else if (handTiles instanceof Eye) all.addAll(((Eye) handTiles).getTiles());
             else if (handTiles instanceof Get) all.add(((Get) handTiles).getTile());
         }
+        Collections.sort(all, EnumTile.tilesComparator);
         return all;
     }
 
@@ -93,7 +88,6 @@ public class Hand implements Cloneable {
         if (!tileIn1.isRed() && (tileIn1.getRed() != null)) if (getHanding().contains(tileIn1.getRed())) tileIn4 = tileIn1.getRed();
         removeFromHanding(tileIn2).removeFromHanding(tileIn3).removeFromHanding(tileIn4);
         tiles.add(new Gang(tileIn1, tileIn2, tileIn3, tileIn4, playerIn, plusGangIn));
-        countGang++;
         tileGang.add(tileIn1.getNormal());
         return this;
     }
@@ -104,7 +98,6 @@ public class Hand implements Cloneable {
         if (!tileIn1.isRed() && (tileIn1.getRed() != null)) if (getHanding().contains(tileIn1.getRed())) tileIn3 = tileIn1.getRed();
         removeFromHanding(tileIn2).removeFromHanding(tileIn3);
         tiles.add(new Peng(tileIn1, tileIn2, tileIn3, playerIn));
-        countPeng++;
         tilePeng.add(tileIn1.getNormal());
         return this;
     }
@@ -116,7 +109,6 @@ public class Hand implements Cloneable {
         if ((tileIn3.getRed() != null)) if (getHanding().contains(tileIn3.getRed())) tileIn3 = tileIn3.getRed();
         removeFromHanding(tileIn1).removeFromHanding(tileIn3);
         tiles.add(new Chi(tileIn1, tileIn2, tileIn3, playerIn));
-        countChi++;
         tileChi.add(tileIn1.getNormal());
         return this;
     }
@@ -129,7 +121,6 @@ public class Hand implements Cloneable {
         if (!tileIn1.isRed() && tileIn1.getRed() != null) if (getHanding().contains(tileIn1.getRed())) tileIn4 = tileIn1.getRed();
         removeFromHanding(tileIn1).removeFromHanding(tileIn2).removeFromHanding(tileIn3).removeFromHanding(tileIn4);
         tiles.add(new AnGang(tileIn1, tileIn2, tileIn3, tileIn4));
-        countAnGang++;
         tileAnGang.add(tileIn1.getNormal());
         return this;
     }
@@ -141,7 +132,6 @@ public class Hand implements Cloneable {
         if (!tileIn1.isRed() && tileIn1.getRed() != null) if (getHanding().contains(tileIn1.getRed())) tileIn3 = tileIn1.getRed();
         removeFromHanding(tileIn1).removeFromHanding(tileIn2).removeFromHanding(tileIn3);
         tiles.add(new Ke(tileIn1, tileIn2, tileIn3));
-        countKe++;
         tileKe.add(tileIn1.getNormal());
         return this;
     }
@@ -154,7 +144,6 @@ public class Hand implements Cloneable {
         if ((tileIn3.getRed() != null)) if (getHanding().contains(tileIn3.getRed())) tileIn3 = tileIn3.getRed();
         removeFromHanding(tileIn1).removeFromHanding(tileIn2).removeFromHanding(tileIn3);
         tiles.add(new Shun(tileIn1, tileIn2, tileIn3));
-        countShun++;
         tileShun.add(tileIn1.getNormal());
         return this;
     }
@@ -203,7 +192,7 @@ public class Hand implements Cloneable {
     }
 
     public boolean isMenzen() {
-        if (countGang + countPeng + countChi == 0) return true;
+        if (getCountGang() + getCountPeng() + getCountChi() == 0) return true;
         else return false;
     }
 
@@ -212,15 +201,15 @@ public class Hand implements Cloneable {
     }
 
     public int getCountGang() {
-        return countGang;
+        return getTileGang().size();
     }
 
     public int getCountPeng() {
-        return countPeng;
+        return getTilePeng().size();
     }
 
     public int getCountChi() {
-        return countChi;
+        return getTileChi().size();
     }
 
     public int getCountKita() {
@@ -228,15 +217,15 @@ public class Hand implements Cloneable {
     }
 
     public int getCountAnGang() {
-        return countAnGang;
+        return getTileAnGang().size();
     }
 
     public int getCountKe() {
-        return countKe;
+        return getTileKe().size();
     }
 
     public int getCountShun() {
-        return countShun;
+        return getTileShun().size();
     }
 
     public boolean hasEye() {

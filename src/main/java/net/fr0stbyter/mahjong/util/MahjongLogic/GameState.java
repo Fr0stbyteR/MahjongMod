@@ -5,6 +5,7 @@ public class GameState {
     private int curHand; // 1-4
     private int curExtra; // 1-8
     private int curDeal; // 1-? xun
+    private boolean isHaitei;
     private EnumPosition curPlayer;
     private Phase phase;
     public GameState() {
@@ -26,6 +27,10 @@ public class GameState {
 
     public int getCurExtra() {
         return curExtra;
+    }
+
+    public boolean isHaitei() {
+        return isHaitei;
     }
 
     public EnumPosition getCurPlayer() {

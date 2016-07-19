@@ -16,4 +16,12 @@ public class TileGroup {
     public static ArrayList<EnumTile> yaochyuu = new ArrayList<EnumTile>(Arrays.asList(M1, M9, P1, P9, S1, S9, F1, F2, F3, F4, D1, D2, D3));
     public static ArrayList<EnumTile> zi = new ArrayList<EnumTile>(Arrays.asList(F1, F2, F3, F4, D1, D2, D3));
     public static ArrayList<EnumTile> green = new ArrayList<EnumTile>(Arrays.asList(S2, S3, S4, S6, S8, D2));
+    public static ArrayList<EnumTile> getGroupByEnum(EnumTileGroup group) {
+        if (group == EnumTileGroup.MAN) return man;
+        if (group == EnumTileGroup.PIN) return pin;
+        if (group == EnumTileGroup.SOU) return sou;
+        if (group == EnumTileGroup.WIND) return wind;
+        if (group == EnumTileGroup.DRAGON) return dragon;
+        return null;
+    }
 }
