@@ -1,5 +1,6 @@
 package net.fr0stbyter.mahjong.util.MahjongLogic;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import static net.fr0stbyter.mahjong.util.MahjongLogic.EnumTile.*;
@@ -18,7 +19,7 @@ public class GameType {
         length = lengthIn;
         redDoraCount = redDoraCountIn;
     }
-    public HashMap<EnumTile, Integer> getTiles() {
+    public HashMap<EnumTile, Integer> getTilesCount() {
         GameRegion region = this.region;
         int playerCount = this.playerCount;
         int redDoraCount = this.redDoraCount;
@@ -29,10 +30,10 @@ public class GameType {
                     tiles.put(M1, 4);
                     tiles.put(M9, 4);
                     for (EnumTile tile : EnumTile.values()) {
-                        if ((tile.getGroup() == PIN) && (!tile.getIsRed())) tiles.put(tile, 4);
-                        if ((tile.getGroup() == SOU) && (!tile.getIsRed())) tiles.put(tile, 4);
-                        if ((tile.getGroup() == WIND) && (!tile.getIsRed())) tiles.put(tile, 4);
-                        if ((tile.getGroup() == DRAGON) && (!tile.getIsRed())) tiles.put(tile, 4);
+                        if ((tile.getGroup() == PIN) && (!tile.isRed())) tiles.put(tile, 4);
+                        if ((tile.getGroup() == SOU) && (!tile.isRed())) tiles.put(tile, 4);
+                        if ((tile.getGroup() == WIND) && (!tile.isRed())) tiles.put(tile, 4);
+                        if ((tile.getGroup() == DRAGON) && (!tile.isRed())) tiles.put(tile, 4);
                     }
                     if ((redDoraCount > 0) && (redDoraCount <= 8)) {
                         int p5rCount = (redDoraCount / 2) - (redDoraCount % 2);
@@ -43,7 +44,8 @@ public class GameType {
                         tiles.put(S5R, s5rCount);
                     }
                     return tiles;
-                } else if (playerCount == 4) {
+                }
+                if (playerCount == 4) {
                     for (EnumTile tile : EnumTile.values()) {
                         if (tile.getGroup() == MAN) tiles.put(tile, 4);
                         if (tile.getGroup() == PIN) tiles.put(tile, 4);
@@ -67,6 +69,17 @@ public class GameType {
             }
             default: return null;
         }
+    }
+
+    public ArrayList<EnumTile> getTiles() {
+        HashMap<EnumTile, Integer> getTilesCount = getTilesCount();
+        ArrayList<EnumTile> tiles = new ArrayList<EnumTile>();
+        for (EnumTile tile : getTilesCount.keySet()) {
+            for (int i = 0; i < getTilesCount.get(tile); i++) {
+                tiles.add(tile);
+            }
+        }
+        return tiles;
     }
 
     public GameRegion getRegion() {

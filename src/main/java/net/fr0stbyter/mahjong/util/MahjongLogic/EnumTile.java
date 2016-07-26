@@ -67,7 +67,7 @@ public enum EnumTile {
 
     public static EnumTile getTile(String name) {
         for (EnumTile tile : values()) {
-            if (name == tile.name) return tile;
+            if (name.equals(tile.name)) return tile;
         }
         return null;
     }

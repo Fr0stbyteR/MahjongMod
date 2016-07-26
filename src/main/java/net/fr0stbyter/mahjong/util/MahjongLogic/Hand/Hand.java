@@ -18,10 +18,10 @@ public class Hand implements Cloneable {
     private ArrayList<EnumTile> tileShun = new ArrayList<EnumTile>();
     private boolean hasEye = false;
     private EnumTile tileEye = null;
-    private ArrayList<HandTiles> tiles = new ArrayList<HandTiles>(Collections.singleton(new Handing()));
+    private ArrayList<HandTiles> tiles = new ArrayList<HandTiles>(Collections.singletonList(new Handing()));
 
     public ArrayList<EnumTile> getHanding() {
-        return ((Handing) tiles.get(0)).getTiles();
+        return tiles.get(0).getTiles();
     }
 
     public int getHandingCount() {
@@ -30,16 +30,8 @@ public class Hand implements Cloneable {
 
     public ArrayList<EnumTile> getAll() { // without kita
         ArrayList<EnumTile> all = new ArrayList<EnumTile>();
-        all.addAll(getHanding());
         for (HandTiles handTiles : tiles) {
-            if (handTiles instanceof Gang) all.addAll(((Gang) handTiles).getTiles());
-            else if (handTiles instanceof Peng) all.addAll(((Peng) handTiles).getTiles());
-            else if (handTiles instanceof Chi) all.addAll(((Chi) handTiles).getTiles());
-            else if (handTiles instanceof AnGang) all.addAll(((AnGang) handTiles).getTiles());
-            else if (handTiles instanceof Ke) all.addAll(((Ke) handTiles).getTiles());
-            else if (handTiles instanceof Shun) all.addAll(((Shun) handTiles).getTiles());
-            else if (handTiles instanceof Eye) all.addAll(((Eye) handTiles).getTiles());
-            else if (handTiles instanceof Get) all.add(((Get) handTiles).getTile());
+            if (!(handTiles instanceof Kita)) all.addAll(handTiles.getTiles());
         }
         Collections.sort(all, EnumTile.tilesComparator);
         return all;
@@ -62,7 +54,7 @@ public class Hand implements Cloneable {
     public Hand addToHandingFromGet() {
         for (HandTiles handTiles : tiles) {
             if (handTiles instanceof Get) {
-                addToHanding(((Get) handTiles).getTile());
+                addToHanding(handTiles.getTile());
                 tiles.remove(handTiles);
                 break;
             }
@@ -176,7 +168,7 @@ public class Hand implements Cloneable {
 
     public EnumTile getGet() {
         for (HandTiles handTiles : tiles) {
-            if (handTiles instanceof Get) return ((Get) handTiles).getTile();
+            if (handTiles instanceof Get) return handTiles.getTile();
         }
         return null;
     }
@@ -264,8 +256,22 @@ public class Hand implements Cloneable {
         return tiles;
     }
 
+    public boolean equals(Hand hand) {
+        return hand != null
+                && getAll().equals(hand.getAll())
+                && tileAnGang.equals(hand.getTileAnGang())
+                && tileGang.equals(hand.getTileGang())
+                && tileKe.equals(hand.getTileKe())
+                && tilePeng.equals(hand.getTilePeng())
+                && tileShun.equals(hand.getTileShun())
+                && tileChi.equals(hand.getTileChi())
+                && tileEye == hand.getTileEye()
+                && getGet() == hand.getGet();
+    }
+
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
+
 }

@@ -15,7 +15,7 @@ public enum EnumTileGroup {
 
     public static EnumTileGroup getTileGroup(String name) {
         for (EnumTileGroup group : values()) {
-            if (name == group.name) return group;
+            if (name.equals(group.name)) return group;
         }
         return null;
     }

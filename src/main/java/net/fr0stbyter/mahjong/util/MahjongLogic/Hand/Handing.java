@@ -5,13 +5,19 @@ import net.fr0stbyter.mahjong.util.MahjongLogic.EnumTile;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class Handing extends HandTiles {
+public class Handing implements HandTiles {
     private ArrayList<EnumTile> tiles = new ArrayList<EnumTile>();
 
-    // TODO try and catch
+    @Override
     public ArrayList<EnumTile> getTiles() {
         return tiles;
     }
+
+    @Override
+    public EnumTile getTile() {
+        return tiles.get(0);
+    }
+
 
     public void setTiles(ArrayList<EnumTile> tilesIn) {
         tiles = tilesIn;

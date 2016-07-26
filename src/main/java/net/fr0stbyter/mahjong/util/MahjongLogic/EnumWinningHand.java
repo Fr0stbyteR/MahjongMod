@@ -43,8 +43,12 @@ public enum EnumWinningHand {
     YAKUHAI(false, 1, false, 1),
     RINSHYANKAIHOU(false, 1, false, 1),
     CHYANKAN(false, 1, false, 1),
-    HAITEIMOOYUE(false, 1, false, 1),
-    HOUTEIRAOYUI(false, 1, false, 1);
+    HAITEIMOUYUE(false, 1, false, 1),
+    HOUTEIRAOYUI(false, 1, false, 1),
+    KITA(false, 1, false, 1),
+    DORA(false, 1, false, 1),
+    URA(false, 1, false, 1),
+    NAGASHIMANGAN(false, 0, true, 0);
     private boolean isYakuman;
     private int fan;
     private boolean isMenZenYaku;

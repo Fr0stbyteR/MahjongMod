@@ -6,7 +6,7 @@ import net.fr0stbyter.mahjong.util.MahjongLogic.Player;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Peng extends HandTiles {
+public class Peng implements HandTiles {
     private ArrayList<EnumTile> tiles;
     private Player fromPlayer;
 
@@ -15,9 +15,14 @@ public class Peng extends HandTiles {
         fromPlayer = fromPlayerIn;
     }
 
-    // TODO try and catch
+    @Override
     public ArrayList<EnumTile> getTiles() {
         return tiles;
+    }
+
+    @Override
+    public EnumTile getTile() {
+        return tiles.get(0);
     }
 
     public Player getFromPlayer() {

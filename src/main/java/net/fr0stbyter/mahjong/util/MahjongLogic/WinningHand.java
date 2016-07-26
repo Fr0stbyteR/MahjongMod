@@ -1,73 +1,113 @@
 package net.fr0stbyter.mahjong.util.MahjongLogic;
 
-import net.fr0stbyter.mahjong.util.MahjongLogic.Hand.HandTiles;
+import net.fr0stbyter.mahjong.util.MahjongLogic.Hand.Hand;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class WinningHand {
-    private Status status;
     private Player player;
-    private ArrayList<HashMap<EnumWinningHand, Integer>> hands;
+    private Hand hand;
     private EnumTile extraTile;
-    private int fan;
-    private int fu;
-    private int score;
-    private ArrayList<HandTiles<HandTiles>> tiles;
-    WinningHand(Status statusIn, Player playerIn, ArrayList<HashMap<EnumWinningHand, Integer>> handsIn, int fanIn, int fuIn, int scoreIn, ArrayList<HandTiles<HandTiles>> tilesIn, EnumTile extraTileIn) {
-        status = statusIn;
+    private ArrayList<AnalyzeResult> yakuList = new ArrayList<AnalyzeResult>();
+    private int fan = 0;
+    private Fu fu;
+    private int score = 0;
+    private int baseScore = 0;
+    private ScoreLevel scoreLevel = null;
+    WinningHand(Player playerIn, Hand handIn, EnumTile extraTileIn, Fu fuIn) {
         player = playerIn;
-        hands = handsIn;
-        fan = fanIn;
-        fu = fuIn;
-        score = scoreIn;
-        tiles = tilesIn;
+        hand = handIn;
         extraTile = extraTileIn;
+        fu = fuIn;
     }
 
-    public WinningHand analyze(GameState state, Player playerIn, ArrayList<HandTiles<HandTiles>> tilesIn, EnumTile extraTileIn) {
-        Status status = Status.NOTEN;
-        ArrayList<HashMap<EnumWinningHand, Integer>> hands = new ArrayList<HashMap<EnumWinningHand, Integer>>();
-        int fan = 0;
-        int fu = 0;
-        int score = 0;
-        // YakuMan
-        // TODO
-        return new WinningHand(status, playerIn, hands, fan, fu, score, tilesIn, extraTileIn);
+    public WinningHand add(AnalyzeResult analyzeResult) {
+        yakuList.add(analyzeResult);
+        return this;
     }
 
+    public boolean isWon() {
+        for (AnalyzeResult analyzeResult : yakuList) {
+            if (analyzeResult.getHandStatus() == HandStatus.WIN) return true;
+        }
+        return false;
+    }
 
-    public Status getStatus() {
-        return status;
+    public boolean isWon(EnumWinningHand enumWinningHand) {
+        for (AnalyzeResult analyzeResult : yakuList) {
+            if (analyzeResult.getHandStatus() == HandStatus.WIN && analyzeResult.getWinningHand() == enumWinningHand) return true;
+        }
+        return false;
     }
 
     public Player getPlayer() {
         return player;
     }
 
-    public ArrayList<HashMap<EnumWinningHand, Integer>> getHands() {
-        return hands;
-    }
-
-    public int getFan() {
-        return fan;
-    }
-
-    public int getFu() {
-        return fu;
-    }
-
-    public ArrayList<HandTiles<HandTiles>> getTiles() {
-        return tiles;
+    public Hand getHand() {
+        return hand;
     }
 
     public EnumTile getExtraTile() {
         return extraTile;
     }
 
+    public ArrayList<AnalyzeResult> getyakuList() {
+        return yakuList;
+    }
+
+    public int getFan() {
+        for (AnalyzeResult analyzeResult : yakuList) {
+            if (analyzeResult.getHandStatus() == HandStatus.WIN) fan += analyzeResult.getFan();
+        }
+        return fan;
+    }
+
+    public Fu getFu() {
+        return fu;
+    }
+
     public int getScore() {
+        baseScore = (int) (getFu().getCount() * Math.pow(2, getFan() + 2));
+        if (getFan() < 5 && baseScore > 2000) {
+            score = 8000;
+            baseScore = 2000;
+            scoreLevel = ScoreLevel.MANKAN;
+        }
+        if (getFan() >= 6 && getFan() <= 7) {
+            score = 12000;
+            baseScore = 3000;
+            scoreLevel = ScoreLevel.HANEMAN;
+        }
+        if (getFan() >= 8 && getFan() <= 10) {
+            score = 16000;
+            baseScore = 4000;
+            scoreLevel = ScoreLevel.BAIMAN;
+        }
+        if (getFan() >= 11 && getFan() <= 12) {
+            score = 24000;
+            baseScore = 6000;
+            scoreLevel = ScoreLevel.SANBAIMAN;
+        }
+        if (getFan() >= 13) {
+            score = 32000;
+            baseScore = 8000;
+            scoreLevel = ScoreLevel.YAKUMAN;
+        }
+        if (getPlayer().isOya()) score = (int) (score * 1.5);
         return score;
     }
 
-    public enum Status {WIN, TEN, NOTEN}
+    public int getBaseScore() {
+        if (score == 0) getScore();
+        return baseScore;
+    }
+
+    public ScoreLevel getScoreLevel() {
+        if (score == 0) getScore();
+        return scoreLevel;
+    }
+
+    public enum HandStatus {WIN, TEN, NOTEN}
+    public enum ScoreLevel {MANKAN, HANEMAN, BAIMAN, SANBAIMAN, YAKUMAN}
 }

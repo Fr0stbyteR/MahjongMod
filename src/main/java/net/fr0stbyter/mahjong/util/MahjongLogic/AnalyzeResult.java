@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class AnalyzeResult {
-    WinningHand.Status status;
+    WinningHand.HandStatus handStatus;
     HashMap<ArrayList<EnumTile>, EnumTile> waitDrop;
     EnumWinningHand winningHand;
     int fan;
 
-    public AnalyzeResult(WinningHand.Status statusIn, HashMap<ArrayList<EnumTile>, EnumTile> waitDropIn, EnumWinningHand winningHandIn, int fanIn) {
-        status = statusIn;
+    public AnalyzeResult(WinningHand.HandStatus handStatusIn, HashMap<ArrayList<EnumTile>, EnumTile> waitDropIn, EnumWinningHand winningHandIn, int fanIn) {
+        handStatus = handStatusIn;
         waitDrop = waitDropIn;
         winningHand = winningHandIn;
         fan = fanIn;
     }
 
-    public WinningHand.Status getStatus() {
-        return status;
+    public WinningHand.HandStatus getHandStatus() {
+        return handStatus;
     }
 
     public HashMap<ArrayList<EnumTile>, EnumTile> getWaitDrop() {

@@ -6,17 +6,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 
-public class AnGang extends HandTiles {
+public class AnGang implements HandTiles {
     private ArrayList<EnumTile> tiles;
 
     public AnGang(EnumTile tileIn1, EnumTile tileIn2, EnumTile tileIn3, EnumTile tileIn4) {
         tiles = new ArrayList<EnumTile>(Arrays.asList(tileIn1, tileIn2, tileIn3, tileIn4));
     }
-    // TODO try and catch
+
+    @Override
     public ArrayList<EnumTile> getTiles() {
         return tiles;
     }
 
+    @Override
     public EnumTile getTile() {
         return tiles.get(0);
     }

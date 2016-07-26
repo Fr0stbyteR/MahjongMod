@@ -75,4 +75,9 @@ public class Player {
     public ArrayList<HashMap<WinningHand, Integer>> getWinningHand() {
         return winningHand;
     }
+
+    public boolean isOya() {
+        return curWind == EnumPosition.NORTH;
+    }
+
 }

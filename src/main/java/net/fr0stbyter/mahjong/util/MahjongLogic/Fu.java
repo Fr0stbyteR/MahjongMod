@@ -47,8 +47,8 @@ public class Fu {
             else countMentsu += 16;
         }
 
-        if (gameState.getCurRound().getName() == handAnalyzed.getTileEye().getName()) countEye += 2;
-        if (player.getCurWind().getName() == handAnalyzed.getTileEye().getName()) countEye += 2;
+        if (gameState.getCurRound().getName().equals(handAnalyzed.getTileEye().getName())) countEye += 2;
+        if (player.getCurWind().getName().equals(handAnalyzed.getTileEye().getName())) countEye += 2;
         if (TileGroup.dragon.contains(handAnalyzed.getTileEye())) countEye += 2;
 
         for (EnumTile tile : handAnalyzed.getTileShun()) {
