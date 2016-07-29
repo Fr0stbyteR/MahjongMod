@@ -1,27 +1,35 @@
 package net.fr0stbyter.mahjong.util.MahjongLogic;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import net.fr0stbyter.mahjong.util.MahjongLogic.Hand.Hand;
 
 public class Player {
     private String id;
     private EnumPosition curWind;
     private int score;
-    private boolean isMenzen = false;
-    private boolean isRiichi = false;
-    private boolean isDoubleRiichi = false;
-    private boolean canIbbatsu = false;
-    private boolean canRinshyan = false;
-    private boolean canChyankan = false;
-    private boolean isTenpai = false;
-    private int furiTen = 0;
-    private ArrayList<ArrayList<EnumTile>> handTiles = new ArrayList<ArrayList<EnumTile>>();
-    private ArrayList<HashMap<WinningHand, Integer>> winningHand = new ArrayList<HashMap<WinningHand, Integer>>();
+    private boolean isMenzen;
+    private boolean isRiichi;
+    private boolean isDoubleRiichi;
+    private boolean canIbbatsu;
+    private boolean canRinshyan;
+    private boolean canChyankan;
+    private boolean isTenpai;
+    private int furiTen;
+    private Hand hand;
+    private WinningHand winningHand;
 
-    public Player(String idIn, EnumPosition curWindIn, int scoreIn) {
+    public Player(String idIn, EnumPosition curWindIn) {
         id = idIn;
         curWind = curWindIn;
-        score = scoreIn;
+        hand = new Hand();
+        score = 0;
+        isMenzen = false;
+        isRiichi = false;
+        isDoubleRiichi = false;
+        canIbbatsu = false;
+        canRinshyan = false;
+        canChyankan = false;
+        isTenpai = false;
+        furiTen = 0;
     }
 
     public String getId() {
@@ -68,16 +76,72 @@ public class Player {
         return furiTen;
     }
 
-    public ArrayList<ArrayList<EnumTile>> getHandTiles() {
-        return handTiles;
+    public Hand getHand() {
+        return hand;
     }
 
-    public ArrayList<HashMap<WinningHand, Integer>> getWinningHand() {
+    public WinningHand getWinningHand() {
         return winningHand;
     }
 
     public boolean isOya() {
-        return curWind == EnumPosition.NORTH;
+        return curWind == EnumPosition.EAST;
     }
 
+    public void setCurWind(EnumPosition curWindIn) {
+        curWind = curWindIn;
+    }
+
+    public void setScore(int scoreIn) {
+        score = scoreIn;
+    }
+
+    public void setMenzen(boolean menzen) {
+        isMenzen = menzen;
+    }
+
+    public void setRiichi(boolean riichi) {
+        isRiichi = riichi;
+    }
+
+    public void setDoubleRiichi(boolean doubleRiichi) {
+        isDoubleRiichi = doubleRiichi;
+    }
+
+    public void setCanIbbatsu(boolean canIbbatsuIn) {
+        canIbbatsu = canIbbatsuIn;
+    }
+
+    public void setCanRinshyan(boolean canRinshyanIn) {
+        canRinshyan = canRinshyanIn;
+    }
+
+    public void setCanChyankan(boolean canChyankanIn) {
+        canChyankan = canChyankanIn;
+    }
+
+    public void setTenpai(boolean tenpai) {
+        isTenpai = tenpai;
+    }
+
+    public void setFuriTen(int furiTenIn) {
+        furiTen = furiTenIn;
+    }
+
+    public void setHandTiles(Hand handIn) {
+        hand = handIn;
+    }
+
+    public void addToHanding(EnumTile tile) {
+        hand.addToHanding(tile);
+    }
+
+    public void getTile(EnumTile tile) {
+        hand.get(tile);
+        //TODO analyzeS
+    }
+
+    public void setWinningHand(WinningHand winningHandIn) {
+        winningHand = winningHandIn;
+    }
 }

@@ -46,5 +46,33 @@ public class GameState {
         return phase;
     }
 
-    private enum Phase {SHUFFLE, DEAL, WAIT_DISCARD, WAIT_MELD, WIN, DRAW}
+    public void setCurRound(EnumPosition curRoundIn) {
+        curRound = curRoundIn;
+    }
+
+    public void setCurHand(int curHandIn) {
+        curHand = curHandIn;
+    }
+
+    public void setCurExtra(int curExtraIn) {
+        curExtra = curExtraIn;
+    }
+
+    public void setCurDeal(int curDealIn) {
+        curDeal = curDealIn;
+    }
+
+    public void setCurPlayer(EnumPosition curPlayerIn) {
+        curPlayer = curPlayerIn;
+    }
+
+    public void setHaitei(boolean haiteiIn) {
+        isHaitei = haiteiIn;
+    }
+
+    public void setPhase(Phase phaseIn) {
+        phase = phaseIn;
+    }
+
+    public enum Phase {SHUFFLE, DEAL, WAIT_DISCARD, WAIT_MELD, WIN, DRAW}
 }

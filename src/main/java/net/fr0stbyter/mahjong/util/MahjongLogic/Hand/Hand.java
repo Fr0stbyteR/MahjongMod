@@ -8,17 +8,31 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class Hand implements Cloneable {
-    private boolean hasGet = false;
-    private ArrayList<EnumTile> tileGang = new ArrayList<EnumTile>();
-    private ArrayList<EnumTile> tilePeng = new ArrayList<EnumTile>();
-    private ArrayList<EnumTile> tileChi = new ArrayList<EnumTile>();
-    private int countKita = 0;
-    private ArrayList<EnumTile> tileAnGang = new ArrayList<EnumTile>();
-    private ArrayList<EnumTile> tileKe = new ArrayList<EnumTile>();
-    private ArrayList<EnumTile> tileShun = new ArrayList<EnumTile>();
-    private boolean hasEye = false;
-    private EnumTile tileEye = null;
-    private ArrayList<HandTiles> tiles = new ArrayList<HandTiles>(Collections.singletonList(new Handing()));
+    private boolean hasGet;
+    private ArrayList<EnumTile> tileGang;
+    private ArrayList<EnumTile> tilePeng;
+    private ArrayList<EnumTile> tileChi;
+    private int countKita;
+    private ArrayList<EnumTile> tileAnGang;
+    private ArrayList<EnumTile> tileKe;
+    private ArrayList<EnumTile> tileShun;
+    private boolean hasEye;
+    private EnumTile tileEye;
+    private ArrayList<HandTiles> tiles;
+
+    public Hand() {
+        hasGet = false;
+        hasEye = false;
+        tileEye = null;
+        countKita = 0;
+        tiles = new ArrayList<HandTiles>(Collections.singletonList(new Handing()));
+        tileGang = new ArrayList<EnumTile>();
+        tilePeng = new ArrayList<EnumTile>();
+        tileChi = new ArrayList<EnumTile>();
+        tileAnGang = new ArrayList<EnumTile>();
+        tileKe = new ArrayList<EnumTile>();
+        tileShun = new ArrayList<EnumTile>();
+    }
 
     public ArrayList<EnumTile> getHanding() {
         return tiles.get(0).getTiles();

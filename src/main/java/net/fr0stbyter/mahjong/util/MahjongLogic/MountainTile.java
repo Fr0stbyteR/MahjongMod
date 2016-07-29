@@ -29,4 +29,9 @@ public class MountainTile {
     public boolean isShown() {
         return isShown;
     }
+
+    public MountainTile setShown(boolean setShownIn) {
+        isShown = setShownIn;
+        return this;
+    }
 }
