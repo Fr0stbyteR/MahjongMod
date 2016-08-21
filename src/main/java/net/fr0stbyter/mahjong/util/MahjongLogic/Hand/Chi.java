@@ -6,7 +6,7 @@ import net.fr0stbyter.mahjong.util.MahjongLogic.Player;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Chi implements HandTiles {
+public class Chi implements HandTiles, Cloneable {
     private ArrayList<EnumTile> tiles;
     private Player fromPlayer;
 
@@ -27,5 +27,10 @@ public class Chi implements HandTiles {
 
     public Player getFromPlayer() {
         return fromPlayer;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

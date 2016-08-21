@@ -7,7 +7,7 @@ import net.fr0stbyter.mahjong.util.MahjongLogic.Player;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Gang implements HandTiles {
+public class Gang implements HandTiles, Cloneable {
     private ArrayList<EnumTile> tiles;
     private Player fromPlayer;
     private boolean plusGang;
@@ -34,5 +34,16 @@ public class Gang implements HandTiles {
 
     public boolean getPlusGang() {
         return plusGang;
+    }
+
+    public void setTiles(ArrayList<EnumTile> tilesIn) {
+        tiles = tilesIn;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Gang handTiles = (Gang) super.clone();
+        handTiles.setTiles((ArrayList<EnumTile>) tiles.clone());
+        return handTiles;
     }
 }

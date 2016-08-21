@@ -133,7 +133,7 @@ public enum EnumTile {
 
     public static Comparator<EnumTile> tilesComparator = new Comparator<EnumTile>(){
         public int compare(EnumTile tileIn1, EnumTile tileIn2) {
-            return tileIn2.getIndex() - tileIn1.getIndex();
+            return tileIn1.getIndex() - tileIn2.getIndex();
         }
     };
 }

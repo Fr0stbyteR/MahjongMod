@@ -7,4 +7,5 @@ import java.util.ArrayList;
 public interface HandTiles {
     public ArrayList<EnumTile> getTiles();
     public EnumTile getTile();
+    public Object clone() throws CloneNotSupportedException;
 }

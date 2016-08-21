@@ -60,9 +60,9 @@ public class Hand implements Cloneable {
         return result;
     }
 
-    public ArrayList<HandTiles> addToHanding(EnumTile tileIn) {
+    public Hand addToHanding(EnumTile tileIn) {
         ((Handing) tiles.get(0)).add(tileIn).sort();
-        return tiles;
+        return this;
     }
 
     public Hand addToHandingFromGet() {
@@ -84,6 +84,11 @@ public class Hand implements Cloneable {
 
     public Hand setHanding(ArrayList<EnumTile> tilesIn) {
         ((Handing) tiles.get(0)).setTiles(tilesIn);
+        return this;
+    }
+
+    public Hand handingToNormal() {
+        ((Handing) tiles.get(0)).toNormal();
         return this;
     }
 
@@ -270,6 +275,50 @@ public class Hand implements Cloneable {
         return tiles;
     }
 
+    public void setHasGet(boolean hasGetIn) {
+        hasGet = hasGetIn;
+    }
+
+    public void setTileGang(ArrayList<EnumTile> tileGangIn) {
+        tileGang = tileGangIn;
+    }
+
+    public void setTilePeng(ArrayList<EnumTile> tilePengIn) {
+        tilePeng = tilePengIn;
+    }
+
+    public void setTileChi(ArrayList<EnumTile> tileChiIn) {
+        tileChi = tileChiIn;
+    }
+
+    public void setCountKita(int countKitaIn) {
+        countKita = countKitaIn;
+    }
+
+    public void setTileAnGang(ArrayList<EnumTile> tileAnGangIn) {
+        tileAnGang = tileAnGangIn;
+    }
+
+    public void setTileKe(ArrayList<EnumTile> tileKeIn) {
+        tileKe = tileKeIn;
+    }
+
+    public void setTileShun(ArrayList<EnumTile> tileShunIn) {
+        tileShun = tileShunIn;
+    }
+
+    public void setHasEye(boolean hasEyeIn) {
+        hasEye = hasEyeIn;
+    }
+
+    public void setTileEye(EnumTile tileEyeIn) {
+        tileEye = tileEyeIn;
+    }
+
+    public void setTiles(ArrayList<HandTiles> tilesIn) {
+        tiles = tilesIn;
+    }
+
     public boolean equals(Hand hand) {
         return hand != null
                 && getAll().equals(hand.getAll())
@@ -285,7 +334,19 @@ public class Hand implements Cloneable {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        return super.clone();
+        Hand hand = (Hand) super.clone();
+        hand.setTileGang((ArrayList<EnumTile>) tileGang.clone());
+        hand.setTilePeng((ArrayList<EnumTile>) tilePeng.clone());
+        hand.setTileChi((ArrayList<EnumTile>) tileChi.clone());
+        hand.setTileAnGang((ArrayList<EnumTile>) tileAnGang.clone());
+        hand.setTileKe((ArrayList<EnumTile>) tileKe.clone());
+        hand.setTileShun((ArrayList<EnumTile>) tileShun.clone());
+        ArrayList<HandTiles> newTiles = new ArrayList<HandTiles>();
+        for (HandTiles handTiles : tiles) {
+            newTiles.add((HandTiles) handTiles.clone());
+        }
+        hand.setTiles(newTiles);
+        return hand;
     }
 
 }

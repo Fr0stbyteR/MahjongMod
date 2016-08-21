@@ -6,7 +6,7 @@ import net.fr0stbyter.mahjong.util.MahjongLogic.Player;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Peng implements HandTiles {
+public class Peng implements HandTiles, Cloneable {
     private ArrayList<EnumTile> tiles;
     private Player fromPlayer;
 
@@ -27,5 +27,16 @@ public class Peng implements HandTiles {
 
     public Player getFromPlayer() {
         return fromPlayer;
+    }
+
+    public void setTiles(ArrayList<EnumTile> tilesIn) {
+        tiles = tilesIn;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Peng handTiles = (Peng) super.clone();
+        handTiles.setTiles((ArrayList<EnumTile>) tiles.clone());
+        return handTiles;
     }
 }

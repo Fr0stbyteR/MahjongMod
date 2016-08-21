@@ -5,7 +5,7 @@ import net.fr0stbyter.mahjong.util.MahjongLogic.EnumTile;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class Handing implements HandTiles {
+public class Handing implements HandTiles, Cloneable {
     private ArrayList<EnumTile> tiles = new ArrayList<EnumTile>();
 
     @Override
@@ -33,7 +33,22 @@ public class Handing implements HandTiles {
         return this;
     }
 
-    public void sort() {
+    public Handing sort() {
         Collections.sort(tiles, EnumTile.tilesComparator);
+        return this;
+    }
+
+    public Handing toNormal() {
+        for (int i = 0; i < tiles.size(); i++) {
+            tiles.set(i, tiles.get(i).getNormal());
+        }
+        return this;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        Handing handTiles = (Handing) super.clone();
+        handTiles.setTiles((ArrayList<EnumTile>) tiles.clone());
+        return handTiles;
     }
 }

@@ -64,7 +64,4 @@ public class Game {
         players.get(0).getTile(mountain.getNextThenRemove());
         // wait discard
     }
-    public static void main(String[] args) {
-        System.out.println("Hello World.");
-    }
 }

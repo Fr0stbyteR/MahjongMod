@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 
-public class AnGang implements HandTiles {
+public class AnGang implements HandTiles, Cloneable {
     private ArrayList<EnumTile> tiles;
 
     public AnGang(EnumTile tileIn1, EnumTile tileIn2, EnumTile tileIn3, EnumTile tileIn4) {
@@ -21,5 +21,10 @@ public class AnGang implements HandTiles {
     @Override
     public EnumTile getTile() {
         return tiles.get(0);
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

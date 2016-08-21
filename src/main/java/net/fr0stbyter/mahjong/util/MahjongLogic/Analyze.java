@@ -358,7 +358,7 @@ public class Analyze {
         EnumTileGroup group = hand.getHanding().get(0).getGroup();
         if ((group != MAN) && (group != PIN) && (group != SOU)) return new AnalyzeResult(NOTEN, null, null, 0);
         if (hand.getHandingByGroup(group).size() != 13) return new AnalyzeResult(NOTEN, null, null, 0);
-        if (!hand.getHanding().containsAll(TileGroup.getGroupByEnum(group))) return new AnalyzeResult(NOTEN, null, null, 0);
+        if (!hand.handingToNormal().getHanding().containsAll(TileGroup.toNormal(TileGroup.getGroupByEnum(group)))) return new AnalyzeResult(NOTEN, null, null, 0);
         if ((hand.getHanding().get(0).getNumber() == 1)
                 && (hand.getHanding().get(1).getNumber() == 1)
                 && (hand.getHanding().get(2).getNumber() == 1)
@@ -389,7 +389,7 @@ public class Analyze {
         EnumTileGroup group = hand.getHanding().get(0).getGroup();
         if ((group != MAN) && (group != PIN) && (group != SOU)) return new AnalyzeResult(NOTEN, null, null, 0);
         if (hand.getHandingByGroup(group).size() != 14) return new AnalyzeResult(NOTEN, null, null, 0);
-        if (!hand.getHanding().containsAll(TileGroup.getGroupByEnum(group))) return new AnalyzeResult(NOTEN, null, null, 0);
+        if (!hand.handingToNormal().getHanding().containsAll(TileGroup.toNormal(TileGroup.getGroupByEnum(group)))) return new AnalyzeResult(NOTEN, null, null, 0);
         if ((hand.getHanding().get(0).getNumber() == 1)
                 && (hand.getHanding().get(1).getNumber() == 1)
                 && (hand.getHanding().get(2).getNumber() == 1)
@@ -924,20 +924,21 @@ public class Analyze {
         int dragonCount = hand.getHandingByGroup(DRAGON).size();
         if ((manCount % 3 == 2 ? 1 : 0) + (pinCount % 3 == 2 ? 1 : 0) + (souCount % 3 == 2 ? 1 : 0) + (windCount % 3 == 2 ? 1 : 0) + (dragonCount % 3 == 2 ? 1 : 0) != 1) return null;
         if ((manCount % 3 == 1) || (pinCount % 3 == 1) || (souCount % 3 == 1) || (windCount % 3 == 1) || (dragonCount % 3 == 1)) return null;
-        Hand hand1 = baseAnalyzeWinGroup1(hand, false);
-        Hand hand2 = baseAnalyzeWinGroup2(hand, false);
-        Hand hand3 = baseAnalyzeWinGroup3(hand, false);
+        Hand hand1 = baseAnalyzeWinGroup1(hand);
+        Hand hand2 = baseAnalyzeWinGroup2(hand);
+        Hand hand3 = baseAnalyzeWinGroup3(hand);
         if (hand1 != null) hands.add(hand1);
         if ((hand2 != null) && (!hand2.equals(hand1))) hands.add(hand2);
         if ((hand3 != null) && !hand3.equals(hand1) && !hand3.equals(hand2)) hands.add(hand3);
         return hands;
     }
 
-    private static Hand baseAnalyzeWinGroup1(Hand handIn, boolean hasEyeIn) { //hand in with no get Eye>Ke>Shun
-        boolean hasEye = hasEyeIn;
+    private static Hand baseAnalyzeWinGroup1(Hand handIn) { //hand in with no get Eye>Ke>Shun
+        boolean hasEye = handIn.hasEye();
         if (handIn.getHanding().isEmpty()) return handIn;
         EnumTile tile0 = handIn.getHanding().get(0);
         Hand handOut;
+        if (handIn.getHanding().size() < 2) return null;
         if (!hasEye && tile0.getNormal() == handIn.getHanding().get(1).getNormal()) {
             Hand hand = new Hand();
             try {
@@ -946,10 +947,10 @@ public class Analyze {
                 e.printStackTrace();
             }
             hand.eye(tile0);
-            hasEye = true;
-            handOut = baseAnalyzeWinGroup1(hand, hasEye);
+            handOut = baseAnalyzeWinGroup1(hand);
             if (handOut != null) return handOut;
         }
+        if (handIn.getHanding().size() < 3) return null;
         if (tile0.getNormal() == handIn.getHanding().get(1).getNormal()
                 && handIn.getHanding().get(1).getNormal() == handIn.getHanding().get(2).getNormal()) {
             Hand hand = new Hand();
@@ -959,7 +960,7 @@ public class Analyze {
                 e.printStackTrace();
             }
             hand.ke(tile0);
-            handOut = baseAnalyzeWinGroup1(hand, hasEye);
+            handOut = baseAnalyzeWinGroup1(hand);
             if (handOut != null) return handOut;
         }
         if ((tile0.getNumber() <= 7) && ((tile0.getGroup() == MAN) || (tile0.getGroup() == PIN) || (tile0.getGroup() == SOU))
@@ -972,41 +973,44 @@ public class Analyze {
                 e.printStackTrace();
             }
             hand.shun(tile0);
-            handOut = baseAnalyzeWinGroup1(hand, hasEye);
+            handOut = baseAnalyzeWinGroup1(hand);
             if (handOut != null) return handOut;
         }
         return null;
     }
 
-    private static Hand baseAnalyzeWinGroup2(Hand handIn, boolean hasEyeIn) { //hand in with no get Ke>Shun>Eye
-        boolean hasEye = hasEyeIn;
+    private static Hand baseAnalyzeWinGroup2(Hand handIn) { //hand in with no get Ke>Shun>Eye
+        boolean hasEye = handIn.hasEye();
         if (handIn.getHanding().isEmpty()) return handIn;
         EnumTile tile0 = handIn.getHanding().get(0);
         Hand handOut;
-        if (tile0.getNormal() == handIn.getHanding().get(1).getNormal()
-                && handIn.getHanding().get(1).getNormal() == handIn.getHanding().get(2).getNormal()) {
-            Hand hand = new Hand();
-            try {
-                hand = (Hand) handIn.clone();
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
+        if (handIn.getHanding().size() < 2) return null;
+        if (handIn.getHanding().size() >= 3) {
+            if (handIn.getHanding().size() >= 3 && tile0.getNormal() == handIn.getHanding().get(1).getNormal()
+                    && handIn.getHanding().get(1).getNormal() == handIn.getHanding().get(2).getNormal()) {
+                Hand hand = new Hand();
+                try {
+                    hand = (Hand) handIn.clone();
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
+                hand.ke(tile0);
+                handOut = baseAnalyzeWinGroup2(hand);
+                if (handOut != null) return handOut;
             }
-            hand.ke(tile0);
-            handOut = baseAnalyzeWinGroup2(hand, hasEye);
-            if (handOut != null) return handOut;
-        }
-        if ((tile0.getNumber() <= 7) && ((tile0.getGroup() == MAN) || (tile0.getGroup() == PIN) || (tile0.getGroup() == SOU))
-                && (handIn.getHanding().contains(tile0.getNext().getNormal()) || handIn.getHanding().contains(tile0.getNext().getRed()))
-                && (handIn.getHanding().contains(tile0.getNext().getNext().getNormal()) || handIn.getHanding().contains(tile0.getNext().getNext().getRed()))) {
-            Hand hand = new Hand();
-            try {
-                hand = (Hand) handIn.clone();
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
+            if ((tile0.getNumber() <= 7) && ((tile0.getGroup() == MAN) || (tile0.getGroup() == PIN) || (tile0.getGroup() == SOU))
+                    && (handIn.getHanding().contains(tile0.getNext().getNormal()) || handIn.getHanding().contains(tile0.getNext().getRed()))
+                    && (handIn.getHanding().contains(tile0.getNext().getNext().getNormal()) || handIn.getHanding().contains(tile0.getNext().getNext().getRed()))) {
+                Hand hand = new Hand();
+                try {
+                    hand = (Hand) handIn.clone();
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
+                hand.shun(tile0);
+                handOut = baseAnalyzeWinGroup2(hand);
+                if (handOut != null) return handOut;
             }
-            hand.shun(tile0);
-            handOut = baseAnalyzeWinGroup2(hand, hasEye);
-            if (handOut != null) return handOut;
         }
         if (!hasEye && tile0.getNormal() == handIn.getHanding().get(1).getNormal()) {
             Hand hand = new Hand();
@@ -1016,30 +1020,32 @@ public class Analyze {
                 e.printStackTrace();
             }
             hand.eye(tile0);
-            hasEye = true;
-            handOut = baseAnalyzeWinGroup2(hand, hasEye);
+            handOut = baseAnalyzeWinGroup2(hand);
             if (handOut != null) return handOut;
         }
         return null;
     }
 
-    private static Hand baseAnalyzeWinGroup3(Hand handIn, boolean hasEyeIn) { //hand in with no get Shun>Eye>Ke
-        boolean hasEye = hasEyeIn;
+    private static Hand baseAnalyzeWinGroup3(Hand handIn) { //hand in with no get Shun>Eye>Ke
+        boolean hasEye = handIn.hasEye();
         if (handIn.getHanding().isEmpty()) return handIn;
         EnumTile tile0 = handIn.getHanding().get(0);
         Hand handOut;
-        if ((tile0.getNumber() <= 7) && ((tile0.getGroup() == MAN) || (tile0.getGroup() == PIN) || (tile0.getGroup() == SOU))
-                && (handIn.getHanding().contains(tile0.getNext().getNormal()) || handIn.getHanding().contains(tile0.getNext().getRed()))
-                && (handIn.getHanding().contains(tile0.getNext().getNext().getNormal()) || handIn.getHanding().contains(tile0.getNext().getNext().getRed()))) {
-            Hand hand = new Hand();
-            try {
-                hand = (Hand) handIn.clone();
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
+        if (handIn.getHanding().size() < 2) return null;
+        if (handIn.getHanding().size() >= 3) {
+            if ((tile0.getNumber() <= 7) && ((tile0.getGroup() == MAN) || (tile0.getGroup() == PIN) || (tile0.getGroup() == SOU))
+                    && (handIn.getHanding().contains(tile0.getNext().getNormal()) || handIn.getHanding().contains(tile0.getNext().getRed()))
+                    && (handIn.getHanding().contains(tile0.getNext().getNext().getNormal()) || handIn.getHanding().contains(tile0.getNext().getNext().getRed()))) {
+                Hand hand = new Hand();
+                try {
+                    hand = (Hand) handIn.clone();
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
+                hand.shun(tile0);
+                handOut = baseAnalyzeWinGroup3(hand);
+                if (handOut != null) return handOut;
             }
-            hand.shun(tile0);
-            handOut = baseAnalyzeWinGroup3(hand, hasEye);
-            if (handOut != null) return handOut;
         }
         if (!hasEye && tile0.getNormal() == handIn.getHanding().get(1).getNormal()) {
             Hand hand = new Hand();
@@ -1049,21 +1055,22 @@ public class Analyze {
                 e.printStackTrace();
             }
             hand.eye(tile0);
-            hasEye = true;
-            handOut = baseAnalyzeWinGroup3(hand, hasEye);
+            handOut = baseAnalyzeWinGroup3(hand);
             if (handOut != null) return handOut;
         }
-        if (tile0.getNormal() == handIn.getHanding().get(1).getNormal()
-                && handIn.getHanding().get(1).getNormal() == handIn.getHanding().get(2).getNormal()) {
-            Hand hand = new Hand();
-            try {
-                hand = (Hand) handIn.clone();
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
+        if (handIn.getHanding().size() >= 3) {
+            if (tile0.getNormal() == handIn.getHanding().get(1).getNormal()
+                    && handIn.getHanding().get(1).getNormal() == handIn.getHanding().get(2).getNormal()) {
+                Hand hand = new Hand();
+                try {
+                    hand = (Hand) handIn.clone();
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
+                hand.ke(tile0);
+                handOut = baseAnalyzeWinGroup3(hand);
+                if (handOut != null) return handOut;
             }
-            hand.ke(tile0);
-            handOut = baseAnalyzeWinGroup3(hand, hasEye);
-            if (handOut != null) return handOut;
         }
         return null;
     }
@@ -1100,25 +1107,25 @@ public class Analyze {
         ArrayList<EnumTile> handingUnique = new ArrayList<EnumTile>();
         ArrayList<EnumTile> dropedHandingUnique = new ArrayList<EnumTile>();
         ArrayList<EnumTile> testTiles = new ArrayList<EnumTile>();
-        for (EnumTile tile : hand.getHanding()) {
+        for (EnumTile tile : hand.getHanding()) { // handing with unique tiles
             if (!handingUnique.contains(tile)) handingUnique.add(tile);
         }
         for (EnumTile drop : handingUnique) {
             hand.getHanding().remove(drop);
             dropedHandingUnique.clear();
-            for (EnumTile tile : hand.getHanding()) {
+            for (EnumTile tile : hand.getHanding()) { //handing with unique tiles without the dropped one
                 if (!dropedHandingUnique.contains(tile)) dropedHandingUnique.add(tile);
             }
             testTiles.clear();
             for (EnumTile tile : dropedHandingUnique) {
                 if (tile == drop) continue;
                 if (!testTiles.contains(tile.getNormal())) testTiles.add(tile.getNormal());
-                if (tile.getPrev() != null && !testTiles.contains(tile.getPrev())) testTiles.add(tile.getPrev());
-                if (tile.getNext() != null && !testTiles.contains(tile.getNext())) testTiles.add(tile.getNext());
+                if (tile.getPrev() != null && !testTiles.contains(tile.getPrev()) && tile.getPrev() != drop) testTiles.add(tile.getPrev());
+                if (tile.getNext() != null && !testTiles.contains(tile.getNext()) && tile.getNext() != drop) testTiles.add(tile.getNext());
             }
             for (EnumTile tile : testTiles) {
                 wait = tile;
-                if (baseAnalyzeWinGroup1(hand.get(wait).addToHandingFromGet(), false) != null) {
+                if (baseAnalyzeWinGroup1(hand.get(wait).addToHandingFromGet()) != null) {
                     if (dropWait.containsKey(drop)) dropWait.get(drop).add(wait);
                     else dropWait.put(drop, new ArrayList<EnumTile>(Collections.singletonList(wait)));
                 }
@@ -1133,7 +1140,6 @@ public class Analyze {
         if (handIn.hasGet()) return null; // 13 tiles analyze
 
         if (handIn.isMenzen() && handIn.getHanding().containsAll(TileGroup.yaochyuu)) return TileGroup.yaochyuu; //gsms13
-
         ArrayList<EnumTile> waits = new ArrayList<EnumTile>();
 
         int gokushimusouCount = 0; //gsms
@@ -1186,7 +1192,7 @@ public class Analyze {
             if (tile.getNext() != null && !testTiles.contains(tile.getNext())) testTiles.add(tile.getNext());
         }
         for (EnumTile wait : testTiles) {
-            if (baseAnalyzeWinGroup1(hand.get(wait).addToHandingFromGet(), false) != null) waits.add(wait);
+            if (baseAnalyzeWinGroup1(hand.get(wait).addToHandingFromGet()) != null) waits.add(wait);
             hand.removeFromHanding(wait);
         }
         return waits;

@@ -5,7 +5,7 @@ import net.fr0stbyter.mahjong.util.MahjongLogic.EnumTile;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class Get implements HandTiles {
+public class Get implements HandTiles, Cloneable {
     private EnumTile tile;
 
     public Get(EnumTile tileIn) {
@@ -22,4 +22,8 @@ public class Get implements HandTiles {
         return tile;
     }
 
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
 }

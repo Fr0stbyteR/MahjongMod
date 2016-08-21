@@ -24,4 +24,10 @@ public class TileGroup {
         if (group == EnumTileGroup.DRAGON) return dragon;
         return null;
     }
+    public static ArrayList<EnumTile> toNormal(ArrayList<EnumTile> tiles) {
+        tiles.remove(M5R);
+        tiles.remove(P5R);
+        tiles.remove(S5R);
+        return tiles;
+    }
 }
