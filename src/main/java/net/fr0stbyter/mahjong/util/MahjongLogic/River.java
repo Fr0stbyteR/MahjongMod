@@ -7,7 +7,11 @@ public class River {
     public boolean add(EnumTile tile, EnumPosition position, boolean isTsumoSetsuri, boolean isHorizontal) {
         return riverTiles.add(new RiverTile(tile, position, isTsumoSetsuri, isHorizontal, true));
     }
+    public int getCount() {
+        return riverTiles.size();
+    }
     public RiverTile getLast() {
+        if (riverTiles.isEmpty()) return null;
         return riverTiles.get(riverTiles.size() - 1);
     }
     public EnumTile removeWaiting() {

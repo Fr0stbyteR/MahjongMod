@@ -69,7 +69,12 @@ public class WinningHand {
 
     public int getScore() {
         baseScore = (int) (getFu().getCount() * Math.pow(2, getFan() + 2));
-        if (getFan() < 5 && baseScore > 2000) {
+        if (getFan() < 0) {
+            score = 32000 * -1 * getFan();
+            baseScore = 8000 * -1 * getFan();
+            scoreLevel = ScoreLevel.YAKUMAN;
+        }
+        if (getFan() > 0 && getFan() < 5 && baseScore > 2000) {
             score = 8000;
             baseScore = 2000;
             scoreLevel = ScoreLevel.MANKAN;

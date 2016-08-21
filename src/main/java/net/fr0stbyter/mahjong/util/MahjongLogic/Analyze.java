@@ -11,7 +11,21 @@ import static net.fr0stbyter.mahjong.util.MahjongLogic.EnumWinningHand.*;
 import static net.fr0stbyter.mahjong.util.MahjongLogic.WinningHand.HandStatus.*;
 
 public class Analyze {
-    public WinningHand analyzeYaku(GameType gameType, GameState gameState, Player player, ArrayList<EnumTile> doraIn, ArrayList<EnumTile> uraIn, Hand handIn, EnumTile extraTileIn, Hand handAnalyzed) {
+    public static WinningHand analyzeWin(GameType gameType, GameState gameState, Player player, ArrayList<EnumTile> doraIn, ArrayList<EnumTile> uraIn, Hand handIn, EnumTile extraTileIn) {
+        ArrayList<Hand> hands = baseAnalyzeWin(handIn, extraTileIn);
+        WinningHand winningHand = null;
+        if (hands != null) {
+            for (Hand handAnalyzed : hands) {
+                WinningHand tempWinningHand;
+                tempWinningHand = analyzeYaku(gameType, gameState, player, doraIn, uraIn, handIn, extraTileIn, handAnalyzed);
+                if (winningHand == null) winningHand = tempWinningHand;
+                else if (tempWinningHand.getScore() > winningHand.getScore()) winningHand = tempWinningHand;
+            }
+        }
+        return winningHand;
+    }
+
+    private static WinningHand analyzeYaku(GameType gameType, GameState gameState, Player player, ArrayList<EnumTile> doraIn, ArrayList<EnumTile> uraIn, Hand handIn, EnumTile extraTileIn, Hand handAnalyzed) {
         boolean isMenzen = handIn.isMenzen();
         boolean isTsumo = handIn.hasGet();
         // fu
@@ -67,6 +81,7 @@ public class Analyze {
         for (AnalyzeResult analyzeResult : yakuhai(gameState, player, handAnalyzed).values()) {
             winningHand.add(analyzeResult);
         }
+        if (!winningHand.isWon()) return null;
         for (AnalyzeResult analyzeResult : kita(gameType, handAnalyzed)) {
             winningHand.add(analyzeResult);
         }
@@ -79,7 +94,7 @@ public class Analyze {
         return winningHand;
     }
 
-    private AnalyzeResult gokushimusou13(Hand handIn, EnumTile extraTileIn) {
+    private static AnalyzeResult gokushimusou13(Hand handIn, EnumTile extraTileIn) {
         EnumWinningHand winningHand = GOKUSHIMUSOU13;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -87,8 +102,8 @@ public class Analyze {
             else return new AnalyzeResult(NOTEN, null, null, 0);
         } else fan = handIn.isMenzen() ? winningHand.getFan() : winningHand.getNakuFan();
 
-        HashMap<ArrayList<EnumTile>, EnumTile> waitDrop = new HashMap<ArrayList<EnumTile>, EnumTile>();
-        EnumTile waiting = null;
+        HashMap<EnumTile, ArrayList<EnumTile>> dropWait = new HashMap<EnumTile, ArrayList<EnumTile>>();
+        EnumTile wait = null;
 
         Hand hand = new Hand();
         try {
@@ -100,24 +115,24 @@ public class Analyze {
 
         for (EnumTile tile : TileGroup.yaochyuu) {
             if (hand.getHanding().contains(tile)) hand.removeFromHanding(tile);
-            else if (waiting == null) waiting = tile;
+            else if (wait == null) wait = tile;
             else return new AnalyzeResult(NOTEN, null, null, 0);
         }
-        if (waiting == null) {
+        if (wait == null) {
             if (TileGroup.yaochyuu.contains(hand.getGet())) return new AnalyzeResult(WIN, null, winningHand, fan); // win
             else {
-                waitDrop.put(TileGroup.yaochyuu, hand.getGet());
-                return new AnalyzeResult(TEN, waitDrop, winningHand, fan);
+                dropWait.put(hand.getGet(), TileGroup.yaochyuu);
+                return new AnalyzeResult(TEN, dropWait, winningHand, fan);
             }
         }
-        if (waiting == hand.getGet()) {
-            waitDrop.put(TileGroup.yaochyuu, hand.getHanding().get(0));
-            return new AnalyzeResult(TEN, waitDrop, winningHand, fan);
+        if (wait == hand.getGet()) {
+            dropWait.put(hand.getHanding().get(0), TileGroup.yaochyuu);
+            return new AnalyzeResult(TEN, dropWait, winningHand, fan);
         }
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult gokushimusou(Hand handIn, EnumTile extraTileIn) {
+    private static AnalyzeResult gokushimusou(Hand handIn, EnumTile extraTileIn) {
         EnumWinningHand winningHand = GOKUSHIMUSOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -125,8 +140,8 @@ public class Analyze {
             else return new AnalyzeResult(NOTEN, null, null, 0);
         } else fan = handIn.isMenzen() ? winningHand.getFan() : winningHand.getNakuFan();
 
-        HashMap<ArrayList<EnumTile>, EnumTile> waitDrop = new HashMap<ArrayList<EnumTile>, EnumTile>();
-        ArrayList<EnumTile> waiting = new ArrayList<EnumTile>();
+        HashMap<EnumTile, ArrayList<EnumTile>> dropWait = new HashMap<EnumTile, ArrayList<EnumTile>>();
+        ArrayList<EnumTile> wait = new ArrayList<EnumTile>();
 
         Hand hand = new Hand();
         try {
@@ -139,27 +154,27 @@ public class Analyze {
 
         for (EnumTile tile : TileGroup.yaochyuu) {
             if (hand.getHanding().contains(tile)) hand.removeFromHanding(tile);
-            else if (waiting.isEmpty()) waiting.add(tile);
+            else if (wait.isEmpty()) wait.add(tile);
             else return new AnalyzeResult(NOTEN, null, null, 0);
         }
-        if (waiting.isEmpty() && (TileGroup.yaochyuu.contains(hand.getHanding().get(0)))) return new AnalyzeResult(WIN, null, winningHand, fan); // win
+        if (wait.isEmpty() && (TileGroup.yaochyuu.contains(hand.getHanding().get(0)))) return new AnalyzeResult(WIN, null, winningHand, fan); // win
         if (TileGroup.yaochyuu.contains(hand.getHanding().get(0)) && TileGroup.yaochyuu.contains(hand.getHanding().get(1))) {
-            waitDrop.put(waiting, hand.getHanding().get(0));
-            waitDrop.put(waiting, hand.getHanding().get(1));
-            return new AnalyzeResult(TEN, waitDrop, winningHand, fan);
+            dropWait.put(hand.getHanding().get(0), wait);
+            dropWait.put(hand.getHanding().get(1), wait);
+            return new AnalyzeResult(TEN, dropWait, winningHand, fan);
         }
         if (TileGroup.yaochyuu.contains(hand.getHanding().get(0))) {
-            waitDrop.put(waiting, hand.getHanding().get(1));
-            return new AnalyzeResult(TEN, waitDrop, winningHand, fan);
+            dropWait.put(hand.getHanding().get(1), wait);
+            return new AnalyzeResult(TEN, dropWait, winningHand, fan);
         }
         if (TileGroup.yaochyuu.contains(hand.getHanding().get(1))) {
-            waitDrop.put(waiting, hand.getHanding().get(0));
-            return new AnalyzeResult(TEN, waitDrop, winningHand, fan);
+            dropWait.put(hand.getHanding().get(0), wait);
+            return new AnalyzeResult(TEN, dropWait, winningHand, fan);
         }
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult chiitoitsu(Hand handIn, EnumTile extraTileIn) {
+    private static AnalyzeResult chiitoitsu(Hand handIn, EnumTile extraTileIn) {
         EnumWinningHand winningHand = CHIITOITSU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -167,7 +182,7 @@ public class Analyze {
             else return new AnalyzeResult(NOTEN, null, null, 0);
         } else fan = handIn.isMenzen() ? winningHand.getFan() : winningHand.getNakuFan();
 
-        HashMap<ArrayList<EnumTile>, EnumTile> waitDrop = new HashMap<ArrayList<EnumTile>, EnumTile>();
+        HashMap<EnumTile, ArrayList<EnumTile>> dropWait = new HashMap<EnumTile, ArrayList<EnumTile>>();
         ArrayList<EnumTile> single = new ArrayList<EnumTile>();
 
         Hand hand = new Hand();
@@ -187,12 +202,12 @@ public class Analyze {
             } else return new AnalyzeResult(NOTEN, null, null, 0);
         }
         if (single.size() == 0) return new AnalyzeResult(WIN, null, winningHand, fan);
-        waitDrop.put(new ArrayList<EnumTile>(Collections.singletonList(single.get(0))), single.get(1));
-        waitDrop.put(new ArrayList<EnumTile>(Collections.singletonList(single.get(1))), single.get(0));
-        return new AnalyzeResult(TEN, waitDrop, winningHand, fan);
+        dropWait.put(single.get(1), new ArrayList<EnumTile>(Collections.singletonList(single.get(0))));
+        dropWait.put(single.get(0), new ArrayList<EnumTile>(Collections.singletonList(single.get(1))));
+        return new AnalyzeResult(TEN, dropWait, winningHand, fan);
     }
 
-    private AnalyzeResult suuankoudanki(Hand handIn, EnumTile extraTileIn, Hand handAnalyzed) {
+    private static AnalyzeResult suuankoudanki(Hand handIn, EnumTile extraTileIn, Hand handAnalyzed) {
         EnumWinningHand winningHand = SUUANKOUDANKI;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -205,7 +220,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult suuankou(Hand handAnalyzed) {
+    private static AnalyzeResult suuankou(Hand handAnalyzed) {
         EnumWinningHand winningHand = SUUANKOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -217,7 +232,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult daisangen(Hand handAnalyzed) {
+    private static AnalyzeResult daisangen(Hand handAnalyzed) {
         EnumWinningHand winningHand = DAISANGEN;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -237,7 +252,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult tsuuiisou(Hand handAnalyzed) {
+    private static AnalyzeResult tsuuiisou(Hand handAnalyzed) {
         EnumWinningHand winningHand = TSUUIISOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -249,7 +264,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult daisuushii(Hand handAnalyzed) {
+    private static AnalyzeResult daisuushii(Hand handAnalyzed) {
         EnumWinningHand winningHand = DAISUUSHII;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -268,7 +283,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult shyousuushii(Hand handAnalyzed) { // if not daisuushi
+    private static AnalyzeResult shyousuushii(Hand handAnalyzed) { // if not daisuushi
         EnumWinningHand winningHand = SHYOUSUUSHII;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -288,7 +303,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult ryuuiisou(Hand handAnalyzed) {
+    private static AnalyzeResult ryuuiisou(Hand handAnalyzed) {
         EnumWinningHand winningHand = RYUUIISOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -300,7 +315,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult chinroutou(Hand handAnalyzed) {
+    private static AnalyzeResult chinroutou(Hand handAnalyzed) {
         EnumWinningHand winningHand = CHINROUTOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -312,7 +327,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult suukantsu(Hand handAnalyzed) {
+    private static AnalyzeResult suukantsu(Hand handAnalyzed) {
         EnumWinningHand winningHand = SUUKANTSU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -324,7 +339,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult chyuurenpoutou9(Hand handIn, EnumTile extraTileIn) {
+    private static AnalyzeResult chyuurenpoutou9(Hand handIn, EnumTile extraTileIn) {
         EnumWinningHand winningHand = CHYUURENPOUTOU9;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -354,7 +369,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult chyuurenpoutou(Hand handIn, EnumTile extraTileIn) {
+    private static AnalyzeResult chyuurenpoutou(Hand handIn, EnumTile extraTileIn) {
         EnumWinningHand winningHand = CHYUURENPOUTOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -384,7 +399,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult tenhou(Hand handAnalyzed, GameState gameState) {
+    private static AnalyzeResult tenhou(Hand handAnalyzed, GameState gameState) {
         EnumWinningHand winningHand = TENHOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -396,7 +411,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult chiihou(Hand handAnalyzed, GameState gameState) {
+    private static AnalyzeResult chiihou(Hand handAnalyzed, GameState gameState) {
         EnumWinningHand winningHand = CHIIHOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -408,7 +423,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult chiniisou(Hand handAnalyzed) {
+    private static AnalyzeResult chiniisou(Hand handAnalyzed) {
         EnumWinningHand winningHand = CHINIISOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -423,7 +438,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult honiisou(Hand handAnalyzed) {
+    private static AnalyzeResult honiisou(Hand handAnalyzed) {
         EnumWinningHand winningHand = HONIISOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -443,7 +458,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult jyunchyantaiyaochyuu(Hand handAnalyzed) {
+    private static AnalyzeResult jyunchyantaiyaochyuu(Hand handAnalyzed) {
         EnumWinningHand winningHand = JYUNCHYANTAIYAOCHYUU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -475,7 +490,7 @@ public class Analyze {
         return new AnalyzeResult(WIN, null, winningHand, fan);
     }
 
-    private AnalyzeResult ryanbeekou(Hand handAnalyzed) {
+    private static AnalyzeResult ryanbeekou(Hand handAnalyzed) {
         EnumWinningHand winningHand = RYANBEEKOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -495,7 +510,7 @@ public class Analyze {
         return new AnalyzeResult(WIN, null, winningHand, fan);
     }
 
-    private AnalyzeResult sanshyokudoujyun(Hand handAnalyzed) {
+    private static AnalyzeResult sanshyokudoujyun(Hand handAnalyzed) {
         EnumWinningHand winningHand = SANSHYOKUDOUJYUN;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -519,7 +534,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult ikkitsuukan(Hand handAnalyzed) {
+    private static AnalyzeResult ikkitsuukan(Hand handAnalyzed) {
         EnumWinningHand winningHand = IKKITSUUKAN;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -544,7 +559,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult honchyantaiyaochyuu(Hand handAnalyzed) {
+    private static AnalyzeResult honchyantaiyaochyuu(Hand handAnalyzed) {
         EnumWinningHand winningHand = HONCHYANTAIYAOCHYUU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -570,7 +585,7 @@ public class Analyze {
         return new AnalyzeResult(WIN, null, winningHand, fan);
     }
 
-    private AnalyzeResult toitoihou(Hand handAnalyzed) {
+    private static AnalyzeResult toitoihou(Hand handAnalyzed) {
         EnumWinningHand winningHand = TOITOIHOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -583,7 +598,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult sanankou(Hand handAnalyzed) {
+    private static AnalyzeResult sanankou(Hand handAnalyzed) {
         EnumWinningHand winningHand = SANANKOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -595,7 +610,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult honroutou(Hand handAnalyzed) {
+    private static AnalyzeResult honroutou(Hand handAnalyzed) {
         EnumWinningHand winningHand = HONROUTOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -607,7 +622,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult sanshyokudoukou(Hand handAnalyzed) {
+    private static AnalyzeResult sanshyokudoukou(Hand handAnalyzed) {
         EnumWinningHand winningHand = SANSHYOKUDOUKOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -633,7 +648,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult sankantsu(Hand handAnalyzed) {
+    private static AnalyzeResult sankantsu(Hand handAnalyzed) {
         EnumWinningHand winningHand = SANKANTSU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -645,7 +660,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult shyousangen(Hand handAnalyzed) {
+    private static AnalyzeResult shyousangen(Hand handAnalyzed) {
         EnumWinningHand winningHand = SHYOUSANGEN;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -666,7 +681,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult dabururiichi(Player player, Hand handAnalyzed) {
+    private static AnalyzeResult dabururiichi(Player player, Hand handAnalyzed) {
         EnumWinningHand winningHand = DABURURIICHI;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -678,7 +693,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult riichi(Player player, Hand handAnalyzed) {
+    private static AnalyzeResult riichi(Player player, Hand handAnalyzed) {
         EnumWinningHand winningHand = RIICHI;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -690,7 +705,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult ibbatsu(Player player, Hand handAnalyzed) {
+    private static AnalyzeResult ibbatsu(Player player, Hand handAnalyzed) {
         EnumWinningHand winningHand = IBBATSU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -702,7 +717,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult menzenchintsumohou(boolean isTsumoIn, Hand handAnalyzed) {
+    private static AnalyzeResult menzenchintsumohou(boolean isTsumoIn, Hand handAnalyzed) {
         EnumWinningHand winningHand = MENZENCHINTSUMOHOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -714,7 +729,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult danyaochyuu(Hand handAnalyzed) {
+    private static AnalyzeResult danyaochyuu(Hand handAnalyzed) {
         EnumWinningHand winningHand = DANYAOCHYUU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -728,7 +743,7 @@ public class Analyze {
         return new AnalyzeResult(WIN, null, winningHand, fan);
     }
 
-    private AnalyzeResult binhu(Fu fuIn, Hand handAnalyzed) {
+    private static AnalyzeResult binhu(Fu fuIn, Hand handAnalyzed) {
         EnumWinningHand winningHand = BINHU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -742,7 +757,7 @@ public class Analyze {
         return new AnalyzeResult(WIN, null, winningHand, fan);
     }
 
-    private AnalyzeResult iibeekou(Hand handAnalyzed) {
+    private static AnalyzeResult iibeekou(Hand handAnalyzed) {
         EnumWinningHand winningHand = IIBEEKOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -762,7 +777,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private HashMap<String, AnalyzeResult> yakuhai(GameState gameState, Player player, Hand handAnalyzed) {
+    private static HashMap<String, AnalyzeResult> yakuhai(GameState gameState, Player player, Hand handAnalyzed) {
         HashMap<String, AnalyzeResult> result = new HashMap<String, AnalyzeResult>();
         EnumWinningHand winningHand = YAKUHAI;
         int fan;
@@ -787,7 +802,7 @@ public class Analyze {
         return result;
     }
 
-    private AnalyzeResult rinshyankaihou(Player player, Hand handAnalyzed) {
+    private static AnalyzeResult rinshyankaihou(Player player, Hand handAnalyzed) {
         EnumWinningHand winningHand = RINSHYANKAIHOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -799,7 +814,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult chyankan(Player player, Hand handAnalyzed) {
+    private static AnalyzeResult chyankan(Player player, Hand handAnalyzed) {
         EnumWinningHand winningHand = CHYANKAN;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -811,7 +826,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult haiteimouyue(GameState gameState, boolean isTsumo, Hand handAnalyzed) {
+    private static AnalyzeResult haiteimouyue(GameState gameState, boolean isTsumo, Hand handAnalyzed) {
         EnumWinningHand winningHand = HAITEIMOUYUE;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -823,7 +838,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private AnalyzeResult houteiraoyui(GameState gameState, boolean isTsumo, Hand handAnalyzed) {
+    private static AnalyzeResult houteiraoyui(GameState gameState, boolean isTsumo, Hand handAnalyzed) {
         EnumWinningHand winningHand = HOUTEIRAOYUI;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -835,7 +850,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private ArrayList<AnalyzeResult> kita(GameType gameType, Hand handAnalyzed) {
+    private static ArrayList<AnalyzeResult> kita(GameType gameType, Hand handAnalyzed) {
         ArrayList<AnalyzeResult> result = new ArrayList<AnalyzeResult>();
         if (gameType.getPlayerCount() != 3) return result;
         EnumWinningHand winningHand = KITA;
@@ -851,7 +866,7 @@ public class Analyze {
         return result;
     }
 
-    private ArrayList<AnalyzeResult> dora(ArrayList<EnumTile> doraIn, Hand handAnalyzed) {
+    private static ArrayList<AnalyzeResult> dora(ArrayList<EnumTile> doraIn, Hand handAnalyzed) {
         ArrayList<AnalyzeResult> result = new ArrayList<AnalyzeResult>();
         EnumWinningHand winningHand = DORA;
         int fan;
@@ -868,7 +883,7 @@ public class Analyze {
         return result;
     }
 
-    private ArrayList<AnalyzeResult> ura(ArrayList<EnumTile> uraIn, Hand handAnalyzed) {
+    private static ArrayList<AnalyzeResult> ura(ArrayList<EnumTile> uraIn, Hand handAnalyzed) {
         ArrayList<AnalyzeResult> result = new ArrayList<AnalyzeResult>();
         EnumWinningHand winningHand = URA;
         int fan;
@@ -884,7 +899,7 @@ public class Analyze {
         return result;
     }
 
-    private ArrayList<Hand> baseAnalyzeWin(Hand handIn, EnumTile extraTileIn) {
+    public static ArrayList<Hand> baseAnalyzeWin(Hand handIn, EnumTile extraTileIn) {
         ArrayList<Hand> hands = new ArrayList<Hand>();
         Hand hand = new Hand();
         try {
@@ -918,7 +933,7 @@ public class Analyze {
         return hands;
     }
 
-    private Hand baseAnalyzeWinGroup1(Hand handIn, boolean hasEyeIn) { //hand in with no get Eye>Ke>Shun
+    private static Hand baseAnalyzeWinGroup1(Hand handIn, boolean hasEyeIn) { //hand in with no get Eye>Ke>Shun
         boolean hasEye = hasEyeIn;
         if (handIn.getHanding().isEmpty()) return handIn;
         EnumTile tile0 = handIn.getHanding().get(0);
@@ -963,7 +978,7 @@ public class Analyze {
         return null;
     }
 
-    private Hand baseAnalyzeWinGroup2(Hand handIn, boolean hasEyeIn) { //hand in with no get Ke>Shun>Eye
+    private static Hand baseAnalyzeWinGroup2(Hand handIn, boolean hasEyeIn) { //hand in with no get Ke>Shun>Eye
         boolean hasEye = hasEyeIn;
         if (handIn.getHanding().isEmpty()) return handIn;
         EnumTile tile0 = handIn.getHanding().get(0);
@@ -1008,7 +1023,7 @@ public class Analyze {
         return null;
     }
 
-    private Hand baseAnalyzeWinGroup3(Hand handIn, boolean hasEyeIn) { //hand in with no get Shun>Eye>Ke
+    private static Hand baseAnalyzeWinGroup3(Hand handIn, boolean hasEyeIn) { //hand in with no get Shun>Eye>Ke
         boolean hasEye = hasEyeIn;
         if (handIn.getHanding().isEmpty()) return handIn;
         EnumTile tile0 = handIn.getHanding().get(0);
@@ -1053,9 +1068,18 @@ public class Analyze {
         return null;
     }
 
-    private HashMap<ArrayList<EnumTile>, EnumTile> baseAnalyzeTen(Hand handIn, EnumTile extraTileIn) {
-        HashMap<ArrayList<EnumTile>, EnumTile> waitDrop = new HashMap<ArrayList<EnumTile>, EnumTile>();
+    public static HashMap<EnumTile, ArrayList<EnumTile>> baseAnalyzeTen(Hand handIn, EnumTile extraTileIn) {
+        if (extraTileIn == null && !handIn.hasGet()) return null; // 14 tiles analyze
+        AnalyzeResult gokushimusou13 = gokushimusou13(handIn, extraTileIn);
+        if (gokushimusou13.getHandStatus() == TEN) return gokushimusou13.getDropWait();
+        AnalyzeResult gokushimusou = gokushimusou(handIn, extraTileIn);
+        if (gokushimusou.getHandStatus() == TEN) return gokushimusou.getDropWait();
+
+        HashMap<EnumTile, ArrayList<EnumTile>> dropWait = new HashMap<EnumTile, ArrayList<EnumTile>>();
         EnumTile wait;
+
+        AnalyzeResult chiitoitsu = chiitoitsu(handIn, extraTileIn);
+        if (gokushimusou13.getHandStatus() == TEN) dropWait.putAll(chiitoitsu.getDropWait());
 
         Hand hand = new Hand();
         try {
@@ -1072,21 +1096,100 @@ public class Analyze {
         int windCount = hand.getHandingByGroup(WIND).size();
         int dragonCount = hand.getHandingByGroup(DRAGON).size();
         if (((manCount % 3 == 0 ? 1 : 0) + (pinCount % 3 == 0 ? 1 : 0) + (souCount % 3 == 0 ? 1 : 0) + (windCount % 3 == 0 ? 1 : 0) + (dragonCount % 3 == 0 ? 1 : 0) < 2)) return null;
-        for (EnumTile drop : hand.getHanding()) {
+
+        ArrayList<EnumTile> handingUnique = new ArrayList<EnumTile>();
+        ArrayList<EnumTile> dropedHandingUnique = new ArrayList<EnumTile>();
+        ArrayList<EnumTile> testTiles = new ArrayList<EnumTile>();
+        for (EnumTile tile : hand.getHanding()) {
+            if (!handingUnique.contains(tile)) handingUnique.add(tile);
+        }
+        for (EnumTile drop : handingUnique) {
             hand.getHanding().remove(drop);
+            dropedHandingUnique.clear();
             for (EnumTile tile : hand.getHanding()) {
-                wait = tile.getNormal();
-                if (baseAnalyzeWinGroup1(hand.get(wait).addToHandingFromGet(), false) != null) waitDrop.put(new ArrayList<EnumTile>(Collections.singletonList(wait)), drop);
-                hand.removeFromHanding(wait);
-                if (tile.getPrev() != null) wait = tile.getPrev();
-                if (baseAnalyzeWinGroup1(hand.get(wait).addToHandingFromGet(), false) != null) waitDrop.put(new ArrayList<EnumTile>(Collections.singletonList(wait)), drop);
-                hand.removeFromHanding(wait);
-                if (tile.getNext() != null) wait = tile.getNext();
-                if (baseAnalyzeWinGroup1(hand.get(wait).addToHandingFromGet(), false) != null) waitDrop.put(new ArrayList<EnumTile>(Collections.singletonList(wait)), drop);
+                if (!dropedHandingUnique.contains(tile)) dropedHandingUnique.add(tile);
+            }
+            testTiles.clear();
+            for (EnumTile tile : dropedHandingUnique) {
+                if (tile == drop) continue;
+                if (!testTiles.contains(tile.getNormal())) testTiles.add(tile.getNormal());
+                if (tile.getPrev() != null && !testTiles.contains(tile.getPrev())) testTiles.add(tile.getPrev());
+                if (tile.getNext() != null && !testTiles.contains(tile.getNext())) testTiles.add(tile.getNext());
+            }
+            for (EnumTile tile : testTiles) {
+                wait = tile;
+                if (baseAnalyzeWinGroup1(hand.get(wait).addToHandingFromGet(), false) != null) {
+                    if (dropWait.containsKey(drop)) dropWait.get(drop).add(wait);
+                    else dropWait.put(drop, new ArrayList<EnumTile>(Collections.singletonList(wait)));
+                }
                 hand.removeFromHanding(wait);
             }
             hand.get(drop).addToHandingFromGet();
         }
-        return waitDrop;
+        return dropWait;
     }
+
+    public static ArrayList<EnumTile> baseAnalyzeTen(Hand handIn) {
+        if (handIn.hasGet()) return null; // 13 tiles analyze
+
+        if (handIn.isMenzen() && handIn.getHanding().containsAll(TileGroup.yaochyuu)) return TileGroup.yaochyuu; //gsms13
+
+        ArrayList<EnumTile> waits = new ArrayList<EnumTile>();
+
+        int gokushimusouCount = 0; //gsms
+        if (handIn.isMenzen() && TileGroup.yaochyuu.containsAll(handIn.getHanding())) {
+            for (EnumTile tile : TileGroup.yaochyuu) {
+                if (handIn.getHanding().contains(tile)) gokushimusouCount++;
+                else if (waits.isEmpty()) waits.add(tile);
+                else break;
+            }
+            if (gokushimusouCount == 12) return waits;
+        }
+        waits.clear();
+
+        boolean chiitoitsuFlag = true; //chiitoitsu
+        if (handIn.isMenzen()) {
+            for (int i = 0; i < 13; i++) {
+                if (handIn.getHanding().get(i) == handIn.getHanding().get(i + 1)) i++;
+                else if (waits.isEmpty()) waits.add(handIn.getHanding().get(i));
+                else {
+                    chiitoitsuFlag = false;
+                    break;
+                }
+            }
+            if (chiitoitsuFlag) return waits;
+        }
+        waits.clear();
+
+        Hand hand = new Hand();
+        try {
+            hand = (Hand) handIn.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+
+        int manCount = hand.getHandingByGroup(MAN).size();
+        int pinCount = hand.getHandingByGroup(PIN).size();
+        int souCount = hand.getHandingByGroup(SOU).size();
+        int windCount = hand.getHandingByGroup(WIND).size();
+        int dragonCount = hand.getHandingByGroup(DRAGON).size();
+        if (((manCount % 3 == 0 ? 1 : 0) + (pinCount % 3 == 0 ? 1 : 0) + (souCount % 3 == 0 ? 1 : 0) + (windCount % 3 == 0 ? 1 : 0) + (dragonCount % 3 == 0 ? 1 : 0) < 2)) return null;
+
+        ArrayList<EnumTile> handingUnique = new ArrayList<EnumTile>();
+        ArrayList<EnumTile> testTiles = new ArrayList<EnumTile>();
+        for (EnumTile tile : hand.getHanding()) {
+            if (!handingUnique.contains(tile)) handingUnique.add(tile);
+        }
+        for (EnumTile tile : handingUnique) {
+            if (!testTiles.contains(tile.getNormal())) testTiles.add(tile.getNormal());
+            if (tile.getPrev() != null && !testTiles.contains(tile.getPrev())) testTiles.add(tile.getPrev());
+            if (tile.getNext() != null && !testTiles.contains(tile.getNext())) testTiles.add(tile.getNext());
+        }
+        for (EnumTile wait : testTiles) {
+            if (baseAnalyzeWinGroup1(hand.get(wait).addToHandingFromGet(), false) != null) waits.add(wait);
+            hand.removeFromHanding(wait);
+        }
+        return waits;
+    }
+
 }

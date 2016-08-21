@@ -64,9 +64,39 @@ public class Mountain {
         }
     }
 
+    public int getDoorIndex() {
+        return doorIndex;
+    }
+
+    public int getNextIndex() {
+        return nextIndex;
+    }
+
     public void open(EnumPosition positionIn, int tileStackIn) {
         doorIndex = getIndexFromPosition(positionIn, getStacksCount(positionIn) - tileStackIn - 1);
         nextIndex = doorIndex;
+        // set Rinshyan
+        getTileU(doorIndex + 1).setProp(MountainTile.Prop.RINSHYAN);
+        getTileD(doorIndex + 1).setProp(MountainTile.Prop.RINSHYAN);
+        getTileU(doorIndex + 2).setProp(MountainTile.Prop.RINSHYAN);
+        getTileD(doorIndex + 2).setProp(MountainTile.Prop.RINSHYAN);
+        // set Dora
+        for (int i = 3; i < 7; i++) {
+            getTileU(doorIndex + i).setProp(MountainTile.Prop.DORA);
+        }
+        // set Ura
+        for (int i = 3; i < 7; i++) {
+            getTileD(doorIndex + i).setProp(MountainTile.Prop.URA);
+        }
+        // set Fixed
+        getTileD(doorIndex + 7).setProp(MountainTile.Prop.FIXED);
+        getTileU(doorIndex + 7).setProp(MountainTile.Prop.FIXED);
+        // set Haitei
+        getTileD(doorIndex + 8).setProp(MountainTile.Prop.HAITEI);
+        getTileU(doorIndex + 8).setProp(MountainTile.Prop.HAITEI);
+        getTileD(doorIndex + 9).setProp(MountainTile.Prop.HAITEI);
+        if (playerCount == 4) getTileU(doorIndex + 9).setProp(MountainTile.Prop.HAITEI);
+
     }
 
     public int getStacksCount(EnumPosition positionIn) {
@@ -104,6 +134,10 @@ public class Mountain {
 
     public MountainTile getNext() {
         return getTile(nextIndex);
+    }
+
+    public MountainTile.Prop getNextProp() {
+        return getTile(nextIndex).getProp();
     }
 
     public Mountain removeNext() {

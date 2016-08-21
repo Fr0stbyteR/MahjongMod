@@ -5,13 +5,13 @@ import java.util.HashMap;
 
 public class AnalyzeResult {
     WinningHand.HandStatus handStatus;
-    HashMap<ArrayList<EnumTile>, EnumTile> waitDrop;
+    HashMap<EnumTile, ArrayList<EnumTile>> dropWait;
     EnumWinningHand winningHand;
     int fan;
 
-    public AnalyzeResult(WinningHand.HandStatus handStatusIn, HashMap<ArrayList<EnumTile>, EnumTile> waitDropIn, EnumWinningHand winningHandIn, int fanIn) {
+    public AnalyzeResult(WinningHand.HandStatus handStatusIn, HashMap<EnumTile, ArrayList<EnumTile>> dropWaitIn, EnumWinningHand winningHandIn, int fanIn) {
         handStatus = handStatusIn;
-        waitDrop = waitDropIn;
+        dropWait = dropWaitIn;
         winningHand = winningHandIn;
         fan = fanIn;
     }
@@ -20,8 +20,8 @@ public class AnalyzeResult {
         return handStatus;
     }
 
-    public HashMap<ArrayList<EnumTile>, EnumTile> getWaitDrop() {
-        return waitDrop;
+    public HashMap<EnumTile, ArrayList<EnumTile>> getDropWait() {
+        return dropWait;
     }
 
     public EnumWinningHand getWinningHand() {

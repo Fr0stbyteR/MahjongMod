@@ -2,6 +2,9 @@ package net.fr0stbyter.mahjong.util.MahjongLogic;
 
 import net.fr0stbyter.mahjong.util.MahjongLogic.Hand.Hand;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class Player {
     private String id;
     private EnumPosition curWind;
@@ -14,15 +17,18 @@ public class Player {
     private boolean canChyankan;
     private boolean isTenpai;
     private int furiTen;
+    private Game game;
     private Hand hand;
     private WinningHand winningHand;
+    private ArrayList<EnumTile> waiting;
 
-    public Player(String idIn, EnumPosition curWindIn) {
+    public Player(Game gameIn, String idIn, EnumPosition curWindIn) {
+        game = gameIn;
         id = idIn;
         curWind = curWindIn;
         hand = new Hand();
         score = 0;
-        isMenzen = false;
+        isMenzen = true;
         isRiichi = false;
         isDoubleRiichi = false;
         canIbbatsu = false;
@@ -30,6 +36,11 @@ public class Player {
         canChyankan = false;
         isTenpai = false;
         furiTen = 0;
+        waiting = new ArrayList<EnumTile>();
+    }
+
+    public Game getGame() {
+        return game;
     }
 
     public String getId() {
@@ -40,20 +51,40 @@ public class Player {
         return curWind;
     }
 
+    public void setCurWind(EnumPosition curWindIn) {
+        curWind = curWindIn;
+    }
+
     public int getScore() {
         return score;
+    }
+
+    public void setScore(int scoreIn) {
+        score = scoreIn;
     }
 
     public boolean isMenzen() {
         return isMenzen;
     }
 
+    public void setMenzen(boolean menzen) {
+        isMenzen = menzen;
+    }
+
     public boolean isRiichi() {
         return isRiichi;
     }
 
+    public void setRiichi(boolean riichi) {
+        isRiichi = riichi;
+    }
+
     public boolean isDoubleRiichi() {
         return isDoubleRiichi;
+    }
+
+    public void setDoubleRiichi(boolean doubleRiichi) {
+        isDoubleRiichi = doubleRiichi;
     }
 
     public boolean canIbbatsu() {
@@ -72,8 +103,16 @@ public class Player {
         return isTenpai;
     }
 
+    public void setTenpai(boolean tenpai) {
+        isTenpai = tenpai;
+    }
+
     public int getFuriTen() {
         return furiTen;
+    }
+
+    public void setFuriTen(int furiTenIn) {
+        furiTen = furiTenIn;
     }
 
     public Hand getHand() {
@@ -84,28 +123,12 @@ public class Player {
         return winningHand;
     }
 
+    public void setWinningHand(WinningHand winningHandIn) {
+        winningHand = winningHandIn;
+    }
+
     public boolean isOya() {
         return curWind == EnumPosition.EAST;
-    }
-
-    public void setCurWind(EnumPosition curWindIn) {
-        curWind = curWindIn;
-    }
-
-    public void setScore(int scoreIn) {
-        score = scoreIn;
-    }
-
-    public void setMenzen(boolean menzen) {
-        isMenzen = menzen;
-    }
-
-    public void setRiichi(boolean riichi) {
-        isRiichi = riichi;
-    }
-
-    public void setDoubleRiichi(boolean doubleRiichi) {
-        isDoubleRiichi = doubleRiichi;
     }
 
     public void setCanIbbatsu(boolean canIbbatsuIn) {
@@ -120,14 +143,6 @@ public class Player {
         canChyankan = canChyankanIn;
     }
 
-    public void setTenpai(boolean tenpai) {
-        isTenpai = tenpai;
-    }
-
-    public void setFuriTen(int furiTenIn) {
-        furiTen = furiTenIn;
-    }
-
     public void setHandTiles(Hand handIn) {
         hand = handIn;
     }
@@ -138,10 +153,29 @@ public class Player {
 
     public void getTile(EnumTile tile) {
         hand.get(tile);
-        //TODO analyzeS
+        //TODO analyzes
+        //TODO 99
+        //TODO options
     }
 
-    public void setWinningHand(WinningHand winningHandIn) {
-        winningHand = winningHandIn;
+    public ArrayList<EnumTile> getWaiting() {
+        return waiting;
+    }
+
+    public void setWaiting(ArrayList<EnumTile> waitingIn) {
+        waiting = waitingIn;
+    }
+
+    public Player analyzeWaiting() {
+        ArrayList<EnumTile> analyzeTen = Analyze.baseAnalyzeTen(hand);
+        if (analyzeTen != null) {
+            waiting.clear();
+            waiting.addAll(analyzeTen);
+        }
+        return this;
+    }
+
+    public HashMap<EnumTile, ArrayList<EnumTile>> analyzeRiichi() {
+        return Analyze.baseAnalyzeTen(hand, null);
     }
 }

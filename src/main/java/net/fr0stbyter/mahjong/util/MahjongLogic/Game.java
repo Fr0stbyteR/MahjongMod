@@ -32,13 +32,13 @@ public class Game {
             oyaIndex++;
             if (oyaIndex == gameTypeIn.getPlayerCount()) oyaIndex = 0;
         }
-        players.add(new Player(playersIdIn.get(oyaIndex), EnumPosition.EAST));
+        players.add(new Player(this, playersIdIn.get(oyaIndex), EnumPosition.EAST));
         playersIdIn.remove(oyaIndex);
-        players.add(new Player(playersIdIn.get(0), EnumPosition.SOUTH));
+        players.add(new Player(this, playersIdIn.get(0), EnumPosition.SOUTH));
         playersIdIn.remove(0);
-        players.add(new Player(playersIdIn.get(0), EnumPosition.WEST));
+        players.add(new Player(this, playersIdIn.get(0), EnumPosition.WEST));
         playersIdIn.remove(0);
-        if (gameTypeIn.getPlayerCount() == 4) players.add(new Player(playersIdIn.get(0), EnumPosition.NORTH));
+        if (gameTypeIn.getPlayerCount() == 4) players.add(new Player(this, playersIdIn.get(0), EnumPosition.NORTH));
         playersIdIn.remove(0);
         // create mountain
         mountain = new Mountain(gameTypeIn);
@@ -59,6 +59,7 @@ public class Game {
         }
         for (Player player : players) {
             player.addToHanding(mountain.getNextThenRemove());
+            player.analyzeWaiting();
         }
         players.get(0).getTile(mountain.getNextThenRemove());
         // wait discard

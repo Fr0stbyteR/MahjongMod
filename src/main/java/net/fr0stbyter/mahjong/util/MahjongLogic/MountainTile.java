@@ -5,17 +5,20 @@ public class MountainTile {
     private EnumTile tile;
     private EnumPosition position;
     private boolean isShown;
+    private Prop prop;
 
     public MountainTile(EnumTile tileIn) {
         tile = tileIn;
         position = EnumPosition.NORTH;
         isShown = false;
+        prop = Prop.NORMAL;
     }
 
     public MountainTile(EnumTile tileIn, EnumPosition positionIn, boolean isShownIn) {
         tile = tileIn;
         position = positionIn;
         isShown = isShownIn;
+        prop = Prop.NORMAL;
     }
 
     public EnumTile getTile() {
@@ -30,8 +33,18 @@ public class MountainTile {
         return isShown;
     }
 
+    public Prop getProp() {
+        return prop;
+    }
+
     public MountainTile setShown(boolean setShownIn) {
         isShown = setShownIn;
         return this;
     }
+
+    public void setProp(Prop propIn) {
+        prop = propIn;
+    }
+
+    public enum Prop {RINSHYAN, DORA, URA, FIXED, HAITEI, NORMAL}
 }
