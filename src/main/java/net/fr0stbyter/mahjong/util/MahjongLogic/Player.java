@@ -16,11 +16,12 @@ public class Player {
     private boolean canRinshyan;
     private boolean canChyankan;
     private boolean isTenpai;
-    private int furiTen;
+    private boolean furiTen;
     private Game game;
     private Hand hand;
     private WinningHand winningHand;
     private ArrayList<EnumTile> waiting;
+    private HashMap<Options, EnumTile> options;
 
     public Player(Game gameIn, String idIn, EnumPosition curWindIn) {
         game = gameIn;
@@ -35,8 +36,9 @@ public class Player {
         canRinshyan = false;
         canChyankan = false;
         isTenpai = false;
-        furiTen = 0;
+        furiTen = false;
         waiting = new ArrayList<EnumTile>();
+        options = new HashMap<Options, EnumTile>();
     }
 
     public Game getGame() {
@@ -107,11 +109,11 @@ public class Player {
         isTenpai = tenpai;
     }
 
-    public int getFuriTen() {
+    public boolean getFuriTen() {
         return furiTen;
     }
 
-    public void setFuriTen(int furiTenIn) {
+    public void setFuriTen(boolean furiTenIn) {
         furiTen = furiTenIn;
     }
 
@@ -151,11 +153,80 @@ public class Player {
         hand.addToHanding(tile);
     }
 
-    public void getTile(EnumTile tile) {
+    public ArrayList<RiverTile> getRiver() {
+        return game.getRiver().getTilesFromPosition(curWind);
+    }
+
+    public ArrayList<EnumTile> getTilesFromRiver() {
+        return River.getTiles(game.getRiver().getTilesFromPosition(curWind));
+    }
+
+    public Player getTileFromMountain() {
+        getTile(game.getMountain().getNextThenRemove());
+        return this;
+    }
+
+    public Player getTileFromRinshyan() {
+        getTile(game.getMountain().getNextRinshyanThenRemove());
+        return this;
+    }
+
+    public Player getTile(EnumTile tile) {
         hand.get(tile);
-        //TODO analyzes
-        //TODO 99
-        //TODO options
+        options.clear();
+        if (game.getGameState().getCurDeal() == 1) {
+            int countYaochyuu = 0;
+            for (EnumTile yaochyuu : TileGroup.yaochyuu) {
+                if (hand.getAll().contains(yaochyuu)) countYaochyuu++;
+            }
+            if (countYaochyuu >= 9) options.put(Options.KYUUSHYUKYUUHAI, null);
+        }
+        if (waiting.contains(tile)) {
+            winningHand = Analyze.analyzeWin(game.getGameType(), game.getGameState(), this, game.getMountain().getDora(), game.getMountain().getUra(), hand, null);
+            if (winningHand.isWon()) {
+                options.put(Options.TSUMO, null);
+            }
+        }
+        if (!game.getGameState().isHaitei()) {
+            for (EnumTile found : hand.findAnGang()) {
+                options.put(Options.ANGANG, found);
+            }
+        }
+        if (!game.getGameState().isHaitei()) {
+            for (EnumTile found : hand.findPlusGang()) {
+                options.put(Options.PLUSGANG, found);
+            }
+        }
+        if (game.getGameType().getPlayerCount() == 3) {
+            if (hand.getHanding().contains(EnumTile.F4)) options.put(Options.KITA, null);
+            else if (hand.getGet() == EnumTile.F4) options.put(Options.KITA, null);
+        }
+        HashMap<EnumTile, ArrayList<EnumTile>> dropWait = Analyze.baseAnalyzeTen(hand, null);
+        if (dropWait != null && !dropWait.isEmpty()) {
+            for (EnumTile drop : dropWait.keySet()) {
+                options.put(Options.RIICHI, drop);
+            }
+        }
+        game.getGameState().setPhase(GameState.Phase.WAIT_DISCARD);
+/*        if (options.isEmpty() && isRiichi && !waiting.contains(tile)) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            discard(tile);
+        }*/
+        return this;
+    }
+
+    public Player discard(EnumTile tile) {
+        analyzeWaiting();
+        return this;
+    }
+
+    public Player discardforRiichi(EnumTile tile) {
+
+        return this;
     }
 
     public ArrayList<EnumTile> getWaiting() {
@@ -178,4 +249,5 @@ public class Player {
     public HashMap<EnumTile, ArrayList<EnumTile>> analyzeRiichi() {
         return Analyze.baseAnalyzeTen(hand, null);
     }
+    public enum Options {KYUUSHYUKYUUHAI, RIICHI, KITA, ANGANG, GANG, PLUSGANG, PENG, CHI, RON, TSUMO, CANCEL}
 }

@@ -16,7 +16,7 @@ public class River {
     }
     public EnumTile removeWaiting() {
         EnumTile tile = getLast().getTile();
-        riverTiles.remove(riverTiles.size() - 1);
+        getLast().setShown(false);
         return tile;
     }
     public River cancelWaiting() {
@@ -27,6 +27,13 @@ public class River {
         ArrayList<RiverTile> tiles = new ArrayList<RiverTile>();
         for (RiverTile riverTile : riverTiles) {
             if (riverTile.getPosition() == enumPosition) tiles.add(riverTile);
+        }
+        return tiles;
+    }
+    public static ArrayList<EnumTile> getTiles(ArrayList<RiverTile> riverTiles) {
+        ArrayList<EnumTile> tiles = new ArrayList<EnumTile>();
+        for (RiverTile riverTile : riverTiles) {
+            tiles.add(riverTile.getTile());
         }
         return tiles;
     }

@@ -118,13 +118,26 @@ public enum EnumTile {
     }
 
     public EnumTile getNext() {
-        if ((getNumber() <= 8) && ((getGroup() == MAN) || (getGroup() == PIN) || (getGroup() == SOU))) return getTile(getGroup(), getNumber() + 1, false);
+        if ((getNumber() <= 8) && (getGroup() == MAN || getGroup() == PIN || getGroup() == SOU)) return getTile(getGroup(), getNumber() + 1, false);
         else return null;
     }
 
     public EnumTile getPrev() {
-        if ((getNumber() >= 2) && ((getGroup() == MAN) || (getGroup() == PIN) || (getGroup() == SOU))) return getTile(getGroup(), getNumber() - 1, false);
+        if ((getNumber() >= 2) && (getGroup() == MAN || getGroup() == PIN || getGroup() == SOU)) return getTile(getGroup(), getNumber() - 1, false);
         else return null;
+    }
+
+    public EnumTile getDora(int playerCountIn) {
+        int tileNumber = getNumber() + 1;
+        if (getGroup() == MAN || getGroup() == PIN || getGroup() == SOU) {
+            if (tileNumber == 10) tileNumber = 1;
+        } else if (getGroup() == WIND) {
+            if (tileNumber == 5) tileNumber = 1;
+        } else if (getGroup() == DRAGON) {
+            if (tileNumber == 4) tileNumber = 1;
+        } else return null;
+        if (playerCountIn == 3 && getGroup() == MAN && tileNumber == 2) tileNumber = 9;
+        return getTile(getGroup(), tileNumber, false);
     }
 
     public String toString() {

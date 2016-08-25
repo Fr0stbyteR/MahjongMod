@@ -5,24 +5,29 @@ import net.fr0stbyter.mahjong.util.MahjongLogic.Hand.Hand;
 import java.util.ArrayList;
 
 public class WinningHand {
+    private int playerCount;
     private Player player;
     private Hand hand;
-    private EnumTile extraTile;
+    private boolean isTsumo;
     private ArrayList<AnalyzeResult> yakuList = new ArrayList<AnalyzeResult>();
     private int fan = 0;
     private Fu fu;
     private int score = 0;
     private int baseScore = 0;
     private ScoreLevel scoreLevel = null;
-    WinningHand(Player playerIn, Hand handIn, EnumTile extraTileIn, Fu fuIn) {
+    private boolean dirty;
+    WinningHand(GameType gameTypeIn, Player playerIn, Hand handIn, boolean isTsumoIn, Fu fuIn) {
+        playerCount = gameTypeIn.getPlayerCount();
         player = playerIn;
         hand = handIn;
-        extraTile = extraTileIn;
+        isTsumo = isTsumoIn;
         fu = fuIn;
+        dirty = false;
     }
 
     public WinningHand add(AnalyzeResult analyzeResult) {
         yakuList.add(analyzeResult);
+        dirty = true;
         return this;
     }
 
@@ -48,8 +53,8 @@ public class WinningHand {
         return hand;
     }
 
-    public EnumTile getExtraTile() {
-        return extraTile;
+    public boolean getIsTsumo() {
+        return isTsumo;
     }
 
     public ArrayList<AnalyzeResult> getyakuList() {
@@ -57,6 +62,8 @@ public class WinningHand {
     }
 
     public int getFan() {
+        if (!dirty) return fan;
+        fan = 0;
         for (AnalyzeResult analyzeResult : yakuList) {
             if (analyzeResult.getHandStatus() == HandStatus.WIN) fan += analyzeResult.getFan();
         }
@@ -68,48 +75,43 @@ public class WinningHand {
     }
 
     public int getScore() {
-        baseScore = (int) (getFu().getCount() * Math.pow(2, getFan() + 2));
-        if (getFan() < 0) {
-            score = 32000 * -1 * getFan();
-            baseScore = 8000 * -1 * getFan();
+        getFan();
+        baseScore = (int) (getFu().getCount() * Math.pow(2, fan + 2));
+        if (fan < 0) {
+            baseScore = 8000 * -1 * fan;
             scoreLevel = ScoreLevel.YAKUMAN;
-        }
-        if (getFan() > 0 && getFan() < 5 && baseScore > 2000) {
-            score = 8000;
+        } else if (fan > 0 && fan < 6 && baseScore > 2000) {
             baseScore = 2000;
             scoreLevel = ScoreLevel.MANKAN;
-        }
-        if (getFan() >= 6 && getFan() <= 7) {
-            score = 12000;
+        } else if (fan >= 6 && fan <= 7) {
             baseScore = 3000;
             scoreLevel = ScoreLevel.HANEMAN;
-        }
-        if (getFan() >= 8 && getFan() <= 10) {
-            score = 16000;
+        } else if (fan >= 8 && fan <= 10) {
             baseScore = 4000;
             scoreLevel = ScoreLevel.BAIMAN;
-        }
-        if (getFan() >= 11 && getFan() <= 12) {
-            score = 24000;
+        } else if (fan >= 11 && fan <= 12) {
             baseScore = 6000;
             scoreLevel = ScoreLevel.SANBAIMAN;
-        }
-        if (getFan() >= 13) {
-            score = 32000;
+        } else if (fan >= 13) {
             baseScore = 8000;
             scoreLevel = ScoreLevel.YAKUMAN;
+        } else {
+            scoreLevel = null;
         }
+        score = baseScore * (isTsumo ? playerCount : 4);
+        score = (int) (Math.ceil(((double) score) / 100) * 100);
         if (getPlayer().isOya()) score = (int) (score * 1.5);
+        dirty = false;
         return score;
     }
 
     public int getBaseScore() {
-        if (score == 0) getScore();
+        if (dirty) getScore();
         return baseScore;
     }
 
     public ScoreLevel getScoreLevel() {
-        if (score == 0) getScore();
+        if (dirty) getScore();
         return scoreLevel;
     }
 

@@ -21,6 +21,10 @@ public class Fu {
         else count = 20 + countElse + countMentsu + countEye + countMachi;
     }
 
+    Fu() {
+        count = 0;
+    }
+
     public static Fu analyze(GameState gameState, Player player, Hand handAnalyzed, EnumTile tileIn, boolean isTsumo) {
         int countElse = 0;
         int countMentsu = 0;
@@ -28,7 +32,7 @@ public class Fu {
         int countMachi = 0;
 
         if (isTsumo) countElse += 2;
-        if (handAnalyzed.isMenzen()) countElse += 10;
+        if (handAnalyzed.isMenzen() && !isTsumo) countElse += 10;
 
         for (EnumTile tile : handAnalyzed.getTilePeng()) {
             if (TileGroup.yaochyuu.contains(tile)) countMentsu += 4;
@@ -47,9 +51,11 @@ public class Fu {
             else countMentsu += 16;
         }
 
-        if (gameState.getCurRound().getName().equals(handAnalyzed.getTileEye().getName())) countEye += 2;
-        if (player.getCurWind().getName().equals(handAnalyzed.getTileEye().getName())) countEye += 2;
-        if (TileGroup.dragon.contains(handAnalyzed.getTileEye())) countEye += 2;
+        if (handAnalyzed.getTileEye() != null) {
+            if (gameState.getCurRound().getName().equals(handAnalyzed.getTileEye().getName())) countEye += 2;
+            if (player.getCurWind().getName().equals(handAnalyzed.getTileEye().getName())) countEye += 2;
+            if (TileGroup.dragon.contains(handAnalyzed.getTileEye())) countEye += 2;
+        }
 
         for (EnumTile tile : handAnalyzed.getTileShun()) {
             //if ((tile == tileIn.getNormal()) && (tileIn.getNumber() != 7)) break; //2menten not (7)89
@@ -76,7 +82,10 @@ public class Fu {
         if (specYaku == SpecYaku.TSUMOBINHU) count = 20;
         else if (specYaku == SpecYaku.CHIITOITSU) count = 25;
         else if (specYaku == SpecYaku.KUIBINHU) count = 30;
-        else count = 20 + countElse + countMentsu + countEye + countMachi;
+        else {
+            count = 20 + countElse + countMentsu + countEye + countMachi;
+            count = (int) (Math.ceil(((double) count) / 10) * 10);
+        }
         return count;
     }
 
@@ -102,8 +111,9 @@ public class Fu {
 
     public Fu setSpecYaku(SpecYaku specYakuIn) {
         specYaku = specYakuIn;
+        getCount();
         return this;
     }
 
-    private enum SpecYaku {TSUMOBINHU, CHIITOITSU, KUIBINHU}
+    public enum SpecYaku {TSUMOBINHU, CHIITOITSU, KUIBINHU}
 }

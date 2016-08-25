@@ -19,12 +19,14 @@ public class Hand implements Cloneable {
     private boolean hasEye;
     private EnumTile tileEye;
     private ArrayList<HandTiles> tiles;
+    private boolean isChiitoitsu;
 
     public Hand() {
         hasGet = false;
         hasEye = false;
         tileEye = null;
         countKita = 0;
+        isChiitoitsu = false;
         tiles = new ArrayList<HandTiles>(Collections.singletonList(new Handing()));
         tileGang = new ArrayList<EnumTile>();
         tilePeng = new ArrayList<EnumTile>();
@@ -34,8 +36,21 @@ public class Hand implements Cloneable {
         tileShun = new ArrayList<EnumTile>();
     }
 
+    public boolean isChiitoitsu() {
+        return isChiitoitsu;
+    }
+
+    public void setChiitoitsu(boolean isChiitoitsuIn) {
+        isChiitoitsu = isChiitoitsuIn;
+    }
+
     public ArrayList<EnumTile> getHanding() {
         return tiles.get(0).getTiles();
+    }
+
+    public Hand setHanding(ArrayList<EnumTile> tilesIn) {
+        ((Handing) tiles.get(0)).setTiles(tilesIn);
+        return this;
     }
 
     public int getHandingCount() {
@@ -65,6 +80,10 @@ public class Hand implements Cloneable {
         return this;
     }
 
+    public Hand addToHanding(ArrayList<EnumTile> tilesIn) {
+        ((Handing) tiles.get(0)).addAll(tilesIn).sort();
+        return this;
+    }
     public Hand addToHandingFromGet() {
         for (HandTiles handTiles : tiles) {
             if (handTiles instanceof Get) {
@@ -79,11 +98,6 @@ public class Hand implements Cloneable {
 
     public Hand removeFromHanding(EnumTile tileIn) {
         getHanding().remove(tileIn);
-        return this;
-    }
-
-    public Hand setHanding(ArrayList<EnumTile> tilesIn) {
-        ((Handing) tiles.get(0)).setTiles(tilesIn);
         return this;
     }
 
@@ -124,6 +138,20 @@ public class Hand implements Cloneable {
         return this;
     }
 
+    public ArrayList<EnumTile> findAnGang() {
+        ArrayList<EnumTile> found = new ArrayList<EnumTile>();
+        ArrayList<EnumTile> hand = (ArrayList<EnumTile>) getHanding().clone();
+        if (hasGet) hand.add(getGet());
+        for (EnumTile tile : hand) {
+            int count = 0;
+            for (EnumTile tile1 : hand) {
+                if (tile == tile1) count++;
+            }
+            if (count == 4) found.add(tile);
+        }
+        return found;
+    }
+
     public Hand anGang(EnumTile tileIn1) {
         if (hasGet) addToHandingFromGet();
         EnumTile tileIn2 = tileIn1.getNormal();
@@ -133,6 +161,25 @@ public class Hand implements Cloneable {
         removeFromHanding(tileIn1).removeFromHanding(tileIn2).removeFromHanding(tileIn3).removeFromHanding(tileIn4);
         tiles.add(new AnGang(tileIn1, tileIn2, tileIn3, tileIn4));
         tileAnGang.add(tileIn1.getNormal());
+        return this;
+    }
+
+    public ArrayList<EnumTile> findPlusGang() {
+        ArrayList<EnumTile> found = new ArrayList<EnumTile>();
+        for (HandTiles handTiles : tiles) {
+            if (handTiles instanceof Peng && getHanding().contains(handTiles.getTile())) found.add(handTiles.getTile());
+        }
+        return found;
+    }
+    public Hand plusGang(EnumTile tileIn1) {
+        for (HandTiles handTiles : tiles) {
+            if (handTiles instanceof Peng && handTiles.getTile() == tileIn1) {
+                addToHanding(handTiles.getTiles());
+                tiles.remove(handTiles);
+                gang(tileIn1, null, true);
+                break;
+            }
+        }
         return this;
     }
 
@@ -227,6 +274,10 @@ public class Hand implements Cloneable {
         return countKita;
     }
 
+    public void setCountKita(int countKitaIn) {
+        countKita = countKitaIn;
+    }
+
     public int getCountAnGang() {
         return getTileAnGang().size();
     }
@@ -247,76 +298,72 @@ public class Hand implements Cloneable {
         return tileGang;
     }
 
-    public ArrayList<EnumTile> getTilePeng() {
-        return tilePeng;
-    }
-
-    public ArrayList<EnumTile> getTileChi() {
-        return tileChi;
-    }
-
-    public ArrayList<EnumTile> getTileAnGang() {
-        return tileAnGang;
-    }
-
-    public ArrayList<EnumTile> getTileKe() {
-        return tileKe;
-    }
-
-    public ArrayList<EnumTile> getTileShun() {
-        return tileShun;
-    }
-
-    public EnumTile getTileEye() {
-        return tileEye;
-    }
-
-    public ArrayList<HandTiles> getTiles() {
-        return tiles;
-    }
-
-    public void setHasGet(boolean hasGetIn) {
-        hasGet = hasGetIn;
-    }
-
     public void setTileGang(ArrayList<EnumTile> tileGangIn) {
         tileGang = tileGangIn;
+    }
+
+    public ArrayList<EnumTile> getTilePeng() {
+        return tilePeng;
     }
 
     public void setTilePeng(ArrayList<EnumTile> tilePengIn) {
         tilePeng = tilePengIn;
     }
 
+    public ArrayList<EnumTile> getTileChi() {
+        return tileChi;
+    }
+
     public void setTileChi(ArrayList<EnumTile> tileChiIn) {
         tileChi = tileChiIn;
     }
 
-    public void setCountKita(int countKitaIn) {
-        countKita = countKitaIn;
+    public ArrayList<EnumTile> getTileAnGang() {
+        return tileAnGang;
     }
 
     public void setTileAnGang(ArrayList<EnumTile> tileAnGangIn) {
         tileAnGang = tileAnGangIn;
     }
 
+    public ArrayList<EnumTile> getTileKe() {
+        return tileKe;
+    }
+
     public void setTileKe(ArrayList<EnumTile> tileKeIn) {
         tileKe = tileKeIn;
+    }
+
+    public ArrayList<EnumTile> getTileShun() {
+        return tileShun;
     }
 
     public void setTileShun(ArrayList<EnumTile> tileShunIn) {
         tileShun = tileShunIn;
     }
 
-    public void setHasEye(boolean hasEyeIn) {
-        hasEye = hasEyeIn;
+    public EnumTile getTileEye() {
+        return tileEye;
     }
 
     public void setTileEye(EnumTile tileEyeIn) {
         tileEye = tileEyeIn;
     }
 
+    public ArrayList<HandTiles> getTiles() {
+        return tiles;
+    }
+
     public void setTiles(ArrayList<HandTiles> tilesIn) {
         tiles = tilesIn;
+    }
+
+    public void setHasGet(boolean hasGetIn) {
+        hasGet = hasGetIn;
+    }
+
+    public void setHasEye(boolean hasEyeIn) {
+        hasEye = hasEyeIn;
     }
 
     public boolean equals(Hand hand) {

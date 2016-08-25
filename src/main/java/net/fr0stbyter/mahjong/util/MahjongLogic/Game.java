@@ -12,7 +12,7 @@ public class Game {
     private int[] dices;
     public Game(ArrayList<String> playersIdIn, GameType gameTypeIn) {
         gameType = gameTypeIn;
-        gameState = new GameState();
+        gameState = new GameState(this);
         players = new ArrayList<Player>();
         dices = new int[]{(int) (Math.floor(Math.random() * 6) + 1)
                 , (int) (Math.floor(Math.random() * 6) + 1)
@@ -38,8 +38,10 @@ public class Game {
         playersIdIn.remove(0);
         players.add(new Player(this, playersIdIn.get(0), EnumPosition.WEST));
         playersIdIn.remove(0);
-        if (gameTypeIn.getPlayerCount() == 4) players.add(new Player(this, playersIdIn.get(0), EnumPosition.NORTH));
-        playersIdIn.remove(0);
+        if (gameTypeIn.getPlayerCount() == 4) {
+            players.add(new Player(this, playersIdIn.get(0), EnumPosition.NORTH));
+            playersIdIn.remove(0);
+        }
         // create mountain
         mountain = new Mountain(gameTypeIn);
         int openPositionIndex = 0;
@@ -63,5 +65,29 @@ public class Game {
         }
         players.get(0).getTile(mountain.getNextThenRemove());
         // wait discard
+    }
+
+    public GameState getGameState() {
+        return gameState;
+    }
+
+    public GameType getGameType() {
+        return gameType;
+    }
+
+    public ArrayList<Player> getPlayers() {
+        return players;
+    }
+
+    public River getRiver() {
+        return river;
+    }
+
+    public Mountain getMountain() {
+        return mountain;
+    }
+
+    public int[] getDices() {
+        return dices;
     }
 }

@@ -7,6 +7,7 @@ public class RiverTile {
     private boolean isTsumoSetsuri;
     private boolean isHorizontal;
     private boolean isWaiting;
+    private boolean isShown;
 
     public RiverTile(EnumTile tileIn, EnumPosition positionIn, boolean isTsumoSetsuriIn, boolean isHorizontalIn, boolean isWaitingIn) {
         tile = tileIn;
@@ -14,6 +15,7 @@ public class RiverTile {
         isTsumoSetsuri = isTsumoSetsuriIn;
         isHorizontal = isHorizontalIn;
         isWaiting = isWaitingIn;
+        isShown = true;
     }
 
     public EnumTile getTile() {
@@ -38,5 +40,13 @@ public class RiverTile {
 
     public void setWaiting(boolean waiting) {
         isWaiting = waiting;
+    }
+
+    public boolean isShown() {
+        return isShown;
+    }
+
+    public void setShown(boolean shown) {
+        isShown = shown;
     }
 }

@@ -46,8 +46,9 @@ public enum EnumWinningHand {
     HAITEIMOUYUE(false, 1, false, 1),
     HOUTEIRAOYUI(false, 1, false, 1),
     KITA(false, 1, false, 1),
+    AKA(false, 1, false, 1),
     DORA(false, 1, false, 1),
-    URA(false, 1, false, 1),
+    URA(false, 1, true, 0),
     NAGASHIMANGAN(false, 0, true, 0);
     private boolean isYakuman;
     private int fan;

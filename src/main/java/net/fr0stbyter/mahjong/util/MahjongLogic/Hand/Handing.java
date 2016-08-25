@@ -23,13 +23,17 @@ public class Handing implements HandTiles, Cloneable {
         tiles = tilesIn;
     }
 
-    public Handing add(EnumTile tile) {
-        tiles.add(tile);
+    public Handing add(EnumTile tileIn) {
+        tiles.add(tileIn);
         return this;
     }
 
-    public Handing remove(EnumTile tile) {
-        tiles.remove(tile);
+    public Handing addAll(ArrayList<EnumTile> tilesIn) {
+        tiles.addAll(tilesIn);
+        return this;
+    }
+    public Handing remove(EnumTile tileIn) {
+        tiles.remove(tileIn);
         return this;
     }
 

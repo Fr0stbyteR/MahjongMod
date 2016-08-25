@@ -7,6 +7,7 @@ public class Mountain {
     private int playerCount;
     private int doorIndex; // first tile get by oya, next is getD doorIndex, next is getU doorIndex - 1
     private int nextIndex;
+    private int countDora;
     private ArrayList<MountainTile> mountainTilesU = new ArrayList<MountainTile>();
     private ArrayList<MountainTile> mountainTilesD = new ArrayList<MountainTile>();
 
@@ -15,7 +16,7 @@ public class Mountain {
     }
 
     public boolean addD(EnumTile tileIn, EnumPosition positionIn) {
-        return mountainTilesU.add(new MountainTile(tileIn, positionIn, false));
+        return mountainTilesD.add(new MountainTile(tileIn, positionIn, false));
     }
 
     public ArrayList<MountainTile> getTilesUFromPosition(EnumPosition enumPosition) {
@@ -34,9 +35,10 @@ public class Mountain {
         return tiles;
     }
 
-    Mountain(GameType gameType) {
-        playerCount = gameType.getPlayerCount();
-        ArrayList<EnumTile> tiles = gameType.getTiles();
+    Mountain(GameType gameTypeIn) {
+        countDora = 1;
+        playerCount = gameTypeIn.getPlayerCount();
+        ArrayList<EnumTile> tiles = gameTypeIn.getTiles();
         Collections.shuffle(tiles);
         for (int i = 0; i < (playerCount == 3 ? 14 : 17); i++) { //counter-clockwise
             addU(tiles.get(0), EnumPosition.EAST);
@@ -76,26 +78,39 @@ public class Mountain {
         doorIndex = getIndexFromPosition(positionIn, getStacksCount(positionIn) - tileStackIn - 1);
         nextIndex = doorIndex;
         // set Rinshyan
-        getTileU(doorIndex + 1).setProp(MountainTile.Prop.RINSHYAN);
-        getTileD(doorIndex + 1).setProp(MountainTile.Prop.RINSHYAN);
-        getTileU(doorIndex + 2).setProp(MountainTile.Prop.RINSHYAN);
-        getTileD(doorIndex + 2).setProp(MountainTile.Prop.RINSHYAN);
-        // set Dora
-        for (int i = 3; i < 7; i++) {
-            getTileU(doorIndex + i).setProp(MountainTile.Prop.DORA);
-        }
-        // set Ura
-        for (int i = 3; i < 7; i++) {
-            getTileD(doorIndex + i).setProp(MountainTile.Prop.URA);
+        int openPointer = doorIndex;
+        int maxPointer = mountainTilesU.size() - 1;
+        if (openPointer == maxPointer) openPointer = 0;
+        else openPointer++;
+        getTileU(openPointer).setProp(MountainTile.Prop.RINSHYAN);
+        getTileD(openPointer).setProp(MountainTile.Prop.RINSHYAN);
+
+        if (openPointer == maxPointer) openPointer = 0;
+        else openPointer++;
+        getTileU(openPointer).setProp(MountainTile.Prop.RINSHYAN);
+        getTileD(openPointer).setProp(MountainTile.Prop.RINSHYAN);
+        // set Dora Ura
+        for (int i = 0; i < 4; i++) {
+            if (openPointer == maxPointer) openPointer = 0;
+            else openPointer++;
+            getTileU(openPointer).setProp(MountainTile.Prop.DORA);
+            if (i == 0) getTileU(openPointer).setShown(true);
+            getTileD(openPointer).setProp(MountainTile.Prop.URA);
         }
         // set Fixed
-        getTileD(doorIndex + 7).setProp(MountainTile.Prop.FIXED);
-        getTileU(doorIndex + 7).setProp(MountainTile.Prop.FIXED);
+        if (openPointer == maxPointer) openPointer = 0;
+        else openPointer++;
+        getTileD(openPointer).setProp(MountainTile.Prop.FIXED);
+        getTileU(openPointer).setProp(MountainTile.Prop.FIXED);
         // set Haitei
-        getTileD(doorIndex + 8).setProp(MountainTile.Prop.HAITEI);
-        getTileU(doorIndex + 8).setProp(MountainTile.Prop.HAITEI);
-        getTileD(doorIndex + 9).setProp(MountainTile.Prop.HAITEI);
-        if (playerCount == 4) getTileU(doorIndex + 9).setProp(MountainTile.Prop.HAITEI);
+        if (openPointer == maxPointer) openPointer = 0;
+        else openPointer++;
+        getTileD(openPointer).setProp(MountainTile.Prop.HAITEI);
+        getTileU(openPointer).setProp(MountainTile.Prop.HAITEI);
+        if (openPointer == maxPointer) openPointer = 0;
+        else openPointer++;
+        getTileD(openPointer).setProp(MountainTile.Prop.HAITEI);
+        if (playerCount == 4) getTileU(openPointer).setProp(MountainTile.Prop.HAITEI);
 
     }
 
@@ -144,7 +159,8 @@ public class Mountain {
         if (mountainTilesU.get(nextIndex) != null) mountainTilesU.set(nextIndex, null);
         else if (mountainTilesD.get(nextIndex) != null) {
             mountainTilesD.set(nextIndex, null);
-            nextIndex--;
+            if (nextIndex == 0) nextIndex = mountainTilesU.size() - 1;
+            else nextIndex--;
         }
         return this;
     }
@@ -152,6 +168,12 @@ public class Mountain {
     public EnumTile getNextThenRemove() {
         EnumTile tile = getNext().getTile();
         removeNext();
+        return tile;
+    }
+
+    public EnumTile getNextRinshyanThenRemove() {
+        EnumTile tile = getNextRinshyan();
+        removeNextRinshyan();
         return tile;
     }
 
@@ -207,17 +229,33 @@ public class Mountain {
 
     public ArrayList<EnumTile> getDora() {
         ArrayList<EnumTile> tiles = new ArrayList<EnumTile>();
-        for (int i = 3; i < 7; i++) {
-            tiles.add(getTileU(doorIndex + i).getTile());
+        int doraPointer = doorIndex;
+        int maxPointer = mountainTilesU.size() - 1;
+        for (int i = 0; i < countDora; i++) {
+            if (doraPointer == maxPointer) doraPointer = 0;
+            else doraPointer++;
+            tiles.add(getTileU(doraPointer).getTile().getDora(playerCount));
         }
         return tiles;
     }
 
     public ArrayList<EnumTile> getUra() {
         ArrayList<EnumTile> tiles = new ArrayList<EnumTile>();
-        for (int i = 3; i < 7; i++) {
-            tiles.add(getTileD(doorIndex + i).getTile());
+        int doraPointer = doorIndex;
+        int maxPointer = mountainTilesU.size() - 1;
+        for (int i = 0; i < countDora; i++) {
+            if (doraPointer == maxPointer) doraPointer = 0;
+            else doraPointer++;
+            tiles.add(getTileD(doraPointer).getTile().getDora(playerCount));
         }
         return tiles;
+    }
+    public Mountain extraDora() {
+        countDora++;
+        int doraPointer = doorIndex + countDora;
+        int maxPointer = mountainTilesU.size() - 1;
+        if (doraPointer > maxPointer) doraPointer = doraPointer - maxPointer - 1;
+        getTileU(doraPointer).setShown(true);
+        return this;
     }
 }
