@@ -386,11 +386,12 @@ public class Analyze {
             e.printStackTrace();
         }
         if (extraTileIn != null && !hand.hasGet()) hand.get(extraTileIn);
+        hand.handingToNormal();
 
         EnumTileGroup group = hand.getHanding().get(0).getGroup();
         if ((group != MAN) && (group != PIN) && (group != SOU)) return new AnalyzeResult(NOTEN, null, null, 0);
         if (hand.getHandingByGroup(group).size() != 13) return new AnalyzeResult(NOTEN, null, null, 0);
-        if (!hand.handingToNormal().getHanding().containsAll(TileGroup.toNormal(TileGroup.getGroupByEnum(group)))) return new AnalyzeResult(NOTEN, null, null, 0);
+        if (!hand.getHanding().containsAll(TileGroup.toNormal(TileGroup.getGroupByEnum(group)))) return new AnalyzeResult(NOTEN, null, null, 0);
         if ((hand.getHanding().get(0).getNumber() == 1)
                 && (hand.getHanding().get(1).getNumber() == 1)
                 && (hand.getHanding().get(2).getNumber() == 1)
@@ -417,11 +418,12 @@ public class Analyze {
         }
         if (extraTileIn != null && !hand.hasGet()) hand.get(extraTileIn);
         hand.addToHandingFromGet();
+        hand.handingToNormal();
 
         EnumTileGroup group = hand.getHanding().get(0).getGroup();
         if ((group != MAN) && (group != PIN) && (group != SOU)) return new AnalyzeResult(NOTEN, null, null, 0);
         if (hand.getHandingByGroup(group).size() != 14) return new AnalyzeResult(NOTEN, null, null, 0);
-        if (!hand.handingToNormal().getHanding().containsAll(TileGroup.toNormal(TileGroup.getGroupByEnum(group)))) return new AnalyzeResult(NOTEN, null, null, 0);
+        if (!hand.getHanding().containsAll(TileGroup.toNormal(TileGroup.getGroupByEnum(group)))) return new AnalyzeResult(NOTEN, null, null, 0);
         if ((hand.getHanding().get(0).getNumber() == 1)
                 && (hand.getHanding().get(1).getNumber() == 1)
                 && (hand.getHanding().get(2).getNumber() == 1)

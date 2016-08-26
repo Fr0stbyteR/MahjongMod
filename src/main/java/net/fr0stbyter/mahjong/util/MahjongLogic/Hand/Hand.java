@@ -106,10 +106,18 @@ public class Hand implements Cloneable {
         return this;
     }
 
-    public boolean findGeng(EnumTile tile) {
+    public ArrayList<EnumTile> getHandingToNormal() {
+        ArrayList<EnumTile> handing = (ArrayList<EnumTile>) tiles.get(0).getTiles().clone();
+        for (int i = 0; i < handing.size(); i++) {
+            handing.set(i, handing.get(i).getNormal());
+        }
+        return handing;
+    }
+
+    public boolean findGang(EnumTile tileIn) {
         int count = 0;
         for (EnumTile tile1 : getHanding()) {
-            if (tile == tile1) count++;
+            if (tileIn.getNormal() == tile1.getNormal()) count++;
         }
         return count == 3;
     }
@@ -125,10 +133,10 @@ public class Hand implements Cloneable {
         return this;
     }
 
-    public boolean findPeng(EnumTile tile) {
+    public boolean findPeng(EnumTile tileIn) {
         int count = 0;
         for (EnumTile tile1 : getHanding()) {
-            if (tile == tile1) count++;
+            if (tileIn.getNormal() == tile1.getNormal()) count++;
         }
         return count == 2;
     }
@@ -143,11 +151,31 @@ public class Hand implements Cloneable {
         return this;
     }
 
+    public ArrayList<EnumTile> findChi(EnumTile tileIn) {
+        ArrayList<EnumTile> found = new ArrayList<EnumTile>();
+        ArrayList<EnumTile> handing = getHandingToNormal();
+        if (tileIn.getPrev() != null && tileIn.getPrev().getPrev() != null
+                && handing.contains(tileIn.getPrev()) && handing.contains(tileIn.getPrev().getPrev()))
+            found.add(tileIn.getPrev().getPrev());
+        if (tileIn.getPrev() != null && tileIn.getNext() != null
+                && handing.contains(tileIn.getPrev()) && handing.contains(tileIn.getNext()))
+            found.add(tileIn.getPrev());
+        if (tileIn.getNext() != null && tileIn.getNext().getNext()  != null
+                && handing.contains(tileIn.getNext()) && handing.contains(tileIn.getNext().getNext() ))
+            found.add(tileIn);
+        for (int i = 0; i < found.size(); i++) {
+            if (getHanding().contains(found.get(i).getRed())) found.set(i, found.get(i).getRed());
+        }
+        return found;
+    }
+
     public Hand chi(EnumTile tileIn1, Player playerIn, EnumTile tileGotIn) {
         EnumTile tileIn2 = tileIn1.getNext();
+        if (tileIn2 == null) return null;
         EnumTile tileIn3 = tileIn1.getNext().getNext();
-        if ((tileIn1.getRed() != null)) if (getHanding().contains(tileIn2.getRed())) tileIn2 = tileIn2.getRed();
-        if ((tileIn3.getRed() != null)) if (getHanding().contains(tileIn3.getRed())) tileIn3 = tileIn3.getRed();
+        if (tileIn3 == null) return null;
+        if (getHanding().contains(tileIn2.getRed())) tileIn2 = tileIn2.getRed();
+        if (getHanding().contains(tileIn3.getRed())) tileIn3 = tileIn3.getRed();
         if (tileGotIn != tileIn1) removeFromHanding(tileIn1);
         if (tileGotIn != tileIn2) removeFromHanding(tileIn2);
         if (tileGotIn != tileIn3) removeFromHanding(tileIn3);
@@ -158,9 +186,12 @@ public class Hand implements Cloneable {
 
     public ArrayList<EnumTile> findAnGang() {
         ArrayList<EnumTile> found = new ArrayList<EnumTile>();
-        ArrayList<EnumTile> hand = (ArrayList<EnumTile>) getHanding().clone();
-        if (hasGet) hand.add(getGet());
+        ArrayList<EnumTile> hand = getHandingToNormal();
+        EnumTile last = null;
+        if (hasGet) hand.add(getGet().getNormal());
         for (EnumTile tile : hand) {
+            if (last == tile) continue;
+            else last = tile;
             int count = 0;
             for (EnumTile tile1 : hand) {
                 if (tile == tile1) count++;
@@ -184,11 +215,12 @@ public class Hand implements Cloneable {
 
     public ArrayList<EnumTile> findPlusGang() {
         ArrayList<EnumTile> found = new ArrayList<EnumTile>();
-        for (HandTiles handTiles : tiles) {
-            if (handTiles instanceof Peng && getHanding().contains(handTiles.getTile())) found.add(handTiles.getTile());
+        for (EnumTile tile : tilePeng) {
+            if (getHandingToNormal().contains(tile)) found.add(tile);
         }
         return found;
     }
+
     public Hand plusGang(EnumTile tileIn1) {
         for (HandTiles handTiles : tiles) {
             if (handTiles instanceof Peng && handTiles.getTile() == tileIn1) {
@@ -216,9 +248,11 @@ public class Hand implements Cloneable {
     public Hand shun(EnumTile tileIn1) {
         if (hasGet) addToHandingFromGet();
         EnumTile tileIn2 = tileIn1.getNext();
+        if (tileIn2 == null) return null;
         EnumTile tileIn3 = tileIn1.getNext().getNext();
-        if ((tileIn2.getRed() != null)) if (getHanding().contains(tileIn2.getRed())) tileIn2 = tileIn2.getRed();
-        if ((tileIn3.getRed() != null)) if (getHanding().contains(tileIn3.getRed())) tileIn3 = tileIn3.getRed();
+        if (tileIn3 == null) return null;
+        if (getHanding().contains(tileIn2.getRed())) tileIn2 = tileIn2.getRed();
+        if (getHanding().contains(tileIn3.getRed())) tileIn3 = tileIn3.getRed();
         removeFromHanding(tileIn1).removeFromHanding(tileIn2).removeFromHanding(tileIn3);
         tiles.add(new Shun(tileIn1, tileIn2, tileIn3));
         tileShun.add(tileIn1.getNormal());
@@ -269,8 +303,7 @@ public class Hand implements Cloneable {
     }
 
     public boolean isMenzen() {
-        if (getCountGang() + getCountPeng() + getCountChi() == 0) return true;
-        else return false;
+        return getCountGang() + getCountPeng() + getCountChi() == 0;
     }
 
     public boolean hasGet() {

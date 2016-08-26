@@ -221,10 +221,7 @@ public class Player {
 
     public Player discard(EnumTile tile) {
         analyzeWaiting();
-        furiTen = false;
-        for (EnumTile tileWaiting : waiting) {
-            if (getTilesFromRiver().contains(tileWaiting)) furiTen = true;
-        }
+        resetFuriten();
         boolean horizontal = false;
         if (isRiichi) {
             boolean hasHorizontal = false;
@@ -234,11 +231,23 @@ public class Player {
             horizontal = !hasHorizontal;
         }
         game.getRiver().add(tile, curWind, tile == hand.getGet(), horizontal);
+        if (tile == hand.getGet()) hand.removeGet();
+        else hand.removeFromHanding(tile);
+
         return this;
     }
 
     public Player discardforRiichi(EnumTile tile) {
 
+        return this;
+    }
+
+    public Player resetFuriten() {
+        if (isRiichi) return this;
+        furiTen = false;
+        for (EnumTile tileWaiting : waiting) {
+            if (getTilesFromRiver().contains(tileWaiting)) furiTen = true;
+        }
         return this;
     }
 
@@ -257,6 +266,35 @@ public class Player {
             waiting.addAll(analyzeTen);
         }
         return this;
+    }
+
+    public HashMap<Options, EnumTile> getOptions() {
+        return options;
+    }
+
+    public HashMap<Options, EnumTile> getOptions(EnumTile tileIn) {
+        options.clear();
+        if (!furiTen && waiting.contains(tileIn)) {
+            winningHand = Analyze.analyzeWin(game.getGameType(), game.getGameState(), this, game.getMountain().getDora(), game.getMountain().getUra(), hand, tileIn);
+            if (winningHand.isWon()) {
+                options.put(Options.RON, tileIn);
+            }
+        }
+        for (EnumTile tile : hand.findChi(tileIn)) {
+            options.put(Options.CHI, tile);
+        }
+        if (hand.findPeng(tileIn)) {
+            options.put(Options.PENG, tileIn);
+        }
+        if (hand.findGang(tileIn)) {
+            options.put(Options.GANG, tileIn);
+        }
+        if (!options.isEmpty()) options.put(Options.CANCEL, null);
+        return options;
+    }
+
+    public void setOptions(HashMap<Options, EnumTile> options) {
+        this.options = options;
     }
 
     public HashMap<EnumTile, ArrayList<EnumTile>> analyzeRiichi() {
