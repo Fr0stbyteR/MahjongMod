@@ -125,9 +125,9 @@ public class Analyze {
         if (winningHand.isWon(BINHU) && !isTsumo) fu.setSpecYaku(Fu.SpecYaku.KUIBINHU);
         if (!winningHand.isWon(RYANBEEKOU)) winningHand.add(iibeekou(handAnalyzed));
         winningHand.add(rinshyankaihou(player, handAnalyzed))
-                .add(chyankan(player, handAnalyzed))
-                .add(haiteimouyue(gameState, isTsumo, handAnalyzed))
-                .add(houteiraoyui(gameState, isTsumo, handAnalyzed));
+                .add(chyankan(player, handAnalyzed));
+        if (!winningHand.isWon(RINSHYANKAIHOU)) winningHand.add(haiteimouyue(gameState, isTsumo, handAnalyzed));
+        if (!winningHand.isWon(RINSHYANKAIHOU)) winningHand.add(houteiraoyui(gameState, isTsumo, handAnalyzed));
         for (AnalyzeResult analyzeResult : yakuhai(gameState, player, handAnalyzed).values()) {
             winningHand.add(analyzeResult);
         }

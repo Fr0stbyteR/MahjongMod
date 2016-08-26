@@ -221,6 +221,19 @@ public class Player {
 
     public Player discard(EnumTile tile) {
         analyzeWaiting();
+        furiTen = false;
+        for (EnumTile tileWaiting : waiting) {
+            if (getTilesFromRiver().contains(tileWaiting)) furiTen = true;
+        }
+        boolean horizontal = false;
+        if (isRiichi) {
+            boolean hasHorizontal = false;
+            for (RiverTile riverTile : getRiver()) {
+                if (riverTile.getHorizontal()) hasHorizontal = true;
+            }
+            horizontal = !hasHorizontal;
+        }
+        game.getRiver().add(tile, curWind, tile == hand.getGet(), horizontal);
         return this;
     }
 

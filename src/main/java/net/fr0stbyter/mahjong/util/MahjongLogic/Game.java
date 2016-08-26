@@ -14,6 +14,7 @@ public class Game {
         gameType = gameTypeIn;
         gameState = new GameState(this);
         players = new ArrayList<Player>();
+        river = new River();
         dices = new int[]{(int) (Math.floor(Math.random() * 6) + 1)
                 , (int) (Math.floor(Math.random() * 6) + 1)
                 , (int) (Math.floor(Math.random() * 6) + 1)

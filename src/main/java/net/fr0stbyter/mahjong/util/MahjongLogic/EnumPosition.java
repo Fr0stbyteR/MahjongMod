@@ -34,6 +34,12 @@ public enum EnumPosition {
     public EnumPosition getPrev() {
         return getPosition(index == 0 ? 3 : index - 1);
     }
+    public EnumPosition getNextNoNorth() {
+        return getPosition(index == 2 ? 0 : index + 1);
+    }
+    public EnumPosition getPrevNoNorth() {
+        return getPosition(index == 0 ? 2 : index - 1);
+    }
     public EnumPosition getOpposite() {
         return getPosition(index < 2 ? index + 2 : index - 2);
     }

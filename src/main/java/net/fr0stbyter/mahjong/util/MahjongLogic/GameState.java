@@ -85,8 +85,7 @@ public class GameState {
     }
 
     public void nextPlayer() {
-        curPlayer = curPlayer.getNext();
-        if (game.getGameType().getPlayerCount() == 3 && curPlayer == EnumPosition.NORTH) curPlayer = EnumPosition.EAST;
+        curPlayer = game.getGameType().getPlayerCount() == 3 ? curPlayer.getNextNoNorth() : curPlayer.getNext();
         if (curPlayer == EnumPosition.EAST) nextDeal();
     }
 
