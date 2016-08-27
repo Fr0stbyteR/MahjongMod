@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class Mountain {
+    private Game game;
     private int playerCount;
     private int doorIndex; // first tile get by oya, next is getD doorIndex, next is getU doorIndex - 1
     private int nextIndex;
@@ -35,10 +36,11 @@ public class Mountain {
         return tiles;
     }
 
-    Mountain(GameType gameTypeIn) {
+    Mountain(Game gameIn) {
+        game = gameIn;
         countDora = 1;
-        playerCount = gameTypeIn.getPlayerCount();
-        ArrayList<EnumTile> tiles = gameTypeIn.getTiles();
+        playerCount = game.getGameType().getPlayerCount();
+        ArrayList<EnumTile> tiles = game.getGameType().getTiles();
         Collections.shuffle(tiles);
         for (int i = 0; i < (playerCount == 3 ? 14 : 17); i++) { //counter-clockwise
             addU(tiles.get(0), EnumPosition.EAST);
@@ -152,7 +154,7 @@ public class Mountain {
     }
 
     public MountainTile.Prop getNextProp() {
-        return getTile(nextIndex).getProp();
+        return getNext().getProp();
     }
 
     public Mountain removeNext() {
@@ -166,6 +168,7 @@ public class Mountain {
     }
 
     public EnumTile getNextThenRemove() {
+        if (getNextProp() == MountainTile.Prop.HAITEI) game.getGameState().setHaitei(true);
         EnumTile tile = getNext().getTile();
         removeNext();
         return tile;

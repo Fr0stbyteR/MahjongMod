@@ -14,7 +14,7 @@ public class GameState {
         curRound = EnumPosition.EAST;
         curHand = 1;
         curExtra = 1;
-        curDeal = 0;
+        curDeal = 1;
         curPlayer = EnumPosition.EAST;
         isHaitei = false;
         phase = Phase.SHUFFLE;
@@ -69,7 +69,9 @@ public class GameState {
     }
 
     public void nextExtra() {
+        isHaitei = false;
         curExtra++;
+        curDeal = 0;
     }
 
     public void setCurDeal(int curDealIn) {

@@ -45,7 +45,7 @@ public class Analyze {
         EnumTile extraTile = null;
         System.out.print("\nhanding:" + hand.getAll());
         gameState.setCurPlayer(EnumPosition.SOUTH);
-        gameState.setCurDeal(3);
+        //gameState.setCurDeal(3);
         WinningHand winningHand = analyzeWin(gameType, gameState, player, doraIn, uraIn, hand, extraTile);
         System.out.print("\nRES:" + winningHand);
         for (AnalyzeResult analyzeResult : winningHand.getyakuList()) {
@@ -79,8 +79,8 @@ public class Analyze {
         Fu fu = Fu.analyze(gameState, player, handAnalyzed, extraTileIn != null ? extraTileIn : handIn.getGet(), isTsumo);
         WinningHand winningHand = new WinningHand(gameType, player, handIn, isTsumo, fu);
         // special yaku
-        if (winningHand.add(gokushimusou13(handIn, extraTileIn)).isWon()) return winningHand;
-        if (winningHand.add(gokushimusou(handIn, extraTileIn)).isWon()) return winningHand;
+        winningHand.add(gokushimusou13(handIn, extraTileIn));
+        if (!winningHand.isWon(GOKUSHIMUSOU13)) winningHand.add(gokushimusou(handIn, extraTileIn));
         winningHand.add(chiitoitsu(handAnalyzed));
         if (winningHand.isWon(CHIITOITSU)) fu.setSpecYaku(Fu.SpecYaku.CHIITOITSU);
         // yakuman

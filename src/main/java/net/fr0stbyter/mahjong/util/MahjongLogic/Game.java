@@ -2,6 +2,7 @@ package net.fr0stbyter.mahjong.util.MahjongLogic;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 public class Game {
     private GameState gameState;
@@ -10,11 +11,14 @@ public class Game {
     private River river;
     private Mountain mountain;
     private int[] dices;
+    private ArrayList<Player> playersHasOptions;
+    private HashMap<Player, HashMap<Player.Options, EnumTile>> optionsSelected;
     public Game(ArrayList<String> playersIdIn, GameType gameTypeIn) {
         gameType = gameTypeIn;
         gameState = new GameState(this);
         players = new ArrayList<Player>();
         river = new River();
+        optionsSelected = new HashMap<Player, HashMap<Player.Options, EnumTile>>();
         dices = new int[]{(int) (Math.floor(Math.random() * 6) + 1)
                 , (int) (Math.floor(Math.random() * 6) + 1)
                 , (int) (Math.floor(Math.random() * 6) + 1)
@@ -44,7 +48,7 @@ public class Game {
             playersIdIn.remove(0);
         }
         // create mountain
-        mountain = new Mountain(gameTypeIn);
+        mountain = new Mountain(this);
         int openPositionIndex = 0;
         for (int i = 0; i < (dices[4] + dices[5] - 1) % gameTypeIn.getPlayerCount(); i++) { //open position
             openPositionIndex++;
@@ -64,8 +68,71 @@ public class Game {
             player.addToHanding(mountain.getNextThenRemove());
             player.analyzeWaiting();
         }
-        players.get(0).getTile(mountain.getNextThenRemove());
+        getPlayer(gameState.getCurPlayer()).getTileFromMountain();
         // wait discard
+    }
+
+    public Game nextDeal() {
+        river.cancelWaiting();
+        gameState.nextPlayer();
+        for (Player player : players) {
+            player.setCanChyankan(false);
+        }
+        getPlayer(gameState.getCurPlayer()).getTileFromMountain();
+        return this;
+    }
+
+    public ArrayList<Player> checkOptions(Player playerIn, EnumTile tileIn) {
+        optionsSelected.clear();
+        playersHasOptions.clear();
+        for (Player player : players) {
+            if (player == playerIn) continue;
+            if (!player.getOptions(playerIn, tileIn).isEmpty()) playersHasOptions.add(player);
+        }
+        if (playersHasOptions.isEmpty()) nextDeal();
+        return playersHasOptions;
+    }
+
+    public Game selectOptions(Player playerIn, HashMap<Player.Options, EnumTile> optionIn, boolean isChyankan) {
+        optionsSelected.put(playerIn, optionIn);
+        playersHasOptions.remove(playerIn);
+        for (Player player : players) {
+            player.setCanChyankan(isChyankan);
+        }
+        if (playersHasOptions.isEmpty()) {
+            boolean isRon = false;
+            for (Player player : optionsSelected.keySet()) {
+                if (optionsSelected.get(player).containsKey(Player.Options.RON)) {
+                    player.ron(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.RON));
+                    isRon = true;
+                }
+            }
+            if (isRon) return this;
+            if (isChyankan) {
+                nextDeal();
+                return this;
+            }
+            for (Player player : optionsSelected.keySet()) {
+                if (optionsSelected.get(player).containsKey(Player.Options.GANG)) {
+                    player.gang(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.GANG));
+                    return this;
+                }
+            }
+            for (Player player : optionsSelected.keySet()) {
+                if (optionsSelected.get(player).containsKey(Player.Options.PENG)) {
+                    player.peng(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.PENG));
+                    return this;
+                }
+            }
+            for (Player player : optionsSelected.keySet()) {
+                if (optionsSelected.get(player).containsKey(Player.Options.CHI)) {
+                    player.chi(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.CHI));
+                    return this;
+                }
+            }
+        }
+        nextDeal();
+        return this;
     }
 
     public GameState getGameState() {
@@ -78,6 +145,13 @@ public class Game {
 
     public ArrayList<Player> getPlayers() {
         return players;
+    }
+
+    public Player getPlayer(EnumPosition enumPosition) {
+        for (Player player : players) {
+            if (player.getCurWind() == enumPosition) return player;
+        }
+        return null;
     }
 
     public River getRiver() {

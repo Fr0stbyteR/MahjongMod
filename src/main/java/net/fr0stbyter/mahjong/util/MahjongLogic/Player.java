@@ -230,10 +230,11 @@ public class Player {
             }
             horizontal = !hasHorizontal;
         }
+        game.getGameState().setPhase(GameState.Phase.WAIT_MELD);
         game.getRiver().add(tile, curWind, tile == hand.getGet(), horizontal);
         if (tile == hand.getGet()) hand.removeGet();
         else hand.removeFromHanding(tile);
-
+        game.checkOptions(this, tile);
         return this;
     }
 
@@ -272,16 +273,19 @@ public class Player {
         return options;
     }
 
-    public HashMap<Options, EnumTile> getOptions(EnumTile tileIn) {
+    public HashMap<Options, EnumTile> getOptions(Player playerIn, EnumTile tileIn) { // other players discard
         options.clear();
+        if (playerIn == this) return options;
         if (!furiTen && waiting.contains(tileIn)) {
             winningHand = Analyze.analyzeWin(game.getGameType(), game.getGameState(), this, game.getMountain().getDora(), game.getMountain().getUra(), hand, tileIn);
             if (winningHand.isWon()) {
                 options.put(Options.RON, tileIn);
             }
         }
-        for (EnumTile tile : hand.findChi(tileIn)) {
-            options.put(Options.CHI, tile);
+        if (game.getGameType().getPlayerCount() == 4 && getCurWind() == playerIn.getCurWind().getNext()) {
+            for (EnumTile tile : hand.findChi(tileIn)) {
+                options.put(Options.CHI, tile);
+            }
         }
         if (hand.findPeng(tileIn)) {
             options.put(Options.PENG, tileIn);
@@ -293,12 +297,25 @@ public class Player {
         return options;
     }
 
-    public void setOptions(HashMap<Options, EnumTile> options) {
-        this.options = options;
+    public void setOptions(HashMap<Options, EnumTile> optionsIn) {
+        options = optionsIn;
     }
 
     public HashMap<EnumTile, ArrayList<EnumTile>> analyzeRiichi() {
         return Analyze.baseAnalyzeTen(hand, null);
     }
+
+    public void ron(EnumPosition curPlayerIn, EnumTile tileIn) {
+    }
+
+    public void gang(EnumPosition curPlayerIn, EnumTile enumTileIn) {
+    }
+
+    public void peng(EnumPosition curPlayerIn, EnumTile enumTileIn) {
+    }
+
+    public void chi(EnumPosition curPlayerIn, EnumTile enumTileIn) {
+    }
+
     public enum Options {KYUUSHYUKYUUHAI, RIICHI, KITA, ANGANG, GANG, PLUSGANG, PENG, CHI, RON, TSUMO, CANCEL}
 }
