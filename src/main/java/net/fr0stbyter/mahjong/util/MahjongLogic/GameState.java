@@ -8,7 +8,9 @@ public class GameState {
     private int curDeal; // 1-? xun
     private EnumPosition curPlayer;
     private boolean isHaitei;
+    private boolean allLast;
     private Phase phase;
+
     public GameState(Game gameIn) {
         game = gameIn;
         curRound = EnumPosition.EAST;
@@ -17,6 +19,8 @@ public class GameState {
         curDeal = 1;
         curPlayer = EnumPosition.EAST;
         isHaitei = false;
+        allLast = false;
+
         phase = Phase.SHUFFLE;
     }
 
@@ -52,43 +56,62 @@ public class GameState {
         curRound = curRoundIn;
     }
 
-    public void nextRound() {
+    public GameState nextRound() {
         curRound = curRound.getNext();
+        curHand = 1;
+        isHaitei = false;
+        curExtra = 0;
+        curDeal = 0;
+        return this;
     }
 
     public void setCurHand(int curHandIn) {
         curHand = curHandIn;
     }
 
-    public void nextHand() {
+    public GameState nextHand() {
         curHand++;
+        isHaitei = false;
+        curExtra = 1;
+        curDeal = 1;
+        if (curRound.getIndex() + 1 == game.getGameType().getLength() && curHand == game.getGameType().getPlayerCount()) allLast = true;
+        if (curHand > game.getGameType().getPlayerCount()) nextRound();
+        return this;
     }
 
     public void setCurExtra(int curExtraIn) {
         curExtra = curExtraIn;
     }
 
-    public void nextExtra() {
+    public GameState nextExtra() {
         isHaitei = false;
         curExtra++;
-        curDeal = 0;
+        curDeal = 1;
+        return this;
     }
 
     public void setCurDeal(int curDealIn) {
         curDeal = curDealIn;
     }
 
-    public void nextDeal() {
+    public GameState nextDeal() {
         curDeal++;
+        return this;
     }
 
-    public void setCurPlayer(EnumPosition curPlayerIn) {
+    public GameState setCurPlayer(EnumPosition curPlayerIn) {
         curPlayer = curPlayerIn;
+        return this;
     }
 
-    public void nextPlayer() {
+    public GameState nextPlayer() {
         curPlayer = game.getGameType().getPlayerCount() == 3 ? curPlayer.getNextNoNorth() : curPlayer.getNext();
         if (curPlayer == EnumPosition.EAST) nextDeal();
+        return this;
+    }
+
+    public boolean isAllLast() {
+        return allLast;
     }
 
     public void setHaitei(boolean haiteiIn) {

@@ -9,12 +9,12 @@ import java.util.Arrays;
 
 public class Gang implements HandTiles, Cloneable {
     private ArrayList<EnumTile> tiles;
-    private Player fromPlayer;
+    private int orientation; // 1 right, 2 opposite, 3 left
     private boolean plusGang;
 
-    public Gang(EnumTile tileIn1, EnumTile tileIn2, EnumTile tileIn3, EnumTile tileIn4, Player fromPlayerIn, boolean plusGangIn) {
+    public Gang(EnumTile tileIn1, EnumTile tileIn2, EnumTile tileIn3, EnumTile tileIn4, int orientationIn, boolean plusGangIn) {
         tiles = new ArrayList<EnumTile>(Arrays.asList(tileIn1, tileIn2, tileIn3, tileIn4));
-        fromPlayer = fromPlayerIn;
+        orientation = orientationIn;
         plusGang = plusGangIn;
     }
 
@@ -28,8 +28,8 @@ public class Gang implements HandTiles, Cloneable {
         return tiles.get(0);
     }
 
-    public Player getFromPlayer() {
-        return fromPlayer;
+    public int getOrientation() {
+        return orientation;
     }
 
     public boolean getPlusGang() {

@@ -43,4 +43,7 @@ public enum EnumPosition {
     public EnumPosition getOpposite() {
         return getPosition(index < 2 ? index + 2 : index - 2);
     }
+    public int getRelation(EnumPosition position) {
+        return (position.getIndex() - index) % 4;
+    }
 }

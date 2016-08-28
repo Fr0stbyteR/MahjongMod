@@ -1,6 +1,7 @@
 package net.fr0stbyter.mahjong.util.MahjongLogic;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 
 import static net.fr0stbyter.mahjong.util.MahjongLogic.EnumTileGroup.*;
@@ -142,6 +143,10 @@ public enum EnumTile {
 
     public String toString() {
         return name;
+    }
+
+    public ArrayList<EnumTile> toSingletonList() {
+        return new ArrayList<EnumTile>(Collections.singletonList(this));
     }
 
     public static Comparator<EnumTile> tilesComparator = new Comparator<EnumTile>(){

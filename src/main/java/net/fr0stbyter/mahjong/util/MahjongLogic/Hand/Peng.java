@@ -8,11 +8,11 @@ import java.util.Arrays;
 
 public class Peng implements HandTiles, Cloneable {
     private ArrayList<EnumTile> tiles;
-    private Player fromPlayer;
+    private int orientation; // 1 right, 2 opposite, 3 left
 
-    public Peng(EnumTile tileIn1, EnumTile tileIn2, EnumTile tileIn3, Player fromPlayerIn) {
+    public Peng(EnumTile tileIn1, EnumTile tileIn2, EnumTile tileIn3, int orientationIn) {
         tiles = new ArrayList<EnumTile>(Arrays.asList(tileIn1, tileIn2, tileIn3));
-        fromPlayer = fromPlayerIn;
+        orientation = orientationIn;
     }
 
     @Override
@@ -25,8 +25,8 @@ public class Peng implements HandTiles, Cloneable {
         return tiles.get(0);
     }
 
-    public Player getFromPlayer() {
-        return fromPlayer;
+    public int getOrientation() {
+        return orientation;
     }
 
     public void setTiles(ArrayList<EnumTile> tilesIn) {

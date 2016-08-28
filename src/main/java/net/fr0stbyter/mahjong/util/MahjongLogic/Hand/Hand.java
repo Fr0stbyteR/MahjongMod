@@ -122,14 +122,14 @@ public class Hand implements Cloneable {
         return count == 3;
     }
 
-    public Hand gang(EnumTile tileIn1, Player playerIn, boolean plusGangIn) {
-        EnumTile tileIn2 = tileIn1.getNormal();
-        EnumTile tileIn3 = tileIn1.getNormal();
-        EnumTile tileIn4 = tileIn1.getNormal();
-        if (!tileIn1.isRed() && (tileIn1.getRed() != null)) if (getHanding().contains(tileIn1.getRed())) tileIn4 = tileIn1.getRed();
-        removeFromHanding(tileIn2).removeFromHanding(tileIn3).removeFromHanding(tileIn4);
-        tiles.add(new Gang(tileIn1, tileIn2, tileIn3, tileIn4, playerIn, plusGangIn));
-        tileGang.add(tileIn1.getNormal());
+    public Hand gang(EnumTile tileGot, int orientationIn, boolean plusGangIn) {
+        EnumTile tile2 = tileGot.getNormal();
+        EnumTile tile3 = tileGot.getNormal();
+        EnumTile tile4 = tileGot.getNormal();
+        if (!tileGot.isRed() && (tileGot.getRed() != null)) if (getHanding().contains(tileGot.getRed())) tile4 = tileGot.getRed();
+        removeFromHanding(tile2).removeFromHanding(tile3).removeFromHanding(tile4);
+        tiles.add(new Gang(tileGot, tile2, tile3, tile4, orientationIn, plusGangIn));
+        tileGang.add(tileGot.getNormal());
         return this;
     }
 
@@ -141,13 +141,13 @@ public class Hand implements Cloneable {
         return count == 2;
     }
 
-    public Hand peng(EnumTile tileIn1, Player playerIn) {
-        EnumTile tileIn2 = tileIn1.getNormal();
-        EnumTile tileIn3 = tileIn1.getNormal();
-        if (!tileIn1.isRed() && (tileIn1.getRed() != null)) if (getHanding().contains(tileIn1.getRed())) tileIn3 = tileIn1.getRed();
-        removeFromHanding(tileIn2).removeFromHanding(tileIn3);
-        tiles.add(new Peng(tileIn1, tileIn2, tileIn3, playerIn));
-        tilePeng.add(tileIn1.getNormal());
+    public Hand peng(EnumTile tileGot, int orientationIn) {
+        EnumTile tile2 = tileGot.getNormal();
+        EnumTile tile3 = tileGot.getNormal();
+        if (!tileGot.isRed() && tileGot.getRed() != null) if (getHanding().contains(tileGot.getRed())) tile3 = tileGot.getRed();
+        removeFromHanding(tile2).removeFromHanding(tile3);
+        tiles.add(new Peng(tileGot, tile2, tile3, orientationIn));
+        tilePeng.add(tileGot.getNormal());
         return this;
     }
 
@@ -169,18 +169,18 @@ public class Hand implements Cloneable {
         return found;
     }
 
-    public Hand chi(EnumTile tileIn1, Player playerIn, EnumTile tileGotIn) {
-        EnumTile tileIn2 = tileIn1.getNext();
-        if (tileIn2 == null) return null;
-        EnumTile tileIn3 = tileIn1.getNext().getNext();
-        if (tileIn3 == null) return null;
-        if (getHanding().contains(tileIn2.getRed())) tileIn2 = tileIn2.getRed();
-        if (getHanding().contains(tileIn3.getRed())) tileIn3 = tileIn3.getRed();
-        if (tileGotIn != tileIn1) removeFromHanding(tileIn1);
-        if (tileGotIn != tileIn2) removeFromHanding(tileIn2);
-        if (tileGotIn != tileIn3) removeFromHanding(tileIn3);
-        tiles.add(new Chi(tileIn1, tileIn2, tileIn3, playerIn, tileGotIn));
-        tileChi.add(tileIn1.getNormal());
+    public Hand chi(EnumTile tile1, int orientationIn, EnumTile tileGotIn) {
+        EnumTile tile2 = tile1.getNext();
+        if (tile2 == null) return null;
+        EnumTile tile3 = tile1.getNext().getNext();
+        if (tile3 == null) return null;
+        if (getHanding().contains(tile2.getRed())) tile2 = tile2.getRed();
+        if (getHanding().contains(tile3.getRed())) tile3 = tile3.getRed();
+        if (tileGotIn != tile1) removeFromHanding(tile1);
+        if (tileGotIn != tile2) removeFromHanding(tile2);
+        if (tileGotIn != tile3) removeFromHanding(tile3);
+        tiles.add(new Chi(tile1, tile2, tile3, orientationIn, tileGotIn));
+        tileChi.add(tile1.getNormal());
         return this;
     }
 
@@ -201,15 +201,15 @@ public class Hand implements Cloneable {
         return found;
     }
 
-    public Hand anGang(EnumTile tileIn1) {
+    public Hand anGang(EnumTile tile1) {
         if (hasGet) addToHandingFromGet();
-        EnumTile tileIn2 = tileIn1.getNormal();
-        EnumTile tileIn3 = tileIn1.getNormal();
-        EnumTile tileIn4 = tileIn1.getNormal();
-        if (!tileIn1.isRed() && tileIn1.getRed() != null) if (getHanding().contains(tileIn1.getRed())) tileIn4 = tileIn1.getRed();
-        removeFromHanding(tileIn1).removeFromHanding(tileIn2).removeFromHanding(tileIn3).removeFromHanding(tileIn4);
-        tiles.add(new AnGang(tileIn1, tileIn2, tileIn3, tileIn4));
-        tileAnGang.add(tileIn1.getNormal());
+        EnumTile tile2 = tile1.getNormal();
+        EnumTile tile3 = tile1.getNormal();
+        EnumTile tile4 = tile1.getNormal();
+        if (!tile1.isRed() && tile1.getRed() != null) if (getHanding().contains(tile1.getRed())) tile4 = tile1.getRed();
+        removeFromHanding(tile1).removeFromHanding(tile2).removeFromHanding(tile3).removeFromHanding(tile4);
+        tiles.add(new AnGang(tile1, tile2, tile3, tile4));
+        tileAnGang.add(tile1.getNormal());
         return this;
     }
 
@@ -221,41 +221,41 @@ public class Hand implements Cloneable {
         return found;
     }
 
-    public Hand plusGang(EnumTile tileIn1) {
+    public Hand plusGang(EnumTile tileGot) {
         for (HandTiles handTiles : tiles) {
-            if (handTiles instanceof Peng && handTiles.getTile() == tileIn1) {
+            if (handTiles instanceof Peng && handTiles.getTile() == tileGot) {
                 addToHanding(handTiles.getTiles());
                 tiles.remove(handTiles);
-                tilePeng.remove(tileIn1.getNormal());
-                gang(tileIn1, null, true);
+                tilePeng.remove(tileGot.getNormal());
+                gang(tileGot, 0, true);
                 break;
             }
         }
         return this;
     }
 
-    public Hand ke(EnumTile tileIn1) {
+    public Hand ke(EnumTile tile1) {
         if (hasGet) addToHandingFromGet();
-        EnumTile tileIn2 = tileIn1.getNormal();
-        EnumTile tileIn3 = tileIn1.getNormal();
-        if (!tileIn1.isRed() && tileIn1.getRed() != null) if (getHanding().contains(tileIn1.getRed())) tileIn3 = tileIn1.getRed();
-        removeFromHanding(tileIn1).removeFromHanding(tileIn2).removeFromHanding(tileIn3);
-        tiles.add(new Ke(tileIn1, tileIn2, tileIn3));
-        tileKe.add(tileIn1.getNormal());
+        EnumTile tile2 = tile1.getNormal();
+        EnumTile tile3 = tile1.getNormal();
+        if (!tile1.isRed() && tile1.getRed() != null) if (getHanding().contains(tile1.getRed())) tile3 = tile1.getRed();
+        removeFromHanding(tile1).removeFromHanding(tile2).removeFromHanding(tile3);
+        tiles.add(new Ke(tile1, tile2, tile3));
+        tileKe.add(tile1.getNormal());
         return this;
     }
 
-    public Hand shun(EnumTile tileIn1) {
+    public Hand shun(EnumTile tile1) {
         if (hasGet) addToHandingFromGet();
-        EnumTile tileIn2 = tileIn1.getNext();
-        if (tileIn2 == null) return null;
-        EnumTile tileIn3 = tileIn1.getNext().getNext();
-        if (tileIn3 == null) return null;
-        if (getHanding().contains(tileIn2.getRed())) tileIn2 = tileIn2.getRed();
-        if (getHanding().contains(tileIn3.getRed())) tileIn3 = tileIn3.getRed();
-        removeFromHanding(tileIn1).removeFromHanding(tileIn2).removeFromHanding(tileIn3);
-        tiles.add(new Shun(tileIn1, tileIn2, tileIn3));
-        tileShun.add(tileIn1.getNormal());
+        EnumTile tile2 = tile1.getNext();
+        if (tile2 == null) return null;
+        EnumTile tile3 = tile1.getNext().getNext();
+        if (tile3 == null) return null;
+        if (getHanding().contains(tile2.getRed())) tile2 = tile2.getRed();
+        if (getHanding().contains(tile3.getRed())) tile3 = tile3.getRed();
+        removeFromHanding(tile1).removeFromHanding(tile2).removeFromHanding(tile3);
+        tiles.add(new Shun(tile1, tile2, tile3));
+        tileShun.add(tile1.getNormal());
         return this;
     }
 

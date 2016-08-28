@@ -20,9 +20,10 @@ public class TileGroup {
         if (group == EnumTileGroup.MAN) return man;
         if (group == EnumTileGroup.PIN) return pin;
         if (group == EnumTileGroup.SOU) return sou;
+        if (group == EnumTileGroup.HUA) return hua;
         if (group == EnumTileGroup.WIND) return wind;
         if (group == EnumTileGroup.DRAGON) return dragon;
-        return null;
+        return new ArrayList<EnumTile>();
     }
     public static ArrayList<EnumTile> toNormal(ArrayList<EnumTile> tiles) {
         tiles.remove(M5R);

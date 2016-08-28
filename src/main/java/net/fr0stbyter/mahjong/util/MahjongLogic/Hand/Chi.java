@@ -9,11 +9,11 @@ import java.util.Arrays;
 public class Chi implements HandTiles, Cloneable {
     private ArrayList<EnumTile> tiles;
     private EnumTile tileGot;
-    private Player fromPlayer;
+    private int orientation; // 1 right, 2 opposite, 3 left
 
-    public Chi(EnumTile tileIn1, EnumTile tileIn2, EnumTile tileIn3, Player fromPlayerIn, EnumTile tileGotIn) {
+    public Chi(EnumTile tileIn1, EnumTile tileIn2, EnumTile tileIn3, int orientationIn, EnumTile tileGotIn) {
         tiles = new ArrayList<EnumTile>(Arrays.asList(tileIn1, tileIn2, tileIn3));
-        fromPlayer = fromPlayerIn;
+        orientation = orientationIn;
         tileGot = tileGotIn;
     }
 
@@ -31,8 +31,8 @@ public class Chi implements HandTiles, Cloneable {
         return tileGot;
     }
 
-    public Player getFromPlayer() {
-        return fromPlayer;
+    public int getOrientation() {
+        return orientation;
     }
 
     @Override

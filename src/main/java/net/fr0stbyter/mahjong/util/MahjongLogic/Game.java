@@ -82,33 +82,39 @@ public class Game {
         return this;
     }
 
-    public ArrayList<Player> checkOptions(Player playerIn, EnumTile tileIn) {
+    public ArrayList<Player> checkOptions(Player playerIn, EnumTile tileIn, boolean isChyankanIn) {
         optionsSelected.clear();
         playersHasOptions.clear();
         for (Player player : players) {
             if (player == playerIn) continue;
-            if (!player.getOptions(playerIn, tileIn).isEmpty()) playersHasOptions.add(player);
+            if (!player.getOptions(playerIn, tileIn, isChyankanIn).isEmpty()) playersHasOptions.add(player);
         }
-        if (playersHasOptions.isEmpty()) nextDeal();
+        if (playersHasOptions.isEmpty() && !isChyankanIn) nextDeal();
         return playersHasOptions;
     }
 
-    public Game selectOptions(Player playerIn, HashMap<Player.Options, EnumTile> optionIn, boolean isChyankan) {
-        optionsSelected.put(playerIn, optionIn);
+    public Game selectOption(Player playerIn, HashMap<Player.Options, EnumTile> optionIn, boolean isChyankanIn) {
+        playerIn.clearOptions();
+        if (!optionIn.containsKey(Player.Options.CANCEL)) optionsSelected.put(playerIn, optionIn);
         playersHasOptions.remove(playerIn);
         for (Player player : players) {
-            player.setCanChyankan(isChyankan);
+            player.setCanChyankan(isChyankanIn);
         }
         if (playersHasOptions.isEmpty()) {
             boolean isRon = false;
+            boolean isRenchyan = false;
             for (Player player : optionsSelected.keySet()) {
                 if (optionsSelected.get(player).containsKey(Player.Options.RON)) {
                     player.ron(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.RON));
+                    if (player.getCurWind() == EnumPosition.EAST) isRenchyan = true;
                     isRon = true;
                 }
             }
-            if (isRon) return this;
-            if (isChyankan) {
+            if (isRon) {
+                nextPlay(isRenchyan);
+                return this;
+            }
+            if (isChyankanIn) {
                 nextDeal();
                 return this;
             }
@@ -132,6 +138,22 @@ public class Game {
             }
         }
         nextDeal();
+        return this;
+    }
+
+    private void nextPlay(boolean isRenchyanIn) {
+        if (isRenchyanIn) gameState.nextExtra();
+        else gameState.nextHand();
+        //TODO deal
+    }
+
+    public void agari(Player playerIn, WinningHand winninghandIn) {
+        //TODO select OK
+    }
+
+    public Game ryuukyoku(Player playerIn, Ryuukyoku ryuukyokuIn) {
+        //TODO nagashimankan
+        //TODO redeal
         return this;
     }
 
@@ -165,4 +187,6 @@ public class Game {
     public int[] getDices() {
         return dices;
     }
+
+    public enum Ryuukyoku {KOUHAIHEIKYOKU, KYUUSHYUKYUUHAI, SUUFONRENTA, SUUKANSANRA, SUUCHYARIICHI, SANCHYAHOU}
 }

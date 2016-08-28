@@ -14,7 +14,7 @@ public class Kita implements HandTiles, Cloneable {
 
     @Override
     public ArrayList<EnumTile> getTiles() {
-        return new ArrayList<EnumTile>(Collections.singletonList(tile));
+        return tile.toSingletonList();
     }
 
     @Override

@@ -66,7 +66,7 @@ public class Analyze {
                 WinningHand tempWinningHand;
                 tempWinningHand = analyzeYaku(gameType, gameState, player, doraIn, uraIn, handIn, extraTileIn, handAnalyzed);
                 if (winningHand == null) winningHand = tempWinningHand;
-                else if (tempWinningHand.getScore() > winningHand.getScore()) winningHand = tempWinningHand;
+                else if (tempWinningHand != null && tempWinningHand.getScore() > winningHand.getScore()) winningHand = tempWinningHand;
             }
         }
         return winningHand;
@@ -467,7 +467,7 @@ public class Analyze {
 
 
         EnumTileGroup group = handAnalyzed.getAll().get(0).getGroup();
-        if ((group != MAN) && (group != PIN) && (group != SOU)) return new AnalyzeResult(NOTEN, null, null, 0);
+        if (group != MAN && group != PIN && group != SOU) return new AnalyzeResult(NOTEN, null, null, 0);
         if (TileGroup.getGroupByEnum(group).containsAll(handAnalyzed.getAll())) return new AnalyzeResult(WIN, null, winningHand, fan);
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
@@ -1178,11 +1178,11 @@ public class Analyze {
         }
         if (single.size() == 0) {
             for (int i = 0; i < 14; i++) {
-                dropWait.put(hand.getHanding().get(i), new ArrayList<EnumTile>(Collections.singletonList(hand.getHanding().get(i).getNormal())));
+                dropWait.put(hand.getHanding().get(i), hand.getHanding().get(i).getNormal().toSingletonList());
             }
         }
-        dropWait.put(single.get(1), new ArrayList<EnumTile>(Collections.singletonList(single.get(0).getNormal())));
-        dropWait.put(single.get(0), new ArrayList<EnumTile>(Collections.singletonList(single.get(1).getNormal())));
+        dropWait.put(single.get(1), single.get(0).getNormal().toSingletonList());
+        dropWait.put(single.get(0), single.get(1).getNormal().toSingletonList());
         return dropWait;
     }
 
@@ -1209,8 +1209,8 @@ public class Analyze {
         hand.addToHandingFromGet();
 
         if (hand.getHandingCount() == 2) {
-            dropWait.put(hand.getHanding().get(0), new ArrayList<EnumTile>(Collections.singletonList(hand.getHanding().get(1).getNormal())));
-            dropWait.put(hand.getHanding().get(1), new ArrayList<EnumTile>(Collections.singletonList(hand.getHanding().get(0).getNormal())));
+            dropWait.put(hand.getHanding().get(0), hand.getHanding().get(1).getNormal().toSingletonList());
+            dropWait.put(hand.getHanding().get(1), hand.getHanding().get(0).getNormal().toSingletonList());
             return dropWait;
         }
         int manCount = hand.getHandingByGroup(MAN).size();
@@ -1243,7 +1243,7 @@ public class Analyze {
                 wait = tile;
                 if (baseAnalyzeWinGroup1(hand.get(wait).addToHandingFromGet()) != null) {
                     if (dropWait.containsKey(drop)) dropWait.get(drop).add(wait);
-                    else dropWait.put(drop, new ArrayList<EnumTile>(Collections.singletonList(wait)));
+                    else dropWait.put(drop, wait.toSingletonList());
                 }
                 hand.removeFromHanding(wait);
             }
