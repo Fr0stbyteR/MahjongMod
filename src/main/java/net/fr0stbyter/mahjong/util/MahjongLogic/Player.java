@@ -53,6 +53,11 @@ public class Player {
         return curWind;
     }
 
+    public Player nextWind() {
+        curWind = game.getGameType().getPlayerCount() == 4 ? curWind.getNext() : curWind.getNextNoNorth();
+        return this;
+    }
+
     public void setCurWind(EnumPosition curWindIn) {
         curWind = curWindIn;
     }
@@ -337,6 +342,10 @@ public class Player {
     public void plusGang(EnumTile tileIn) {
         hand.plusGang(tileIn);
         game.getMountain().extraDora();
+        if (game.getMountain().getCountDora() == 4 && hand.getCountAnGang() + hand.getCountGang() != 4) {
+            game.ryuukyoku(this, Game.Ryuukyoku.SUUKANSANRA);
+            return;
+        }
         game.checkOptions(this, tileIn, true);
         getTileFromRinshyan();
     }
@@ -344,6 +353,10 @@ public class Player {
     public void angang(EnumTile tileIn) {
         hand.anGang(tileIn);
         game.getMountain().extraDora();
+        if (game.getMountain().getCountDora() == 4 && hand.getCountAnGang() + hand.getCountGang() != 4) {
+            game.ryuukyoku(this, Game.Ryuukyoku.SUUKANSANRA);
+            return;
+        }
         getTileFromRinshyan();
     }
 
@@ -357,6 +370,10 @@ public class Player {
         EnumTile tileGot = game.getRiver().removeWaiting();
         game.getGameState().setCurPlayer(curWind).nextDeal();
         hand.gang(tileGot, getCurWind().getRelation(curPlayerIn), false);
+        if (game.getMountain().getCountDora() == 4 && hand.getCountAnGang() + hand.getCountGang() != 4) {
+            game.ryuukyoku(this, Game.Ryuukyoku.SUUKANSANRA);
+            return;
+        }
         getTileFromRinshyan();
     }
 

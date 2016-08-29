@@ -230,6 +230,10 @@ public class Mountain {
         return tiles;
     }
 
+    public int getCountDora() {
+        return countDora;
+    }
+
     public ArrayList<EnumTile> getDora() {
         ArrayList<EnumTile> tiles = new ArrayList<EnumTile>();
         int doraPointer = doorIndex;

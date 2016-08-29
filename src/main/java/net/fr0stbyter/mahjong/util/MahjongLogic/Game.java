@@ -1,7 +1,6 @@
 package net.fr0stbyter.mahjong.util.MahjongLogic;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
 public class Game {
@@ -10,7 +9,7 @@ public class Game {
     private ArrayList<Player> players;
     private River river;
     private Mountain mountain;
-    private int[] dices;
+    private Dices dices;
     private ArrayList<Player> playersHasOptions;
     private HashMap<Player, HashMap<Player.Options, EnumTile>> optionsSelected;
     public Game(ArrayList<String> playersIdIn, GameType gameTypeIn) {
@@ -19,42 +18,28 @@ public class Game {
         players = new ArrayList<Player>();
         river = new River();
         optionsSelected = new HashMap<Player, HashMap<Player.Options, EnumTile>>();
-        dices = new int[]{(int) (Math.floor(Math.random() * 6) + 1)
-                , (int) (Math.floor(Math.random() * 6) + 1)
-                , (int) (Math.floor(Math.random() * 6) + 1)
-                , (int) (Math.floor(Math.random() * 6) + 1)
-                , (int) (Math.floor(Math.random() * 6) + 1)
-                , (int) (Math.floor(Math.random() * 6) + 1)};
+        dices = new Dices(2);
+        playersHasOptions = new ArrayList<Player>();
         // sitting down
         // decide oya with dices
-        Collections.shuffle(playersIdIn);
-        int oyaIndex = 0;
-        for (int i = 0; i < (dices[0] + dices[1] - 1) % gameTypeIn.getPlayerCount(); i++) { // count from Oya
-            oyaIndex++;
-            if (oyaIndex == gameTypeIn.getPlayerCount()) oyaIndex = 0;
+        //Collections.shuffle(playersIdIn);
+        int oyaIndex = (dices.roll().getSum() - 1) % gameType.getPlayerCount(); // roll temp Oya
+        oyaIndex = (oyaIndex + dices.roll().getSum() - 1) % gameType.getPlayerCount(); // Oya roll
+        for (int i = 0; i < gameType.getPlayerCount(); i++) {
+            players.add(new Player(this, playersIdIn.get(i), EnumPosition.getPosition(i)));
         }
-        for (int i = 0; i < (dices[2] + dices[3] - 1) % gameTypeIn.getPlayerCount(); i++) {
-            oyaIndex++;
-            if (oyaIndex == gameTypeIn.getPlayerCount()) oyaIndex = 0;
+        while (players.get(oyaIndex).getCurWind() != EnumPosition.EAST) {
+            nextOya();
         }
-        players.add(new Player(this, playersIdIn.get(oyaIndex), EnumPosition.EAST));
-        playersIdIn.remove(oyaIndex);
-        players.add(new Player(this, playersIdIn.get(0), EnumPosition.SOUTH));
-        playersIdIn.remove(0);
-        players.add(new Player(this, playersIdIn.get(0), EnumPosition.WEST));
-        playersIdIn.remove(0);
-        if (gameTypeIn.getPlayerCount() == 4) {
-            players.add(new Player(this, playersIdIn.get(0), EnumPosition.NORTH));
-            playersIdIn.remove(0);
-        }
+        deal();
+    }
+
+
+    public Game deal() {
         // create mountain
         mountain = new Mountain(this);
-        int openPositionIndex = 0;
-        for (int i = 0; i < (dices[4] + dices[5] - 1) % gameTypeIn.getPlayerCount(); i++) { //open position
-            openPositionIndex++;
-            if (openPositionIndex == gameTypeIn.getPlayerCount()) openPositionIndex = 0;
-        }
-        mountain.open(EnumPosition.getPosition(openPositionIndex), dices[4] + dices[5] - 1);
+        int openPositionIndex = (dices.roll().getSum() - 1) % gameType.getPlayerCount();
+        mountain.open(EnumPosition.getPosition(openPositionIndex), dices.getSum() - 1);
         // first deal
         gameState.setPhase(GameState.Phase.DEAL);
         for (int i = 0; i < 3; i++) {
@@ -70,6 +55,7 @@ public class Game {
         }
         getPlayer(gameState.getCurPlayer()).getTileFromMountain();
         // wait discard
+        return this;
     }
 
     public Game nextDeal() {
@@ -78,6 +64,7 @@ public class Game {
         for (Player player : players) {
             player.setCanChyankan(false);
         }
+        gameState.setPhase(GameState.Phase.DEAL);
         getPlayer(gameState.getCurPlayer()).getTileFromMountain();
         return this;
     }
@@ -111,6 +98,7 @@ public class Game {
                 }
             }
             if (isRon) {
+                //TODO show bill
                 nextPlay(isRenchyan);
                 return this;
             }
@@ -143,8 +131,11 @@ public class Game {
 
     private void nextPlay(boolean isRenchyanIn) {
         if (isRenchyanIn) gameState.nextExtra();
-        else gameState.nextHand();
-        //TODO deal
+        else {
+            gameState.nextHand();
+            nextOya();
+        }
+        deal();
     }
 
     public void agari(Player playerIn, WinningHand winninghandIn) {
@@ -153,7 +144,14 @@ public class Game {
 
     public Game ryuukyoku(Player playerIn, Ryuukyoku ryuukyokuIn) {
         //TODO nagashimankan
-        //TODO redeal
+        deal();
+        return this;
+    }
+
+    public Game nextOya() {
+        for (Player player : players) {
+            player.nextWind();
+        }
         return this;
     }
 
@@ -184,7 +182,7 @@ public class Game {
         return mountain;
     }
 
-    public int[] getDices() {
+    public Dices getDices() {
         return dices;
     }
 
