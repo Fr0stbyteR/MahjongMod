@@ -169,6 +169,7 @@ public class Mountain {
 
     public EnumTile getNextThenRemove() {
         if (getNextProp() == MountainTile.Prop.HAITEI) game.getGameState().setHaitei(true);
+        if (getNextProp() == MountainTile.Prop.FIXED) return null;
         EnumTile tile = getNext().getTile();
         removeNext();
         return tile;

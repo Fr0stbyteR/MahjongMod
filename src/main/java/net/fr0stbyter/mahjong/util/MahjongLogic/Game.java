@@ -12,11 +12,13 @@ public class Game {
     private Dices dices;
     private ArrayList<Player> playersHasOptions;
     private HashMap<Player, HashMap<Player.Options, EnumTile>> optionsSelected;
+    private boolean isRenchyan;
+
     public Game(ArrayList<String> playersIdIn, GameType gameTypeIn) {
         gameType = gameTypeIn;
         gameState = new GameState(this);
         players = new ArrayList<Player>();
-        river = new River();
+        river = new River(this);
         optionsSelected = new HashMap<Player, HashMap<Player.Options, EnumTile>>();
         dices = new Dices(2);
         playersHasOptions = new ArrayList<Player>();
@@ -60,6 +62,7 @@ public class Game {
 
     public Game nextDeal() {
         river.cancelWaiting();
+        if (mountain.getNextProp() == MountainTile.Prop.FIXED) ryuukyoku(getPlayer(gameState.getCurPlayer()), Ryuukyoku.KOUHAIHEIKYOKU);
         gameState.nextPlayer();
         for (Player player : players) {
             player.setCanChyankan(false);
@@ -88,18 +91,27 @@ public class Game {
             player.setCanChyankan(isChyankanIn);
         }
         if (playersHasOptions.isEmpty()) {
-            boolean isRon = false;
-            boolean isRenchyan = false;
+            ArrayList<Player> playerAgari = new ArrayList<Player>();
+            EnumTile tileAgari = null;
+            isRenchyan = false;
             for (Player player : optionsSelected.keySet()) {
                 if (optionsSelected.get(player).containsKey(Player.Options.RON)) {
-                    player.ron(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.RON));
+                    playerAgari.add(player);
+                    tileAgari = optionsSelected.get(player).get(Player.Options.RON);
                     if (player.getCurWind() == EnumPosition.EAST) isRenchyan = true;
-                    isRon = true;
                 }
             }
-            if (isRon) {
-                //TODO show bill
-                nextPlay(isRenchyan);
+            if (playerAgari.size() == 3) {
+                ryuukyoku(null, Ryuukyoku.SANCHYAHOU);
+                return this;
+            }
+            if (!playerAgari.isEmpty()) {
+                for (Player player : optionsSelected.keySet()) {
+                    if (!optionsSelected.get(player).containsKey(Player.Options.RON)) {
+                        optionsSelected.remove(player);
+                    }
+                }
+                playerAgari.get(0).ron(gameState.getCurPlayer(), tileAgari);
                 return this;
             }
             if (isChyankanIn) {
@@ -108,18 +120,21 @@ public class Game {
             }
             for (Player player : optionsSelected.keySet()) {
                 if (optionsSelected.get(player).containsKey(Player.Options.GANG)) {
+                    breakIbbatsu();
                     player.gang(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.GANG));
                     return this;
                 }
             }
             for (Player player : optionsSelected.keySet()) {
                 if (optionsSelected.get(player).containsKey(Player.Options.PENG)) {
+                    breakIbbatsu();
                     player.peng(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.PENG));
                     return this;
                 }
             }
             for (Player player : optionsSelected.keySet()) {
                 if (optionsSelected.get(player).containsKey(Player.Options.CHI)) {
+                    breakIbbatsu();
                     player.chi(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.CHI));
                     return this;
                 }
@@ -129,22 +144,84 @@ public class Game {
         return this;
     }
 
-    private void nextPlay(boolean isRenchyanIn) {
-        if (isRenchyanIn) gameState.nextExtra();
+    public Game requestConfirm() {
+        playersHasOptions.clear();
+        for (Player player : players) {
+            player.requestConfirm();
+            playersHasOptions.add(player);
+        }
+        return this;
+    }
+
+    public Game confirm(Player playerIn) {
+        playerIn.clearOptions();
+        playersHasOptions.remove(playerIn);
+        if (gameState.getPhase() == GameState.Phase.GAME_OVER && playersHasOptions.isEmpty()) {
+            for (Player player : players) {
+                if (player.getScore() < 0) gameOver();
+            }
+        }
+        if (gameState.getPhase() == GameState.Phase.AGARI && playersHasOptions.isEmpty()) {
+            if (!optionsSelected.isEmpty()) {
+                for (Player player : optionsSelected.keySet()) {
+                    if (!optionsSelected.get(player).containsKey(Player.Options.RON)) {
+                        player.ron(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.RON));
+                        return this;
+                    }
+                }
+            } else {
+                nextPlay();
+            }
+        }
+        return this;
+    }
+
+    private Game gameOver() {
+        //TODO
+        return this;
+    }
+
+    public void nextPlay() {
+        if (isRenchyan) gameState.nextExtra();
         else {
             gameState.nextHand();
             nextOya();
         }
+        for (Player player : players) {
+            player.reset();
+        }
+        river = new River(this);
+        optionsSelected.clear();
+        playersHasOptions.clear();
         deal();
     }
 
-    public void agari(Player playerIn, WinningHand winninghandIn) {
-        //TODO select OK
+    public void agari(Player playerIn, Player fromPlayerIn, WinningHand winninghandIn) {
+        optionsSelected.remove(playerIn);
+        //TODO show bill
+        //TODO score
+        requestConfirm();
     }
 
     public Game ryuukyoku(Player playerIn, Ryuukyoku ryuukyokuIn) {
+        gameState.setPhase(GameState.Phase.DRAW);
+        if (ryuukyokuIn == Ryuukyoku.KOUHAIHEIKYOKU) {
+            for (Player player : players) {
+                for (RiverTile tile : river.getTilesFromPosition(player.getCurWind())) {
+                    if (!TileGroup.yaochyuu.contains(tile.getTile()) || !tile.isShown()) break;
+                }
+
+            }
+        }
         //TODO nagashimankan
-        deal();
+        nextPlay();
+        return this;
+    }
+
+    public Game breakIbbatsu() {
+        for (Player player : players) {
+            player.setCanIbbatsu(false);
+        }
         return this;
     }
 
@@ -184,6 +261,14 @@ public class Game {
 
     public Dices getDices() {
         return dices;
+    }
+
+    public int getCountRiichi() {
+        int count = 0;
+        for (Player player : players) {
+            if (player.isRiichi()) count++;
+        }
+        return count;
     }
 
     public enum Ryuukyoku {KOUHAIHEIKYOKU, KYUUSHYUKYUUHAI, SUUFONRENTA, SUUKANSANRA, SUUCHYARIICHI, SANCHYAHOU}

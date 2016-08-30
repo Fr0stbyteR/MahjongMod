@@ -15,7 +15,7 @@ public class GameState {
         game = gameIn;
         curRound = EnumPosition.EAST;
         curHand = 1;
-        curExtra = 1;
+        curExtra = 0;
         curDeal = 1;
         curPlayer = EnumPosition.EAST;
         isHaitei = false;
@@ -72,7 +72,7 @@ public class GameState {
     public GameState nextHand() {
         curHand++;
         isHaitei = false;
-        curExtra = 1;
+        curExtra = 0;
         curDeal = 1;
         if (curRound.getIndex() + 1 == game.getGameType().getLength() && curHand == game.getGameType().getPlayerCount()) allLast = true;
         if (curHand > game.getGameType().getPlayerCount()) nextRound();
@@ -122,5 +122,5 @@ public class GameState {
         phase = phaseIn;
     }
 
-    public enum Phase {SHUFFLE, DEAL, WAIT_DISCARD, WAIT_MELD, WIN, DRAW}
+    public enum Phase {SHUFFLE, DEAL, WAIT_DISCARD, WAIT_MELD, AGARI, DRAW, GAME_OVER}
 }

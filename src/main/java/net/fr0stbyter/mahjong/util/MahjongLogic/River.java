@@ -3,8 +3,19 @@ package net.fr0stbyter.mahjong.util.MahjongLogic;
 import java.util.ArrayList;
 
 public class River {
+    private Game game;
     private ArrayList<RiverTile> riverTiles = new ArrayList<RiverTile>();
+
+    public River(Game gameIn) {
+        game = gameIn;
+    }
+
     public boolean add(EnumTile tile, EnumPosition position, boolean isTsumoSetsuri, boolean isHorizontal) {
+        if (riverTiles.size() == 3
+                && tile.getGroup() == EnumTileGroup.WIND
+                && riverTiles.get(0).getTile() == tile
+                && riverTiles.get(1).getTile() == tile
+                && riverTiles.get(2).getTile() == tile) game.ryuukyoku(game.getPlayer(position), Game.Ryuukyoku.SUUFONRENTA);
         return riverTiles.add(new RiverTile(tile, position, isTsumoSetsuri, isHorizontal, true));
     }
     public int getCount() {
