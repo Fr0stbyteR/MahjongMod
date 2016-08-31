@@ -37,6 +37,7 @@ public class Player {
         canChyankan = false;
         isTenpai = false;
         furiTen = false;
+        winningHand = null;
         waiting = new ArrayList<EnumTile>();
         options = new HashMap<Options, ArrayList<EnumTile>>();
     }
@@ -52,6 +53,7 @@ public class Player {
         canChyankan = false;
         isTenpai = false;
         furiTen = false;
+        winningHand = null;
         waiting = new ArrayList<EnumTile>();
         options = new HashMap<Options, ArrayList<EnumTile>>();
         return this;

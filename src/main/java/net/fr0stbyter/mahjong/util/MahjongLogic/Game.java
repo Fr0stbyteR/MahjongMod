@@ -156,12 +156,9 @@ public class Game {
     public Game confirm(Player playerIn) {
         playerIn.clearOptions();
         playersHasOptions.remove(playerIn);
-        if (gameState.getPhase() == GameState.Phase.GAME_OVER && playersHasOptions.isEmpty()) {
-            for (Player player : players) {
-                if (player.getScore() < 0) gameOver();
-            }
-        }
-        if (gameState.getPhase() == GameState.Phase.AGARI && playersHasOptions.isEmpty()) {
+        if (!playersHasOptions.isEmpty()) return this;
+        if (gameState.getPhase() == GameState.Phase.GAME_OVER) gameOver();
+        if (gameState.getPhase() == GameState.Phase.AGARI) {
             if (!optionsSelected.isEmpty()) {
                 for (Player player : optionsSelected.keySet()) {
                     if (!optionsSelected.get(player).containsKey(Player.Options.RON)) {
@@ -170,9 +167,31 @@ public class Game {
                     }
                 }
             } else {
+                for (Player player : players) {
+                    if (player.getScore() < 0) {
+                        gameState.setPhase(GameState.Phase.GAME_OVER);
+                        showGameOver();
+                        return this;
+                    }
+                }
+                if (gameState.isAllLast()) {
+                    for (Player player : players) {
+                        if (player.getScore() > (gameType.getPlayerCount() == 4 ? 30000 : 40000)) {
+                            gameState.setPhase(GameState.Phase.GAME_OVER);
+                            showGameOver();
+                            return this;
+                        }
+                    }
+
+                }
                 nextPlay();
             }
         }
+        return this;
+    }
+
+    private Game showGameOver() {
+        //TODO show bill
         return this;
     }
 
@@ -196,25 +215,74 @@ public class Game {
         deal();
     }
 
-    public void agari(Player playerIn, Player fromPlayerIn, WinningHand winninghandIn) {
+    public void agari(Player playerIn, Player fromPlayerIn, WinningHand winningHandIn) {
         optionsSelected.remove(playerIn);
+        HashMap<Player, Integer> scoreChange = new HashMap<Player, Integer>();
+        int scoreGet = winningHandIn.getScore();
+        scoreGet += gameState.getCurExtra() * 300;
+        for (Player player : players) {
+            scoreChange.put(player, player == playerIn
+                    ? scoreGet + (playerIn.isRiichi() ? 1000 : 0)
+                    : player == fromPlayerIn
+                        ? scoreGet * -1
+                        : fromPlayerIn == null
+                            ? (int) (Math.ceil(((double) (scoreGet
+                                / (gameType.getPlayerCount() + (playerIn.isOya() ? 0 : 1))
+                                * (player.isOya() ? 2 : 1)
+                                - (gameType.getPlayerCount() == 3 ? 1000 : 0))) / 100) * 100) * -1
+                            : 0);
+        }
+        if (fromPlayerIn != null) {
+            scoreGet = 0;
+            for (Player player : players) {
+                if (player != playerIn) scoreGet += scoreChange.get(player) * -1;
+            }
+            scoreChange.put(playerIn, scoreGet);
+        }
+        for (Player player : players) {
+            player.setScore(player.getScore() + scoreChange.get(player));
+        }
         //TODO show bill
-        //TODO score
         requestConfirm();
     }
 
     public Game ryuukyoku(Player playerIn, Ryuukyoku ryuukyokuIn) {
         gameState.setPhase(GameState.Phase.DRAW);
         if (ryuukyokuIn == Ryuukyoku.KOUHAIHEIKYOKU) {
+            HashMap<Player, Integer> scoreChange = new HashMap<Player, Integer>();
+            for (Player player1 : players) {
+                scoreChange.put(player1, 0);
+            }
+            boolean isNagashimankan = true;
             for (Player player : players) {
+                isNagashimankan = true;
                 for (RiverTile tile : river.getTilesFromPosition(player.getCurWind())) {
-                    if (!TileGroup.yaochyuu.contains(tile.getTile()) || !tile.isShown()) break;
+                    if (!TileGroup.yaochyuu.contains(tile.getTile()) || !tile.isShown()) {
+                        isNagashimankan = false;
+                        break;
+                    }
                 }
-
+                if (isNagashimankan) {
+                    for (Player player1 : players) {
+                        scoreChange.put(player1, scoreChange.get(player1)
+                                + (player1 == player
+                                    ? (player1.isOya()
+                                        ? (gameType.getPlayerCount() == 3 ? 8000 : 12000)
+                                        : (gameType.getPlayerCount() == 3 ? 6000 : 8000))
+                                    : (player1.isOya()
+                                        ? -4000
+                                        : (player.isOya() ? -4000 : -2000))));
+                    }
+                }
+            }
+            if (isNagashimankan) {
+                //TODO nagashimankan
+                requestConfirm();
+                return this;
             }
         }
-        //TODO nagashimankan
-        nextPlay();
+        //TODO ryukyoku
+        requestConfirm();
         return this;
     }
 

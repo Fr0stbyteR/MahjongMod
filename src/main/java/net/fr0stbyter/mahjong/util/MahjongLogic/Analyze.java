@@ -23,19 +23,19 @@ public class Analyze {
         GameState gameState = game.getGameState();
         Player player = game.getPlayers().get(1);
         Hand hand = new Hand();
-        hand.addToHanding(EnumTile.M1)
-                .addToHanding(EnumTile.M9)
-                .addToHanding(EnumTile.S1)
-                .addToHanding(EnumTile.S9)
+        hand.addToHanding(EnumTile.S1)
+                .addToHanding(EnumTile.S2)
+                .addToHanding(EnumTile.S3)
+                .addToHanding(EnumTile.M1)
+                .addToHanding(EnumTile.M2)
+                .addToHanding(EnumTile.M3)
                 .addToHanding(EnumTile.P1)
-                .addToHanding(EnumTile.P9)
+                .addToHanding(EnumTile.P2)
+                .addToHanding(EnumTile.P3)
                 .addToHanding(EnumTile.F1)
-                .addToHanding(EnumTile.F2)
-                .addToHanding(EnumTile.F3)
-                .addToHanding(EnumTile.F4)
-                .addToHanding(EnumTile.D1)
-                .addToHanding(EnumTile.D2)
-                .addToHanding(EnumTile.D2);
+                .addToHanding(EnumTile.F1)
+                .addToHanding(EnumTile.F1)
+                .addToHanding(EnumTile.D3);
         //HashMap<EnumTile, ArrayList<EnumTile>> ten = baseAnalyzeTen(hand, EnumTile.S1);
         //hand.peng(EnumTile.F2, game.getPlayers().get(0));
         hand.addToHanding(EnumTile.F4).kita();
@@ -45,7 +45,7 @@ public class Analyze {
         EnumTile extraTile = null;
         System.out.print("\nhanding:" + hand.getAll());
         gameState.setCurPlayer(EnumPosition.SOUTH);
-        //gameState.setCurDeal(3);
+        gameState.setCurDeal(3);
         WinningHand winningHand = analyzeWin(gameType, gameState, player, doraIn, uraIn, hand, extraTile);
         System.out.print("\nRES:" + winningHand);
         for (AnalyzeResult analyzeResult : winningHand.getyakuList()) {

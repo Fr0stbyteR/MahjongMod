@@ -26,6 +26,15 @@ public class WinningHand {
     }
 
     public WinningHand add(AnalyzeResult analyzeResult) {
+        if (analyzeResult.getHandStatus() != HandStatus.WIN) return this;
+        if (analyzeResult.getWinningHand().isYakuman()) {
+            for (AnalyzeResult result : yakuList) {
+                if (result.getWinningHand() == EnumWinningHand.CHIITOITSU) {
+                    yakuList.remove(result);
+                    break;
+                }
+            }
+        }
         yakuList.add(analyzeResult);
         dirty = true;
         return this;
@@ -100,7 +109,7 @@ public class WinningHand {
         }
         score = baseScore * (isTsumo ? playerCount : 4);
         score = (int) (Math.ceil(((double) score) / 100) * 100);
-        if (getPlayer().isOya()) score = (int) (score * 1.5);
+        if (getPlayer().isOya()) score = (int) ((double) score * (playerCount == 4 ? (3.0 / 2.0) : (4.0 / 3.0)));
         dirty = false;
         return score;
     }
