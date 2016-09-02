@@ -33,4 +33,9 @@ public class Shun implements HandTiles, Cloneable {
         handTiles.setTiles((ArrayList<EnumTile>) tiles.clone());
         return handTiles;
     }
+
+    @Override
+    public int getOrientation() {
+        return 0;
+    }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Game {
+    private UI ui;
     private GameState gameState;
     private GameType gameType;
     private ArrayList<Player> players;
@@ -14,7 +15,9 @@ public class Game {
     private HashMap<Player, HashMap<Player.Options, EnumTile>> optionsSelected;
     private boolean isRenchyan;
 
-    public Game(ArrayList<String> playersIdIn, GameType gameTypeIn) {
+    public Game(ArrayList<String> playersIdIn, GameType gameTypeIn, UI uiIn) {
+        ui = uiIn;
+        ui.setGame(this);
         gameType = gameTypeIn;
         gameState = new GameState(this);
         players = new ArrayList<Player>();
@@ -29,6 +32,9 @@ public class Game {
         oyaIndex = (oyaIndex + dices.roll().getSum() - 1) % gameType.getPlayerCount(); // Oya roll
         for (int i = 0; i < gameType.getPlayerCount(); i++) {
             players.add(new Player(this, playersIdIn.get(i), EnumPosition.getPosition(i)));
+        }
+        for (Player player : players) {
+            player.setScore(gameType.getPlayerCount() == 4 ? 25000 : 35000);
         }
         while (players.get(oyaIndex).getCurWind() != EnumPosition.EAST) {
             nextOya();
@@ -56,6 +62,7 @@ public class Game {
             player.analyzeWaiting();
         }
         getPlayer(gameState.getCurPlayer()).getTileFromMountain();
+        ui.dealOver();
         // wait discard
         return this;
     }
@@ -69,6 +76,7 @@ public class Game {
         }
         gameState.setPhase(GameState.Phase.DEAL);
         getPlayer(gameState.getCurPlayer()).getTileFromMountain();
+        ui.nextDealOver();
         return this;
     }
 
@@ -174,7 +182,7 @@ public class Game {
                         return this;
                     }
                 }
-                if (gameState.isAllLast()) {
+                if (!isRenchyan && gameState.isAllLast()) {
                     for (Player player : players) {
                         if (player.getScore() > (gameType.getPlayerCount() == 4 ? 30000 : 40000)) {
                             gameState.setPhase(GameState.Phase.GAME_OVER);
@@ -219,7 +227,7 @@ public class Game {
         optionsSelected.remove(playerIn);
         HashMap<Player, Integer> scoreChange = new HashMap<Player, Integer>();
         int scoreGet = winningHandIn.getScore();
-        scoreGet += gameState.getCurExtra() * 300;
+        scoreGet += gameState.getCurExtra() * (gameType.getPlayerCount() == 4 ? 300 : 200);
         for (Player player : players) {
             scoreChange.put(player, player == playerIn
                     ? scoreGet + (playerIn.isRiichi() ? 1000 : 0)
@@ -276,12 +284,24 @@ public class Game {
                 }
             }
             if (isNagashimankan) {
-                //TODO nagashimankan
+                //TODO show bill nagashimankan
+                requestConfirm();
+                return this;
+            } else {
+                int countTen = 0;
+                for (Player player1 : players) {
+                    scoreChange.put(player1, player1.getWaiting().isEmpty() ? 0 : 1000);
+                    countTen++;
+                }
+                for (Player player1 : players) {
+                    if (player1.getWaiting().isEmpty()) scoreChange.put(player1, -1000 * countTen);
+                }
+                //TODO show bill
                 requestConfirm();
                 return this;
             }
         }
-        //TODO ryukyoku
+        //TODO show bill
         requestConfirm();
         return this;
     }
@@ -298,6 +318,10 @@ public class Game {
             player.nextWind();
         }
         return this;
+    }
+
+    public UI getUi() {
+        return ui;
     }
 
     public GameState getGameState() {

@@ -11,53 +11,6 @@ import static net.fr0stbyter.mahjong.util.MahjongLogic.EnumWinningHand.*;
 import static net.fr0stbyter.mahjong.util.MahjongLogic.WinningHand.HandStatus.*;
 
 public class Analyze {
-    public static void main(String[] args) {
-        ArrayList<String> playersID = new ArrayList<String>();
-        playersID.add("ID1");
-        playersID.add("ID2");
-        playersID.add("ID3");
-        GameType gameType = new GameType(GameType.GameRegion.JAPAN, 3, 1, 3);
-        Game game = new Game(playersID, gameType);
-        ArrayList<EnumTile> doraIn = game.getMountain().getDora();
-        ArrayList<EnumTile> uraIn = game.getMountain().getUra();
-        GameState gameState = game.getGameState();
-        Player player = game.getPlayers().get(1);
-        Hand hand = new Hand();
-        hand.addToHanding(EnumTile.S1)
-                .addToHanding(EnumTile.S2)
-                .addToHanding(EnumTile.S3)
-                .addToHanding(EnumTile.M1)
-                .addToHanding(EnumTile.M2)
-                .addToHanding(EnumTile.M3)
-                .addToHanding(EnumTile.P1)
-                .addToHanding(EnumTile.P2)
-                .addToHanding(EnumTile.P3)
-                .addToHanding(EnumTile.F1)
-                .addToHanding(EnumTile.F1)
-                .addToHanding(EnumTile.F1)
-                .addToHanding(EnumTile.D3);
-        //HashMap<EnumTile, ArrayList<EnumTile>> ten = baseAnalyzeTen(hand, EnumTile.S1);
-        //hand.peng(EnumTile.F2, game.getPlayers().get(0));
-        hand.addToHanding(EnumTile.F4).kita();
-        //player.setRiichi(true);
-        //EnumTile extraTile = EnumTile.D3;
-        hand.get(EnumTile.D3);
-        EnumTile extraTile = null;
-        System.out.print("\nhanding:" + hand.getAll());
-        gameState.setCurPlayer(EnumPosition.SOUTH);
-        gameState.setCurDeal(3);
-        WinningHand winningHand = analyzeWin(gameType, gameState, player, doraIn, uraIn, hand, extraTile);
-        System.out.print("\nRES:" + winningHand);
-        for (AnalyzeResult analyzeResult : winningHand.getyakuList()) {
-            if (analyzeResult.getHandStatus() == WIN) System.out.print("\nRES:" + analyzeResult.getWinningHand() + " " + analyzeResult.getFan());
-        }
-        System.out.print("\nFU:" + winningHand.getFu().getCount());
-        System.out.print("\nFAN:" + winningHand.getFan());
-        System.out.print("\nSCORE:" + winningHand.getScoreLevel() + " " + winningHand.getScore());
-        System.out.print("\nPLAYER1:" + player.getId() + " " + player.isOya() + " " + player.getCurWind());
-        System.out.print("\nDORA:" + doraIn);
-
-    }
     public static WinningHand analyzeWin(GameType gameType, GameState gameState, Player player, ArrayList<EnumTile> doraIn, ArrayList<EnumTile> uraIn, Hand handIn, EnumTile extraTileIn) {
         ArrayList<Hand> hands = baseAnalyzeWin(handIn, extraTileIn);
         WinningHand winningHand = null;

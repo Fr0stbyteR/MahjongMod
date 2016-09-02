@@ -25,6 +25,7 @@ public class Peng implements HandTiles, Cloneable {
         return tiles.get(0);
     }
 
+    @Override
     public int getOrientation() {
         return orientation;
     }

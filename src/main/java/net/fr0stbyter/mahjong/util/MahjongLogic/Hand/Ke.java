@@ -33,4 +33,9 @@ public class Ke implements HandTiles, Cloneable {
         return handTiles;
     }
 
+    @Override
+    public int getOrientation() {
+        return 0;
+    }
+
 }

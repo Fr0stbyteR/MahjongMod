@@ -27,4 +27,8 @@ public class Kita implements HandTiles, Cloneable {
         return super.clone();
     }
 
+    @Override
+    public int getOrientation() {
+        return 0;
+    }
 }

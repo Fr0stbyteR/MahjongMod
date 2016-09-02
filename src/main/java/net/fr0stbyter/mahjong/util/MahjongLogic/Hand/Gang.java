@@ -28,6 +28,7 @@ public class Gang implements HandTiles, Cloneable {
         return tiles.get(0);
     }
 
+    @Override
     public int getOrientation() {
         return orientation;
     }

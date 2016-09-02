@@ -448,4 +448,34 @@ public class Hand implements Cloneable {
         return hand;
     }
 
+    public String toString() { // without kita
+        String all = "";
+        for (HandTiles handTiles : tiles) {
+            if (handTiles instanceof Handing) all += tilesToString(handTiles.getTiles());
+            else if (handTiles instanceof Chi || handTiles instanceof Peng || handTiles instanceof Gang) {
+                String direction = handTiles.getOrientation() == 1 ? ">" : handTiles.getOrientation() == 2 ? "^" : "<";
+                all += " [" + direction + tilesToString(handTiles.getTiles()) + "]";
+            }
+            else if (handTiles instanceof Get) {
+                all += " +" + tilesToString(handTiles.getTiles());
+            }
+            else all += " [" + tilesToString(handTiles.getTiles()) + "]";
+        }
+        return all;
+    }
+
+    public static String tilesToString(ArrayList<EnumTile> tiles) {
+        String string = "";
+        String sLastGroup = "";
+        Collections.sort(tiles, EnumTile.tilesComparator);
+        for (EnumTile tile : tiles) {
+            if (!sLastGroup.equals(tile.name().substring(0, 1))) {
+                if (!string.isEmpty()) string += sLastGroup.toLowerCase() + " ";
+                sLastGroup = tile.name().substring(0, 1);
+            }
+            string += tile.name().substring(1);
+        }
+        string += sLastGroup.toLowerCase();
+        return string;
+    }
 }

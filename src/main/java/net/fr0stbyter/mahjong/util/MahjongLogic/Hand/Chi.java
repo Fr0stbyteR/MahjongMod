@@ -31,6 +31,7 @@ public class Chi implements HandTiles, Cloneable {
         return tileGot;
     }
 
+    @Override
     public int getOrientation() {
         return orientation;
     }

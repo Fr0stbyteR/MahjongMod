@@ -27,4 +27,9 @@ public class AnGang implements HandTiles, Cloneable {
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
+
+    @Override
+    public int getOrientation() {
+        return 0;
+    }
 }

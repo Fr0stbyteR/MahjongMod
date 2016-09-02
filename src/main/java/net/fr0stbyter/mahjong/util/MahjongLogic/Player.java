@@ -15,7 +15,6 @@ public class Player {
     private boolean canIbbatsu;
     private boolean canRinshyan;
     private boolean canChyankan;
-    private boolean isTenpai;
     private boolean furiTen;
     private Game game;
     private Hand hand;
@@ -35,7 +34,6 @@ public class Player {
         canIbbatsu = false;
         canRinshyan = false;
         canChyankan = false;
-        isTenpai = false;
         furiTen = false;
         winningHand = null;
         waiting = new ArrayList<EnumTile>();
@@ -51,7 +49,6 @@ public class Player {
         canIbbatsu = false;
         canRinshyan = false;
         canChyankan = false;
-        isTenpai = false;
         furiTen = false;
         winningHand = null;
         waiting = new ArrayList<EnumTile>();
@@ -122,14 +119,6 @@ public class Player {
 
     public boolean canChyankan() {
         return canChyankan;
-    }
-
-    public boolean isTenpai() {
-        return isTenpai;
-    }
-
-    public void setTenpai(boolean tenpai) {
-        isTenpai = tenpai;
     }
 
     public boolean getFuriTen() {
@@ -238,6 +227,7 @@ public class Player {
     }
 
     public Player discard(EnumTile tile) {
+        if (tile == null || (!hand.getHanding().contains(tile) && tile != hand.getGet())) return null;
         boolean hasHorizontal = false;
         if (isRiichi) {
             if (tile != hand.getGet()) return this;
@@ -249,7 +239,7 @@ public class Player {
         game.getGameState().setPhase(GameState.Phase.WAIT_MELD);
         game.getRiver().add(tile, curWind, tile == hand.getGet(), !hasHorizontal);
         if (tile == hand.getGet()) hand.removeGet();
-        else hand.removeFromHanding(tile);
+        else hand.removeFromHanding(tile).addToHandingFromGet();
         analyzeWaiting();
         resetFuriten();
         game.checkOptions(this, tile, false);

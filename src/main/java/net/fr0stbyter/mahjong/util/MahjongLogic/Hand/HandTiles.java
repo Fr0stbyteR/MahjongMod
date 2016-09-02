@@ -5,7 +5,8 @@ import net.fr0stbyter.mahjong.util.MahjongLogic.EnumTile;
 import java.util.ArrayList;
 
 public interface HandTiles {
-    public ArrayList<EnumTile> getTiles();
-    public EnumTile getTile();
-    public Object clone() throws CloneNotSupportedException;
+    ArrayList<EnumTile> getTiles();
+    EnumTile getTile();
+    Object clone() throws CloneNotSupportedException;
+    int getOrientation();
 }

@@ -107,9 +107,8 @@ public class WinningHand {
         } else {
             scoreLevel = null;
         }
-        score = baseScore * (isTsumo ? playerCount : 4);
+        score = baseScore * (isTsumo ? (getPlayer().isOya() ? (playerCount - 1) * 2 : playerCount) : 4);
         score = (int) (Math.ceil(((double) score) / 100) * 100);
-        if (getPlayer().isOya()) score = (int) ((double) score * (playerCount == 4 ? (3.0 / 2.0) : (4.0 / 3.0)));
         dirty = false;
         return score;
     }
