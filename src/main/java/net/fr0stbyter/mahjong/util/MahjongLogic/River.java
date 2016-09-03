@@ -21,17 +21,19 @@ public class River {
     public int getCount() {
         return riverTiles.size();
     }
+
     public RiverTile getLast() {
         if (riverTiles.isEmpty()) return null;
         return riverTiles.get(riverTiles.size() - 1);
     }
     public EnumTile removeWaiting() {
+        if (getLast() == null) return null;
         EnumTile tile = getLast().getTile();
         getLast().setShown(false);
         return tile;
     }
     public River cancelWaiting() {
-        getLast().setWaiting(false);
+        if (getLast() != null) getLast().setWaiting(false);
         return this;
     }
     public ArrayList<RiverTile> getTilesFromPosition(EnumPosition enumPosition) {

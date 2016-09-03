@@ -2,6 +2,7 @@ package net.fr0stbyter.mahjong.util.MahjongLogic;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 
 public class Mountain {
     private Game game;
@@ -9,6 +10,8 @@ public class Mountain {
     private int doorIndex; // first tile get by oya, next is getD doorIndex, next is getU doorIndex - 1
     private int nextIndex;
     private int countDora;
+    private int[] rinshyanIndex;
+    private int[] doraIndex;
     private ArrayList<MountainTile> mountainTilesU = new ArrayList<MountainTile>();
     private ArrayList<MountainTile> mountainTilesD = new ArrayList<MountainTile>();
 
@@ -36,12 +39,14 @@ public class Mountain {
         return tiles;
     }
 
-    Mountain(Game gameIn) {
+    Mountain(Game gameIn, long seedIn) {
         game = gameIn;
         countDora = 1;
+        rinshyanIndex = new int[2];
+        doraIndex = new int[4];
         playerCount = game.getGameType().getPlayerCount();
         ArrayList<EnumTile> tiles = game.getGameType().getTiles();
-        Collections.shuffle(tiles);
+        Collections.shuffle(tiles, new Random(seedIn));
         for (int i = 0; i < (playerCount == 3 ? 14 : 17); i++) { //counter-clockwise
             addU(tiles.get(0), EnumPosition.EAST);
             tiles.remove(0);
@@ -84,17 +89,20 @@ public class Mountain {
         int maxPointer = mountainTilesU.size() - 1;
         if (openPointer == maxPointer) openPointer = 0;
         else openPointer++;
+        rinshyanIndex[0] = openPointer;
         getTileU(openPointer).setProp(MountainTile.Prop.RINSHYAN);
         getTileD(openPointer).setProp(MountainTile.Prop.RINSHYAN);
 
         if (openPointer == maxPointer) openPointer = 0;
         else openPointer++;
+        rinshyanIndex[1] = openPointer;
         getTileU(openPointer).setProp(MountainTile.Prop.RINSHYAN);
         getTileD(openPointer).setProp(MountainTile.Prop.RINSHYAN);
         // set Dora Ura
         for (int i = 0; i < 4; i++) {
             if (openPointer == maxPointer) openPointer = 0;
             else openPointer++;
+            doraIndex[i] = openPointer;
             getTileU(openPointer).setProp(MountainTile.Prop.DORA);
             if (i == 0) getTileU(openPointer).setShown(true);
             getTileD(openPointer).setProp(MountainTile.Prop.URA);
@@ -215,19 +223,19 @@ public class Mountain {
     }
 
     public Mountain removeNextRinshyan() {
-        if (getTileU(doorIndex + 1) != null) removeTileU(doorIndex + 1);
-        else if (getTileD(doorIndex + 1) != null) removeTileD(doorIndex + 1);
-        else if (getTileU(doorIndex + 2) != null) removeTileU(doorIndex + 2);
-        else if (getTileD(doorIndex + 2) != null) removeTileD(doorIndex + 2);
+        if (getTileU(rinshyanIndex[0]) != null) removeTileU(rinshyanIndex[0]);
+        else if (getTileD(rinshyanIndex[0]) != null) removeTileD(rinshyanIndex[0]);
+        else if (getTileU(rinshyanIndex[1]) != null) removeTileU(rinshyanIndex[1]);
+        else if (getTileD(rinshyanIndex[1]) != null) removeTileD(rinshyanIndex[1]);
         return this;
     }
 
     public ArrayList<EnumTile> getRinshyan() {
         ArrayList<EnumTile> tiles = new ArrayList<EnumTile>();
-        tiles.add(getTileU(doorIndex + 1).getTile());
-        tiles.add(getTileD(doorIndex + 1).getTile());
-        tiles.add(getTileU(doorIndex + 2).getTile());
-        tiles.add(getTileD(doorIndex + 2).getTile());
+        tiles.add(getTileU(rinshyanIndex[0]).getTile());
+        tiles.add(getTileD(rinshyanIndex[0]).getTile());
+        tiles.add(getTileU(rinshyanIndex[1]).getTile());
+        tiles.add(getTileD(rinshyanIndex[1]).getTile());
         return tiles;
     }
 
@@ -237,33 +245,23 @@ public class Mountain {
 
     public ArrayList<EnumTile> getDora() {
         ArrayList<EnumTile> tiles = new ArrayList<EnumTile>();
-        int doraPointer = doorIndex;
-        int maxPointer = mountainTilesU.size() - 1;
         for (int i = 0; i < countDora; i++) {
-            if (doraPointer == maxPointer) doraPointer = 0;
-            else doraPointer++;
-            tiles.add(getTileU(doraPointer).getTile().getDora(playerCount));
+            tiles.add(getTileU(doraIndex[i]).getTile().getDora(playerCount));
         }
         return tiles;
     }
 
     public ArrayList<EnumTile> getUra() {
         ArrayList<EnumTile> tiles = new ArrayList<EnumTile>();
-        int doraPointer = doorIndex;
-        int maxPointer = mountainTilesU.size() - 1;
         for (int i = 0; i < countDora; i++) {
-            if (doraPointer == maxPointer) doraPointer = 0;
-            else doraPointer++;
-            tiles.add(getTileD(doraPointer).getTile().getDora(playerCount));
+            tiles.add(getTileD(doraIndex[i]).getTile().getDora(playerCount));
         }
         return tiles;
     }
+
     public Mountain extraDora() {
         countDora++;
-        int doraPointer = doorIndex + countDora;
-        int maxPointer = mountainTilesU.size() - 1;
-        if (doraPointer > maxPointer) doraPointer = doraPointer - maxPointer - 1;
-        getTileU(doraPointer).setShown(true);
+        getTileU(doraIndex[countDora - 1]).setShown(true);
         return this;
     }
 }

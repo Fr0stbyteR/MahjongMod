@@ -20,7 +20,7 @@ public class Player {
     private Hand hand;
     private WinningHand winningHand;
     private ArrayList<EnumTile> waiting;
-    private HashMap<Options, ArrayList<EnumTile>> options;
+    private HashMap<Option, ArrayList<EnumTile>> options;
 
     public Player(Game gameIn, String idIn, EnumPosition curWindIn) {
         game = gameIn;
@@ -37,12 +37,11 @@ public class Player {
         furiTen = false;
         winningHand = null;
         waiting = new ArrayList<EnumTile>();
-        options = new HashMap<Options, ArrayList<EnumTile>>();
+        options = new HashMap<Option, ArrayList<EnumTile>>();
     }
 
     public Player reset() {
         hand = new Hand();
-        score = 0;
         isMenzen = true;
         isRiichi = false;
         isDoubleRiichi = false;
@@ -52,7 +51,7 @@ public class Player {
         furiTen = false;
         winningHand = null;
         waiting = new ArrayList<EnumTile>();
-        options = new HashMap<Options, ArrayList<EnumTile>>();
+        options = new HashMap<Option, ArrayList<EnumTile>>();
         return this;
     }
 
@@ -192,27 +191,27 @@ public class Player {
             for (EnumTile yaochyuu : TileGroup.yaochyuu) {
                 if (hand.getAll().contains(yaochyuu)) countYaochyuu++;
             }
-            if (countYaochyuu >= 9) options.put(Options.KYUUSHYUKYUUHAI, null);
+            if (countYaochyuu >= 9) options.put(Option.KYUUSHYUKYUUHAI, null);
         }
         if (waiting.contains(tile)) {
             winningHand = Analyze.analyzeWin(game.getGameType(), game.getGameState(), this, game.getMountain().getDora(), game.getMountain().getUra(), hand, null);
             if (winningHand.isWon()) {
-                options.put(Options.TSUMO, null);
+                options.put(Option.TSUMO, null);
             }
         }
         if (!game.getGameState().isHaitei() && !hand.findAnGang().isEmpty()) {
-            options.put(Options.ANGANG, hand.findAnGang());
+            options.put(Option.ANGANG, hand.findAnGang());
         }
         if (!game.getGameState().isHaitei() && !hand.findPlusGang().isEmpty()) {
-            options.put(Options.PLUSGANG, hand.findPlusGang());
+            options.put(Option.PLUSGANG, hand.findPlusGang());
         }
         if (game.getGameType().getPlayerCount() == 3) {
-            if (hand.getHanding().contains(EnumTile.F4)) options.put(Options.KITA, null);
-            else if (hand.getGet() == EnumTile.F4) options.put(Options.KITA, null);
+            if (hand.getHanding().contains(EnumTile.F4)) options.put(Option.KITA, null);
+            else if (hand.getGet() == EnumTile.F4) options.put(Option.KITA, null);
         }
         HashMap<EnumTile, ArrayList<EnumTile>> dropWait = analyzeRiichi();
-        if (dropWait != null && !dropWait.isEmpty()) {
-            options.put(Options.RIICHI, new ArrayList<EnumTile>(dropWait.keySet()));
+        if (dropWait != null && !dropWait.isEmpty() && hand.isMenzen()) {
+            options.put(Option.RIICHI, new ArrayList<EnumTile>(dropWait.keySet()));
         }
         game.getGameState().setPhase(GameState.Phase.WAIT_DISCARD);
 /*        if (options.isEmpty() && isRiichi && !waiting.contains(tile)) {
@@ -236,23 +235,27 @@ public class Player {
                 if (riverTile.getHorizontal() && riverTile.isShown()) hasHorizontal = true;
             }
         }
+        canRinshyan = false;
         game.getGameState().setPhase(GameState.Phase.WAIT_MELD);
         game.getRiver().add(tile, curWind, tile == hand.getGet(), !hasHorizontal);
         if (tile == hand.getGet()) hand.removeGet();
         else hand.removeFromHanding(tile).addToHandingFromGet();
         analyzeWaiting();
         resetFuriten();
+        options.clear();
         game.checkOptions(this, tile, false);
         return this;
     }
 
     public Player discardforRiichi(EnumTile tile) {
+        canRinshyan = false;
         game.getGameState().setPhase(GameState.Phase.WAIT_MELD);
         game.getRiver().add(tile, curWind, tile == hand.getGet(), true);
         if (tile == hand.getGet()) hand.removeGet();
-        else hand.removeFromHanding(tile);
+        else hand.removeFromHanding(tile).addToHandingFromGet();
         analyzeWaiting();
         resetFuriten();
+        options.clear();
         game.checkOptions(this, tile, false);
         return this;
     }
@@ -283,7 +286,7 @@ public class Player {
         return this;
     }
 
-    public HashMap<Options, ArrayList<EnumTile>> getOptions() {
+    public HashMap<Option, ArrayList<EnumTile>> getOptions() {
         return options;
     }
 
@@ -291,38 +294,44 @@ public class Player {
         options.clear();
     }
 
-    public HashMap<Options, ArrayList<EnumTile>> getOptions(Player playerIn, EnumTile tileIn, boolean isChyankanIn) { // other players discard
+    public HashMap<Option, ArrayList<EnumTile>> getOptions(Player playerIn, EnumTile tileIn, boolean isChyankanIn) { // other players discard
         options.clear();
         if (playerIn == this) return options;
         if (!furiTen && waiting.contains(tileIn)) {
             winningHand = Analyze.analyzeWin(game.getGameType(), game.getGameState(), this, game.getMountain().getDora(), game.getMountain().getUra(), hand, tileIn);
             if (winningHand.isWon()) {
-                options.put(Options.RON, tileIn.toSingletonList());
+                canChyankan = isChyankanIn;
+                options.put(Option.RON, tileIn.toSingletonList());
             }
         }
         if (isChyankanIn) return options;
-        if (game.getGameType().getPlayerCount() == 4 && getCurWind() == playerIn.getCurWind().getNext() && !hand.findChi(tileIn).isEmpty()) {
-            options.put(Options.CHI, hand.findChi(tileIn));
+        if (!isRiichi && game.getGameType().getPlayerCount() == 4 && getCurWind() == playerIn.getCurWind().getNext() && !hand.findChi(tileIn).isEmpty()) {
+            options.put(Option.CHI, hand.findChi(tileIn));
         }
-        if (hand.findPeng(tileIn)) {
-            options.put(Options.PENG, tileIn.toSingletonList());
+        if (!isRiichi && hand.findPeng(tileIn)) {
+            options.put(Option.PENG, tileIn.toSingletonList());
         }
-        if (hand.findGang(tileIn)) {
-            options.put(Options.GANG, tileIn.toSingletonList());
+        if (!isRiichi && hand.findGang(tileIn)) {
+            options.put(Option.GANG, tileIn.toSingletonList());
         }
-        if (!options.isEmpty()) options.put(Options.CANCEL, null);
+        if (!options.isEmpty()) options.put(Option.CANCEL, null);
         return options;
     }
 
-    public Player selectOption(Options optionIn, EnumTile tileIn, boolean isChyankanIn) {
-        if (!options.containsKey(optionIn) || !options.get(optionIn).contains(tileIn)) return this;
+    public Player selectOption(Option optionIn, EnumTile tileIn, boolean isChyankanIn) {
+        if (!options.containsKey(optionIn) || (options.get(optionIn) != null && !options.get(optionIn).contains(tileIn))) return null;
+        options.clear();
+        if (optionIn == Option.NEXT) {
+            confirm();
+            return this;
+        }
         if (game.getGameState().getCurPlayer() != curWind) {
-            HashMap<Options, EnumTile> option = new HashMap<Options, EnumTile>();
+            HashMap<Option, EnumTile> option = new HashMap<Option, EnumTile>();
             option.put(optionIn, tileIn);
             game.selectOption(this, option, isChyankanIn);
             return this;
         }
-        if (optionIn == Options.KYUUSHYUKYUUHAI) {
+        if (optionIn == Option.KYUUSHYUKYUUHAI) {
             if (game.getGameState().getCurDeal() == 1) {
                 int countYaochyuu = 0;
                 for (EnumTile yaochyuu : TileGroup.yaochyuu) {
@@ -330,14 +339,29 @@ public class Player {
                 }
                 if (countYaochyuu >= 9) game.ryuukyoku(this, Game.Ryuukyoku.KYUUSHYUKYUUHAI);
             }
+            return this;
         }
-        if (optionIn == Options.TSUMO) tsumo(tileIn);
-        if (optionIn == Options.ANGANG) angang(tileIn);
-        if (optionIn == Options.PLUSGANG) plusGang(tileIn);
-        if (optionIn == Options.KITA) kita(tileIn);
-        if (optionIn == Options.RIICHI) riichi(tileIn);
-        options.clear();
-        return this;
+        if (optionIn == Option.TSUMO) {
+            tsumo(tileIn);
+            return this;
+        }
+        if (optionIn == Option.ANGANG) {
+            angang(tileIn);
+            return this;
+        }
+        if (optionIn == Option.PLUSGANG) {
+            plusGang(tileIn);
+            return this;
+        }
+        if (optionIn == Option.KITA) {
+            kita(tileIn);
+            return this;
+        }
+        if (optionIn == Option.RIICHI) {
+            riichi(tileIn);
+            return this;
+        }
+        return null;
     }
 
     public HashMap<EnumTile, ArrayList<EnumTile>> analyzeRiichi() {
@@ -345,19 +369,19 @@ public class Player {
     }
 
     public void kita(EnumTile tileIn) {
-        options.clear();
         if (game.getGameType().getPlayerCount() != 3 || (!hand.getHanding().contains(EnumTile.F4) && hand.getGet() != EnumTile.F4)) return;
         hand.kita();
         game.checkOptions(this, EnumTile.F4, true);
+        canRinshyan = true;
         getTileFromMountain();
     }
 
     public void riichi(EnumTile tileIn) {
-        options.clear();
         if (isRiichi) return;
         if (game.getCountRiichi() == 3) game.ryuukyoku(this, Game.Ryuukyoku.SUUCHYARIICHI);
         HashMap<EnumTile, ArrayList<EnumTile>> dropWait = analyzeRiichi();
         if (dropWait == null || dropWait.isEmpty()) return;
+        score -= 1000;
         isRiichi = true;
         if (game.getGameState().getCurDeal() == 1) isDoubleRiichi = true;
         canIbbatsu = true;
@@ -378,7 +402,6 @@ public class Player {
     }
 
     public void angang(EnumTile tileIn) {
-        options.clear();
         if (game.getGameState().isHaitei() || hand.findAnGang().isEmpty()) return;
         hand.anGang(tileIn);
         game.getMountain().extraDora();
@@ -386,11 +409,11 @@ public class Player {
             game.ryuukyoku(this, Game.Ryuukyoku.SUUKANSANRA);
             return;
         }
+        canRinshyan = true;
         getTileFromRinshyan();
     }
 
     public void tsumo(EnumTile tileIn) {
-        options.clear();
         if (!waiting.contains(tileIn)) return;
         else {
             winningHand = Analyze.analyzeWin(game.getGameType(), game.getGameState(), this, game.getMountain().getDora(), game.getMountain().getUra(), hand, null);
@@ -398,11 +421,9 @@ public class Player {
             if (!winningHand.isWon()) return;
         }
         game.agari(this, null, winningHand);
-        //TODO
     }
 
     public void ron(EnumPosition curPlayerIn, EnumTile tileIn) {
-        options.clear();
         if (furiTen || !waiting.contains(tileIn)) return;
         else {
             winningHand = Analyze.analyzeWin(game.getGameType(), game.getGameState(), this, game.getMountain().getDora(), game.getMountain().getUra(), hand, tileIn);
@@ -410,11 +431,9 @@ public class Player {
             if (!winningHand.isWon()) return;
         }
         game.agari(this, game.getPlayer(curPlayerIn), winningHand);
-        //TODO
     }
 
     public void gang(EnumPosition curPlayerIn, EnumTile tileIn) {
-        options.clear();
         if (!hand.findGang(tileIn)) return;
         EnumTile tileGot = game.getRiver().removeWaiting();
         game.getGameState().setCurPlayer(curWind).nextDeal();
@@ -427,26 +446,22 @@ public class Player {
     }
 
     public void peng(EnumPosition curPlayerIn, EnumTile tileIn) {
-        options.clear();
         if (!hand.findPeng(tileIn)) return;
         EnumTile tileGot = game.getRiver().removeWaiting();
         game.getGameState().setCurPlayer(curWind).nextDeal();
         hand.peng(tileGot, getCurWind().getRelation(curPlayerIn));
-        getTileFromMountain();
     }
 
     public void chi(EnumPosition curPlayerIn, EnumTile tileIn) {
-        options.clear();
         if (game.getGameType().getPlayerCount() != 4 || getCurWind() != curPlayerIn.getNext() || hand.findChi(tileIn).isEmpty()) return;
         EnumTile tileGot = game.getRiver().removeWaiting();
         game.getGameState().setCurPlayer(curWind).nextDeal();
         hand.chi(tileIn, getCurWind().getRelation(curPlayerIn), tileGot);
-        getTileFromMountain();
     }
 
     public Player requestConfirm() {
         options.clear();
-        options.put(Options.NEXT, null);
+        options.put(Option.NEXT, null);
         return this;
     }
 
@@ -455,5 +470,11 @@ public class Player {
         return this;
     }
 
-    public enum Options {KYUUSHYUKYUUHAI, RIICHI, KITA, ANGANG, GANG, PLUSGANG, PENG, CHI, RON, TSUMO, CANCEL, NEXT}
+    public enum Option {KYUUSHYUKYUUHAI, RIICHI, KITA, ANGANG, GANG, PLUSGANG, PENG, CHI, RON, TSUMO, CANCEL, NEXT}
+    public static Option getOption(String name) {
+        for (Option option : Option.values()) {
+            if (name.equalsIgnoreCase(option.name())) return option;
+        }
+        return null;
+    }
 }

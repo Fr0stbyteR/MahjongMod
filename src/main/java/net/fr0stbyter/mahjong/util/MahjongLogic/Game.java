@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Game {
+    private long seed;
     private UI ui;
     private GameState gameState;
     private GameType gameType;
@@ -12,7 +13,7 @@ public class Game {
     private Mountain mountain;
     private Dices dices;
     private ArrayList<Player> playersHasOptions;
-    private HashMap<Player, HashMap<Player.Options, EnumTile>> optionsSelected;
+    private HashMap<Player, HashMap<Player.Option, EnumTile>> optionsSelected;
     private boolean isRenchyan;
 
     public Game(ArrayList<String> playersIdIn, GameType gameTypeIn, UI uiIn) {
@@ -22,8 +23,9 @@ public class Game {
         gameState = new GameState(this);
         players = new ArrayList<Player>();
         river = new River(this);
-        optionsSelected = new HashMap<Player, HashMap<Player.Options, EnumTile>>();
-        dices = new Dices(2);
+        optionsSelected = new HashMap<Player, HashMap<Player.Option, EnumTile>>();
+        seed = 101;
+        dices = new Dices(2, seed);
         playersHasOptions = new ArrayList<Player>();
         // sitting down
         // decide oya with dices
@@ -45,7 +47,7 @@ public class Game {
 
     public Game deal() {
         // create mountain
-        mountain = new Mountain(this);
+        mountain = new Mountain(this, seed);
         int openPositionIndex = (dices.roll().getSum() - 1) % gameType.getPlayerCount();
         mountain.open(EnumPosition.getPosition(openPositionIndex), dices.getSum() - 1);
         // first deal
@@ -88,12 +90,12 @@ public class Game {
             if (!player.getOptions(playerIn, tileIn, isChyankanIn).isEmpty()) playersHasOptions.add(player);
         }
         if (playersHasOptions.isEmpty() && !isChyankanIn) nextDeal();
+        else ui.options();
         return playersHasOptions;
     }
 
-    public Game selectOption(Player playerIn, HashMap<Player.Options, EnumTile> optionIn, boolean isChyankanIn) {
-        playerIn.clearOptions();
-        if (!optionIn.containsKey(Player.Options.CANCEL)) optionsSelected.put(playerIn, optionIn);
+    public Game selectOption(Player playerIn, HashMap<Player.Option, EnumTile> optionIn, boolean isChyankanIn) {
+        if (!optionIn.containsKey(Player.Option.CANCEL)) optionsSelected.put(playerIn, optionIn);
         playersHasOptions.remove(playerIn);
         for (Player player : players) {
             player.setCanChyankan(isChyankanIn);
@@ -103,9 +105,9 @@ public class Game {
             EnumTile tileAgari = null;
             isRenchyan = false;
             for (Player player : optionsSelected.keySet()) {
-                if (optionsSelected.get(player).containsKey(Player.Options.RON)) {
+                if (optionsSelected.get(player).containsKey(Player.Option.RON)) {
                     playerAgari.add(player);
-                    tileAgari = optionsSelected.get(player).get(Player.Options.RON);
+                    tileAgari = optionsSelected.get(player).get(Player.Option.RON);
                     if (player.getCurWind() == EnumPosition.EAST) isRenchyan = true;
                 }
             }
@@ -115,7 +117,7 @@ public class Game {
             }
             if (!playerAgari.isEmpty()) {
                 for (Player player : optionsSelected.keySet()) {
-                    if (!optionsSelected.get(player).containsKey(Player.Options.RON)) {
+                    if (!optionsSelected.get(player).containsKey(Player.Option.RON)) {
                         optionsSelected.remove(player);
                     }
                 }
@@ -127,23 +129,26 @@ public class Game {
                 return this;
             }
             for (Player player : optionsSelected.keySet()) {
-                if (optionsSelected.get(player).containsKey(Player.Options.GANG)) {
+                if (optionsSelected.get(player).containsKey(Player.Option.GANG)) {
                     breakIbbatsu();
-                    player.gang(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.GANG));
+                    player.gang(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Option.GANG));
+                    ui.melded();
                     return this;
                 }
             }
             for (Player player : optionsSelected.keySet()) {
-                if (optionsSelected.get(player).containsKey(Player.Options.PENG)) {
+                if (optionsSelected.get(player).containsKey(Player.Option.PENG)) {
                     breakIbbatsu();
-                    player.peng(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.PENG));
+                    player.peng(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Option.PENG));
+                    ui.melded();
                     return this;
                 }
             }
             for (Player player : optionsSelected.keySet()) {
-                if (optionsSelected.get(player).containsKey(Player.Options.CHI)) {
+                if (optionsSelected.get(player).containsKey(Player.Option.CHI)) {
                     breakIbbatsu();
-                    player.chi(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.CHI));
+                    player.chi(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Option.CHI));
+                    ui.melded();
                     return this;
                 }
             }
@@ -158,6 +163,7 @@ public class Game {
             player.requestConfirm();
             playersHasOptions.add(player);
         }
+        ui.requestConfirm();
         return this;
     }
 
@@ -169,8 +175,8 @@ public class Game {
         if (gameState.getPhase() == GameState.Phase.AGARI) {
             if (!optionsSelected.isEmpty()) {
                 for (Player player : optionsSelected.keySet()) {
-                    if (!optionsSelected.get(player).containsKey(Player.Options.RON)) {
-                        player.ron(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Options.RON));
+                    if (!optionsSelected.get(player).containsKey(Player.Option.RON)) {
+                        player.ron(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Option.RON));
                         return this;
                     }
                 }
@@ -199,7 +205,7 @@ public class Game {
     }
 
     private Game showGameOver() {
-        //TODO show bill
+        ui.showReport();
         return this;
     }
 
@@ -224,6 +230,7 @@ public class Game {
     }
 
     public void agari(Player playerIn, Player fromPlayerIn, WinningHand winningHandIn) {
+        gameState.setPhase(GameState.Phase.AGARI);
         optionsSelected.remove(playerIn);
         HashMap<Player, Integer> scoreChange = new HashMap<Player, Integer>();
         int scoreGet = winningHandIn.getScore();
@@ -250,7 +257,7 @@ public class Game {
         for (Player player : players) {
             player.setScore(player.getScore() + scoreChange.get(player));
         }
-        //TODO show bill
+        ui.showReport(playerIn, scoreChange);
         requestConfirm();
     }
 
@@ -284,7 +291,7 @@ public class Game {
                 }
             }
             if (isNagashimankan) {
-                //TODO show bill nagashimankan
+                ui.showReport(Ryuukyoku.NAGASHIMANKAN, scoreChange);
                 requestConfirm();
                 return this;
             } else {
@@ -296,12 +303,12 @@ public class Game {
                 for (Player player1 : players) {
                     if (player1.getWaiting().isEmpty()) scoreChange.put(player1, -1000 * countTen);
                 }
-                //TODO show bill
+                ui.showReport(ryuukyokuIn, scoreChange);
                 requestConfirm();
                 return this;
             }
         }
-        //TODO show bill
+        ui.showReport(ryuukyokuIn, null);
         requestConfirm();
         return this;
     }
@@ -363,5 +370,5 @@ public class Game {
         return count;
     }
 
-    public enum Ryuukyoku {KOUHAIHEIKYOKU, KYUUSHYUKYUUHAI, SUUFONRENTA, SUUKANSANRA, SUUCHYARIICHI, SANCHYAHOU}
+    public enum Ryuukyoku {KOUHAIHEIKYOKU, KYUUSHYUKYUUHAI, SUUFONRENTA, SUUKANSANRA, SUUCHYARIICHI, SANCHYAHOU, NAGASHIMANKAN}
 }

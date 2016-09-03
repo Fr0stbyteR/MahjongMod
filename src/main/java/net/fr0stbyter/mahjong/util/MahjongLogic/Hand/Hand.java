@@ -138,7 +138,7 @@ public class Hand implements Cloneable {
         for (EnumTile tile1 : getHanding()) {
             if (tileIn.getNormal() == tile1.getNormal()) count++;
         }
-        return count == 2;
+        return count >= 2;
     }
 
     public Hand peng(EnumTile tileGot, int orientationIn) {

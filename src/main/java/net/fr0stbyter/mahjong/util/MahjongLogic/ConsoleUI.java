@@ -1,8 +1,6 @@
 package net.fr0stbyter.mahjong.util.MahjongLogic;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.util.*;
 
 public class ConsoleUI implements UI {
     private Game game;
@@ -79,10 +77,69 @@ public class ConsoleUI implements UI {
         dealOver();
     }
 
+    @Override
+    public void options() {
+        for (Player player : game.getPlayers()) {
+            if (!player.getOptions().isEmpty()) {
+                for (Player.Option option : player.getOptions().keySet()) {
+                    System.out.print(player.getId() + " option: " + option.name().toLowerCase() + (player.getOptions().get(option) != null ? player.getOptions().get(option) : "") + "\n");
+                }
+                scanOption(player);
+            }
+        }
+    }
+
+    @Override
+    public void melded() {
+        Player player = game.getPlayer(game.getGameState().getCurPlayer());
+        printTable(player);
+        discard(player);
+    }
+
+    @Override
+    public void requestConfirm() {
+        options();
+    }
+
+    @Override
+    public void showReport(Player playerIn, HashMap<Player, Integer> scoreChangeIn) {
+        WinningHand winningHand = playerIn.getWinningHand();
+        System.out.print("AGARI: ");
+        System.out.print(playerIn.getId() + " " + playerIn.getCurWind() + " " + playerIn.getHand().toString() + (winningHand.getIsTsumo() ? "\n" : " +" + game.getRiver().getLast().getTile().name().toLowerCase() + "\n"));
+        for (AnalyzeResult analyzeResult : winningHand.getyakuList()) {
+            if (analyzeResult.getHandStatus() == WinningHand.HandStatus.WIN) System.out.print(analyzeResult.getWinningHand() + " " + analyzeResult.getFan() + "fan\n");
+        }
+        System.out.print("DORA:" + game.getMountain().getDora() + "URA:" + game.getMountain().getUra() + "\n");
+        System.out.print(winningHand.getFu().getCount() + " fu, " + winningHand.getFan() + " fan\n");
+        System.out.print(winningHand.getScoreLevel() + " " + winningHand.getScore() + " \n");
+        for (Player player : game.getPlayers()) {
+            System.out.print(player.getId() + " " + player.getCurWind() + " " + (player.getScore() - scoreChangeIn.get(player)) + " " + scoreChangeIn.get(player) + "\n");
+        }
+    }
+
+    @Override
+    public void showReport(Game.Ryuukyoku ryuukyokuIn, HashMap<Player, Integer> scoreChangeIn) {
+        System.out.print("RYUKYOKU: " + ryuukyokuIn.name());
+        for (Player player : game.getPlayers()) {
+            System.out.print(player.getId() + " " + player.getCurWind() + " " + player.getScore() + scoreChangeIn.get(player) + " " + scoreChangeIn.get(player) + "\n");
+        }
+    }
+
+    @Override
+    public void showReport() {
+        for (Player player : game.getPlayers()) {
+            System.out.print(player.getId() + " " + player.getCurWind() + " " + player.getScore() + "\n");
+        }
+    }
+
     public void printTable() {
         for (Player player : game.getPlayers()) {
-            System.out.print(player.getId() + " " + player.getCurWind() + " " + player.getScore() + "\n" + player.getHand().toString() + "\n");
+            printTable(player);
         }
+    }
+
+    public void printTable(Player player) {
+        System.out.print(player.getId() + " " + player.getCurWind() + " " + player.getScore() + (player.isRiichi() ? "riichi\n" : "\n") + player.getHand().toString() + "\n");
     }
 
     public void printGameState() {
@@ -91,27 +148,50 @@ public class ConsoleUI implements UI {
 
     public void discard(Player playerIn) {
         EnumTile tileDiscard = null;
-        HashMap<Player.Options, ArrayList<EnumTile>> options = game.getPlayer(game.getGameState().getCurPlayer()).getOptions();
+        HashMap<Player.Option, ArrayList<EnumTile>> options = game.getPlayer(game.getGameState().getCurPlayer()).getOptions();
         if (!options.isEmpty()) {
-            for (Player.Options option : options.keySet()) {
+            for (Player.Option option : options.keySet()) {
                 System.out.print("Option: " + option.name().toLowerCase() + (options.get(option) != null ? options.get(option) : "") + "\n");
             }
         }
-        //todo option
-        while (!playerIn.getHand().getHanding().contains(tileDiscard) && tileDiscard != playerIn.getHand().getGet()) {
-            tileDiscard = scanTile();
+        while (tileDiscard == null || !(playerIn.getHand().getHanding().contains(tileDiscard) || (playerIn.getHand().hasGet() && tileDiscard == playerIn.getHand().getGet()))) {
+            tileDiscard = scan();
+            if (tileDiscard == null) return;
         }
         System.out.print(playerIn.getId() + " discards " + tileDiscard + "\n");
         playerIn.discard(tileDiscard);
     }
 
-    public EnumTile scanTile() {
-        String sTile = "";
-        while (EnumTile.getTile(sTile) == null) {
-            System.out.print(game.getGameState().getCurPlayer() + ": ");
-            sTile = scanner.nextLine();
-            System.out.print("input " + EnumTile.getTile(sTile) + "\n");
+    public EnumTile scan() {
+        String scan = "";
+        Player player = game.getPlayer(game.getGameState().getCurPlayer());
+        while (EnumTile.getTile(scan) == null) {
+            System.out.print(player.getId() + ": ");
+            scan = scanner.nextLine();
+            if (Player.getOption(scan.split("\\s")[0]) != null) {
+                Player.Option option = Player.getOption(scan.split("\\s")[0]);
+                EnumTile tile = null;
+                if (scan.split("\\s").length > 1) tile = EnumTile.getTile(scan.split("\\s")[1]);
+                player.selectOption(option, tile, player.canChyankan());
+                if (option == Player.Option.KITA || option == Player.Option.ANGANG || option == Player.Option.PLUSGANG) printTable(player);
+                else return null;
+            }
         }
-        return EnumTile.getTile(sTile);
+        return EnumTile.getTile(scan);
     }
+
+    private void scanOption(Player playerIn) {
+        String scan;
+        while (true) {
+            System.out.print(playerIn.getId() + ": ");
+            scan = scanner.nextLine();
+            if (Player.getOption(scan.split("\\s")[0]) != null) {
+                Player.Option option = Player.getOption(scan.split("\\s")[0]);
+                EnumTile tile = null;
+                if (scan.split("\\s").length > 1) tile = EnumTile.getTile(scan.split("\\s")[1]);
+                if (playerIn.selectOption(option, tile, playerIn.canChyankan()) != null) break;
+            }
+        }
+    }
+
 }
