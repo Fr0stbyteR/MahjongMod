@@ -46,5 +46,5 @@ public class MountainTile {
         prop = propIn;
     }
 
-    public enum Prop {RINSHYAN, DORA, URA, FIXED, HAITEI, NORMAL}
+    public enum Prop {RINSHYAN, DORA, URA, HAITEI, NORMAL}
 }

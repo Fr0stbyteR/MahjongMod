@@ -1,5 +1,7 @@
 package net.fr0stbyter.mahjong.util.MahjongLogic;
 
+import net.minecraft.util.EnumFacing;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -16,10 +18,54 @@ public class Game {
     private HashMap<Player, HashMap<Player.Option, EnumTile>> optionsSelected;
     private boolean isRenchyan;
 
+    public Game(GameType gameTypeIn, UI uiIn) {
+        ui = uiIn;
+        ui.setGame(this);
+        gameType = gameTypeIn;
+    }
+
+    public Game(HashMap<String, EnumFacing> playersIn, GameType gameTypeIn, UI uiIn) {
+        ui = uiIn;
+        ui.setGame(this);
+        gameType = gameTypeIn;
+        initGame(playersIn);
+    }
+
     public Game(ArrayList<String> playersIdIn, GameType gameTypeIn, UI uiIn) {
         ui = uiIn;
         ui.setGame(this);
         gameType = gameTypeIn;
+        initGame(playersIdIn);
+    }
+
+    public void initGame(HashMap<String, EnumFacing> playersIn) {
+        gameState = new GameState(this);
+        players = new ArrayList<Player>();
+        river = new River(this);
+        optionsSelected = new HashMap<Player, HashMap<Player.Option, EnumTile>>();
+        seed = 101;
+        dices = new Dices(2, seed);
+        playersHasOptions = new ArrayList<Player>();
+        // sitting down
+        // decide oya with dices
+        //Collections.shuffle(playersIdIn);
+        ui.setPositions(playersIn);
+        ArrayList<String> playersIdIn = new ArrayList<String>(playersIn.keySet());
+        int oyaIndex = (dices.roll().getSum() - 1) % gameType.getPlayerCount(); // roll temp Oya
+        oyaIndex = (oyaIndex + dices.roll().getSum() - 1) % gameType.getPlayerCount(); // Oya roll
+        for (int i = 0; i < gameType.getPlayerCount(); i++) {
+            players.add(new Player(this, playersIdIn.get(i), EnumPosition.getPosition(i)));
+        }
+        for (Player player : players) {
+            player.setScore(gameType.getPlayerCount() == 4 ? 25000 : 35000);
+        }
+        while (players.get(oyaIndex).getCurWind() != EnumPosition.EAST) {
+            nextOya();
+        }
+        deal();
+    }
+
+    public void initGame(ArrayList<String> playersIdIn) {
         gameState = new GameState(this);
         players = new ArrayList<Player>();
         river = new River(this);
@@ -71,7 +117,14 @@ public class Game {
 
     public Game nextDeal() {
         river.cancelWaiting();
-        if (mountain.getNextProp() == MountainTile.Prop.FIXED) ryuukyoku(getPlayer(gameState.getCurPlayer()), Ryuukyoku.KOUHAIHEIKYOKU);
+        if (mountain.getNextProp() == MountainTile.Prop.DORA) ryuukyoku(getPlayer(gameState.getCurPlayer()), Ryuukyoku.KOUHAIHEIKYOKU);
+        while (getMountain().getCountDora() < getCountGang() + 1) {
+            getMountain().extraDora();
+        }
+        if ((getCountGang() == 4 && !isOnePersonGang()) || getCountGang() > 4) {
+            ryuukyoku(getPlayer(getGameState().getCurPlayer()), Game.Ryuukyoku.SUUKANSANRA);
+            return this;
+        }
         gameState.nextPlayer();
         for (Player player : players) {
             player.setCanChyankan(false);
@@ -188,6 +241,11 @@ public class Game {
                         return this;
                     }
                 }
+                if (isRenchyan && gameState.isAllLast() && getTopPlayer() == getPlayer(gameState.getCurPlayer())) {
+                    gameState.setPhase(GameState.Phase.GAME_OVER);
+                    showGameOver();
+                    return this;
+                }
                 if (!isRenchyan && gameState.isAllLast()) {
                     for (Player player : players) {
                         if (player.getScore() > (gameType.getPlayerCount() == 4 ? 30000 : 40000)) {
@@ -196,7 +254,6 @@ public class Game {
                             return this;
                         }
                     }
-
                 }
                 nextPlay();
             }
@@ -210,7 +267,7 @@ public class Game {
     }
 
     private Game gameOver() {
-        //TODO
+        ui.gameOver();
         return this;
     }
 
@@ -235,9 +292,10 @@ public class Game {
         HashMap<Player, Integer> scoreChange = new HashMap<Player, Integer>();
         int scoreGet = winningHandIn.getScore();
         scoreGet += gameState.getCurExtra() * (gameType.getPlayerCount() == 4 ? 300 : 200);
+        // calc lost player score
         for (Player player : players) {
             scoreChange.put(player, player == playerIn
-                    ? scoreGet + (playerIn.isRiichi() ? 1000 : 0)
+                    ? scoreGet + gameState.getCountRiichi() * 1000
                     : player == fromPlayerIn
                         ? scoreGet * -1
                         : fromPlayerIn == null
@@ -247,6 +305,7 @@ public class Game {
                                 - (gameType.getPlayerCount() == 3 ? 1000 : 0))) / 100) * 100) * -1
                             : 0);
         }
+        // recalc winning player score
         if (fromPlayerIn != null) {
             scoreGet = 0;
             for (Player player : players) {
@@ -254,9 +313,12 @@ public class Game {
             }
             scoreChange.put(playerIn, scoreGet);
         }
+        // add to score
         for (Player player : players) {
             player.setScore(player.getScore() + scoreChange.get(player));
         }
+        // return riichibou
+        gameState.setCountRiichi(0);
         ui.showReport(playerIn, scoreChange);
         requestConfirm();
     }
@@ -320,11 +382,48 @@ public class Game {
         return this;
     }
 
+    public int getCountGang() {
+        int count = 0;
+        for (Player player : players) {
+            count += player.getHand().getCountAnGang() + player.getHand().getCountGang();
+        }
+        return count;
+    }
+
+    public boolean isOnePersonGang() {
+        int countPlayers = 0;
+        for (Player player : players) {
+            int count = player.getHand().getCountAnGang() + player.getHand().getCountGang();
+            if (count > 0) countPlayers++;
+        }
+        return countPlayers < 2;
+    }
+
     public Game nextOya() {
         for (Player player : players) {
             player.nextWind();
         }
         return this;
+    }
+
+    public Game checkRiichibou() {
+        for (Player player : players) {
+            if (player.isRiichi()) {
+                player.setScore(player.getScore() - 1000);
+                gameState.newRiichi();
+                ui.riichi(player);
+            }
+        }
+        return this;
+    }
+
+    public Player getTopPlayer() {
+        int topScore = 0;
+        Player top = null;
+        for (Player player : players) {
+            if (player.getScore() > topScore) top = player;
+        }
+        return top;
     }
 
     public UI getUi() {
@@ -348,6 +447,17 @@ public class Game {
             if (player.getCurWind() == enumPosition) return player;
         }
         return null;
+    }
+
+    public Player getPlayer(String idIn) {
+        for (Player player : players) {
+            if (player.getId().equals(idIn)) return player;
+        }
+        return null;
+    }
+
+    public Player getCurPlayer() {
+        return getPlayer(getGameState().getCurPlayer());
     }
 
     public River getRiver() {

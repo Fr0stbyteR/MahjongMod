@@ -1,5 +1,7 @@
 package net.fr0stbyter.mahjong.util.MahjongLogic;
 
+import net.minecraft.util.EnumFacing;
+
 import java.util.*;
 
 public class ConsoleUI implements UI {
@@ -9,6 +11,11 @@ public class ConsoleUI implements UI {
     @Override
     public Game getGame() {
         return game;
+    }
+
+    @Override
+    public void setPositions(HashMap<String, EnumFacing> playersIn) {
+
     }
 
     @Override
@@ -90,6 +97,16 @@ public class ConsoleUI implements UI {
     }
 
     @Override
+    public void choose(Player playerIn, Player.Option option, EnumTile enumTile) {
+
+    }
+
+    @Override
+    public void discard(Player playerIn, EnumTile enumTile) {
+
+    }
+
+    @Override
     public void melded() {
         Player player = game.getPlayer(game.getGameState().getCurPlayer());
         printTable(player);
@@ -132,6 +149,16 @@ public class ConsoleUI implements UI {
         }
     }
 
+    @Override
+    public void riichi(Player playerIn) {
+
+    }
+
+    @Override
+    public void gameOver() {
+
+    }
+
     public void printTable() {
         for (Player player : game.getPlayers()) {
             printTable(player);
@@ -168,8 +195,8 @@ public class ConsoleUI implements UI {
         while (EnumTile.getTile(scan) == null) {
             System.out.print(player.getId() + ": ");
             scan = scanner.nextLine();
-            if (Player.getOption(scan.split("\\s")[0]) != null) {
-                Player.Option option = Player.getOption(scan.split("\\s")[0]);
+            if (Player.Option.getOption(scan.split("\\s")[0]) != null) {
+                Player.Option option = Player.Option.getOption(scan.split("\\s")[0]);
                 EnumTile tile = null;
                 if (scan.split("\\s").length > 1) tile = EnumTile.getTile(scan.split("\\s")[1]);
                 player.selectOption(option, tile, player.canChyankan());
@@ -185,8 +212,8 @@ public class ConsoleUI implements UI {
         while (true) {
             System.out.print(playerIn.getId() + ": ");
             scan = scanner.nextLine();
-            if (Player.getOption(scan.split("\\s")[0]) != null) {
-                Player.Option option = Player.getOption(scan.split("\\s")[0]);
+            if (Player.Option.getOption(scan.split("\\s")[0]) != null) {
+                Player.Option option = Player.Option.getOption(scan.split("\\s")[0]);
                 EnumTile tile = null;
                 if (scan.split("\\s").length > 1) tile = EnumTile.getTile(scan.split("\\s")[1]);
                 if (playerIn.selectOption(option, tile, playerIn.canChyankan()) != null) break;

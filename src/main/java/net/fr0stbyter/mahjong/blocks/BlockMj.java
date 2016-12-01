@@ -1,6 +1,9 @@
 package net.fr0stbyter.mahjong.blocks;
 
+import net.fr0stbyter.mahjong.init.NetworkHandler;
+import net.fr0stbyter.mahjong.network.message.MessageMj;
 import net.fr0stbyter.mahjong.util.EnumFacing12;
+import net.fr0stbyter.mahjong.util.MahjongLogic.EnumTile;
 import net.fr0stbyter.mahjong.util.PropertyDirection12;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -10,6 +13,8 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -24,12 +29,14 @@ import static net.fr0stbyter.mahjong.init.MahjongRegister.tabMahjong;
 public class BlockMj extends Block {
     public static final PropertyDirection12 FACING = PropertyDirection12.create("facing");
     // Define bounds
-    protected static final AxisAlignedBB boundNSUD = new AxisAlignedBB(0.125D, 0.0D, 0.0D, 0.875D, 0.5D, 1.0D);
-    protected static final AxisAlignedBB boundWEUD = new AxisAlignedBB(0.0D, 0.0D, 0.125D, 1.0D, 0.5D, 0.875D);
-    protected static final AxisAlignedBB boundN = new AxisAlignedBB(0.125D, 0.0D, 0.5D, 0.875D, 1.0D, 1.0D);
-    protected static final AxisAlignedBB boundS = new AxisAlignedBB(0.125D, 0.0D, 0.0D, 0.875D, 1.0D, 0.5D);
-    protected static final AxisAlignedBB boundW = new AxisAlignedBB(0.5D, 0.0D, 0.125D, 1.0D, 1.0D, 0.875D);
-    protected static final AxisAlignedBB boundE = new AxisAlignedBB(0.0D, 0.0D, 0.125D, 0.5D, 1.0D, 0.875D);
+    private static final AxisAlignedBB boundNSUD = new AxisAlignedBB(0.125D, 0.0D, 0.0D, 0.875D, 0.5D, 1.0D);
+    private static final AxisAlignedBB boundWEUD = new AxisAlignedBB(0.0D, 0.0D, 0.125D, 1.0D, 0.5D, 0.875D);
+    private static final AxisAlignedBB boundN = new AxisAlignedBB(0.125D, 0.0D, 0.5D, 0.875D, 1.0D, 1.0D);
+    private static final AxisAlignedBB boundS = new AxisAlignedBB(0.125D, 0.0D, 0.0D, 0.875D, 1.0D, 0.5D);
+    private static final AxisAlignedBB boundW = new AxisAlignedBB(0.5D, 0.0D, 0.125D, 1.0D, 1.0D, 0.875D);
+    private static final AxisAlignedBB boundE = new AxisAlignedBB(0.0D, 0.0D, 0.125D, 0.5D, 1.0D, 0.875D);
+
+    private EnumTile enumTileMj;
 
     public BlockMj(Material material) {
         super(material);
@@ -37,6 +44,16 @@ public class BlockMj extends Block {
         this.setStepSound(SoundType.STONE);
         this.setCreativeTab(tabMahjong);
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing12.NORTH));
+        enumTileMj = null;
+    }
+
+    public BlockMj(Material material, String enumTileNameIn) {
+        super(material);
+        this.setHardness(0.05f);
+        this.setStepSound(SoundType.STONE);
+        this.setCreativeTab(tabMahjong);
+        this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing12.NORTH));
+        enumTileMj = EnumTile.getTile(enumTileNameIn);
     }
 
     @Override
@@ -172,8 +189,9 @@ public class BlockMj extends Block {
 
     // Flip
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ){
-        if (heldItem == null) {
+    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ) {
+        if (worldIn.isRemote) return true;
+        if (playerIn.getHeldItemMainhand() == null) {
             EnumFacing12 blockFacing = worldIn.getBlockState(pos).getValue(FACING);
             if (blockFacing == EnumFacing12.NORTHD) worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing12.NORTH));
             else if (blockFacing == EnumFacing12.SOUTHD) worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing12.SOUTH));
@@ -189,6 +207,15 @@ public class BlockMj extends Block {
             else if (blockFacing == EnumFacing12.EASTU) worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing12.EASTD));
             return true;
         }
+        if (Item.getIdFromItem(playerIn.getHeldItemMainhand().getItem()) == Item.getIdFromItem(Items.stick)) {
+            NetworkHandler.INSTANCE.sendToServer(new MessageMj(-1, getEnumTile().getIndex()));
+            return true;
+        }
         return false;
     }
+
+    public EnumTile getEnumTile() {
+        return enumTileMj;
+    }
+
 }

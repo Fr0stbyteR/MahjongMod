@@ -10,6 +10,7 @@ public class GameState {
     private boolean isHaitei;
     private boolean allLast;
     private Phase phase;
+    private int countRiichi;
 
     public GameState(Game gameIn) {
         game = gameIn;
@@ -20,8 +21,8 @@ public class GameState {
         curPlayer = EnumPosition.EAST;
         isHaitei = false;
         allLast = false;
-
         phase = Phase.SHUFFLE;
+        countRiichi = 0;
     }
 
     public EnumPosition getCurRound() {
@@ -120,6 +121,18 @@ public class GameState {
 
     public void setPhase(Phase phaseIn) {
         phase = phaseIn;
+    }
+
+    public int getCountRiichi() {
+        return countRiichi;
+    }
+
+    public void setCountRiichi(int countRiichiIn) {
+        countRiichi = countRiichiIn;
+    }
+
+    public void newRiichi() {
+        countRiichi++;
     }
 
     public enum Phase {SHUFFLE, DEAL, WAIT_DISCARD, WAIT_MELD, AGARI, DRAW, GAME_OVER}

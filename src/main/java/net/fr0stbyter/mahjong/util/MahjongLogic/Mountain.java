@@ -43,7 +43,7 @@ public class Mountain {
         game = gameIn;
         countDora = 1;
         rinshyanIndex = new int[2];
-        doraIndex = new int[4];
+        doraIndex = new int[5];
         playerCount = game.getGameType().getPlayerCount();
         ArrayList<EnumTile> tiles = game.getGameType().getTiles();
         Collections.shuffle(tiles, new Random(seedIn));
@@ -99,7 +99,7 @@ public class Mountain {
         getTileU(openPointer).setProp(MountainTile.Prop.RINSHYAN);
         getTileD(openPointer).setProp(MountainTile.Prop.RINSHYAN);
         // set Dora Ura
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             if (openPointer == maxPointer) openPointer = 0;
             else openPointer++;
             doraIndex[i] = openPointer;
@@ -107,11 +107,6 @@ public class Mountain {
             if (i == 0) getTileU(openPointer).setShown(true);
             getTileD(openPointer).setProp(MountainTile.Prop.URA);
         }
-        // set Fixed
-        if (openPointer == maxPointer) openPointer = 0;
-        else openPointer++;
-        getTileD(openPointer).setProp(MountainTile.Prop.FIXED);
-        getTileU(openPointer).setProp(MountainTile.Prop.FIXED);
         // set Haitei
         if (openPointer == maxPointer) openPointer = 0;
         else openPointer++;
@@ -177,7 +172,7 @@ public class Mountain {
 
     public EnumTile getNextThenRemove() {
         if (getNextProp() == MountainTile.Prop.HAITEI) game.getGameState().setHaitei(true);
-        if (getNextProp() == MountainTile.Prop.FIXED) return null;
+        if (getNextProp() == MountainTile.Prop.DORA) return null;
         EnumTile tile = getNext().getTile();
         removeNext();
         return tile;
@@ -263,5 +258,9 @@ public class Mountain {
         countDora++;
         getTileU(doraIndex[countDora - 1]).setShown(true);
         return this;
+    }
+
+    public boolean isDora(EnumTile enumtile) {
+        return getDora().contains(enumtile);
     }
 }

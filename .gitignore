@@ -37,3 +37,5 @@ CREDITS-fml.txt
 gradle/
 *.bat
 *.txt
+/src/main/resources/assets/cfm/
+/src/main/java/com/mrcrayfish/

@@ -73,6 +73,13 @@ public enum EnumTile {
         return null;
     }
 
+    public static EnumTile getTile(int indexIn) {
+        for (EnumTile tile : values()) {
+            if (indexIn == tile.index) return tile;
+        }
+        return null;
+    }
+
     public static EnumTile getTile(EnumTileGroup group, int number, boolean isRed) {
         for (EnumTile tile : values()) {
             if ((group == tile.group) && (number == tile.number) && (isRed == tile.isRed)) return tile;
