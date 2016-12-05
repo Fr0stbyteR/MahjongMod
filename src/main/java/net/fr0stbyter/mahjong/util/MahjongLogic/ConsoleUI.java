@@ -19,6 +19,11 @@ public class ConsoleUI implements UI {
     }
 
     @Override
+    public void newDora() {
+
+    }
+
+    @Override
     public void setGame(Game gameIn) {
         game = gameIn;
         scanner = new Scanner(System.in);
@@ -107,7 +112,7 @@ public class ConsoleUI implements UI {
     }
 
     @Override
-    public void melded() {
+    public void choosed(Player playerIn, Player.Option optionIn) {
         Player player = game.getPlayer(game.getGameState().getCurPlayer());
         printTable(player);
         discard(player);

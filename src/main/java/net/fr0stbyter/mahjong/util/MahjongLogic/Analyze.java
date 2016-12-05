@@ -1224,13 +1224,14 @@ public class Analyze {
 
         boolean chiitoitsuFlag = true; //chiitoitsu
         if (handIn.isMenzen()) {
-            for (int i = 0; i < 13; i++) {
+            for (int i = 0; i < 11; i++) {
                 if (handIn.getHanding().get(i).getNormal() == handIn.getHanding().get(i + 1).getNormal()) i++;
                 else if (waits.isEmpty()) waits.add(handIn.getHanding().get(i));
                 else {
                     chiitoitsuFlag = false;
                     break;
                 }
+                if (i == 11 && waits.isEmpty()) waits.add(handIn.getHanding().get(12));
             }
             if (chiitoitsuFlag) return waits;
         }

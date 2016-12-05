@@ -49,4 +49,16 @@ public class RiverTile {
     public void setShown(boolean shown) {
         isShown = shown;
     }
+
+    @Override
+    public String toString() {
+        return "RiverTile{" +
+                "tile=" + tile +
+                ", position=" + position +
+                ", isTsumoSetsuri=" + isTsumoSetsuri +
+                ", isHorizontal=" + isHorizontal +
+                ", isWaiting=" + isWaiting +
+                ", isShown=" + isShown +
+                '}';
+    }
 }

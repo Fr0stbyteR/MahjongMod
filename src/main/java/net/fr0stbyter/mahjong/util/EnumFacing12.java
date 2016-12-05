@@ -166,6 +166,78 @@ public enum EnumFacing12 implements IStringSerializable
         return this.directionVec;
     }
 
+    /**
+     * Rotate this Facing around the Y axis clockwise (NORTH => EAST => SOUTH => WEST => NORTH)
+     */
+    public EnumFacing12 rotateY()
+    {
+        switch (this)
+        {
+            case NORTHD:
+                return EASTD;
+            case EASTD:
+                return SOUTHD;
+            case SOUTHD:
+                return WESTD;
+            case WESTD:
+                return NORTHD;
+            case NORTH:
+                return EAST;
+            case EAST:
+                return SOUTH;
+            case SOUTH:
+                return WEST;
+            case WEST:
+                return NORTH;
+            case NORTHU:
+                return EASTU;
+            case EASTU:
+                return SOUTHU;
+            case SOUTHU:
+                return WESTU;
+            case WESTU:
+                return NORTHU;
+            default:
+                throw new IllegalStateException("Unable to get Y-rotated facing of " + this);
+        }
+    }
+
+    /**
+     * Rotate this Facing around the Y axis counter-clockwise (NORTH => WEST => SOUTH => EAST => NORTH)
+     */
+    public EnumFacing12 rotateYCCW()
+    {
+        switch (this)
+        {
+            case NORTHD:
+                return WESTD;
+            case EASTD:
+                return NORTHD;
+            case SOUTHD:
+                return EASTD;
+            case WESTD:
+                return SOUTHD;
+            case NORTH:
+                return WEST;
+            case EAST:
+                return NORTH;
+            case SOUTH:
+                return EAST;
+            case WEST:
+                return SOUTH;
+            case NORTHU:
+                return WESTU;
+            case EASTU:
+                return NORTHU;
+            case SOUTHU:
+                return EASTU;
+            case WESTU:
+                return SOUTHU;
+            default:
+                throw new IllegalStateException("Unable to get CCW facing of " + this);
+        }
+    }
+
     static
     {
         for (EnumFacing12 EnumFacing12 : values())

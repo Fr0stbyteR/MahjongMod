@@ -40,6 +40,7 @@ public class MahjongRegister {
     public static Item itemMjFacem1, itemMjFacem9, itemMjFacep1, itemMjFacep9, itemMjFaces1, itemMjFaces9;
     public static Block blockMjTable;
     public static Item itemMjTable;
+    public static Item itemMjOpOk, itemMjOpNo, itemMjOpKita, itemMjOpChi, itemMjOpPeng, itemMjOpGang, itemMjOpRyuu, itemMjOpRii, itemMjOpHe;
     public static void define() {
         tabMahjong = new CreativeTabs("mahjong") {
             @Override
@@ -150,6 +151,15 @@ public class MahjongRegister {
         itemMjFaces9 = new ItemMjFace().setRegistryName("mjFaces9").setUnlocalizedName("mjFaces9");
         blockMjTable = new BlockMjTable(Material.clay).setRegistryName("mjTable").setUnlocalizedName("mahjong_table");
         itemMjTable = new ItemBlock(blockMjTable).setRegistryName("mjTable").setUnlocalizedName("mahjong_table");
+        itemMjOpOk = new ItemMjOption("ok").setRegistryName("mjOpOk").setUnlocalizedName("mjOpOk");
+        itemMjOpNo = new ItemMjOption("no").setRegistryName("mjOpNo").setUnlocalizedName("mjOpNo");
+        itemMjOpKita = new ItemMjOption("kita").setRegistryName("mjOpKita").setUnlocalizedName("mjOpKita");
+        itemMjOpChi = new ItemMjOption("chi").setRegistryName("mjOpChi").setUnlocalizedName("mjOpChi");
+        itemMjOpPeng = new ItemMjOption("peng").setRegistryName("mjOpPeng").setUnlocalizedName("mjOpPeng");
+        itemMjOpGang = new ItemMjOption("gang").setRegistryName("mjOpGang").setUnlocalizedName("mjOpGang");
+        itemMjOpRyuu = new ItemMjOption("ryuu").setRegistryName("mjOpRyuu").setUnlocalizedName("mjOpRyuu");
+        itemMjOpRii = new ItemMjOption("rii").setRegistryName("mjOpRii").setUnlocalizedName("mjOpRii");
+        itemMjOpHe = new ItemMjOption("he").setRegistryName("mjOpHe").setUnlocalizedName("mjOpHe");
     }
     public static void register() {
         GameRegistry.register(blockMjm1);
@@ -255,6 +265,15 @@ public class MahjongRegister {
         GameRegistry.register(blockMjTable);
         GameRegistry.register(itemMjTable);
         GameRegistry.registerTileEntity(TileEntityMjTable.class, "mjTable");
+        GameRegistry.register(itemMjOpOk);
+        GameRegistry.register(itemMjOpNo);
+        GameRegistry.register(itemMjOpKita);
+        GameRegistry.register(itemMjOpChi);
+        GameRegistry.register(itemMjOpPeng);
+        GameRegistry.register(itemMjOpGang);
+        GameRegistry.register(itemMjOpRyuu);
+        GameRegistry.register(itemMjOpRii);
+        GameRegistry.register(itemMjOpHe);
 
     }
     public static void registerRecipe() {

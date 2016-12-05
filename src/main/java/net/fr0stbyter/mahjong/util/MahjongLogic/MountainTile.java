@@ -46,5 +46,22 @@ public class MountainTile {
         prop = propIn;
     }
 
+    public void setNull() {
+        tile = null;
+    }
+
+    public boolean isNull() {
+        return tile == null;
+    }
+
     public enum Prop {RINSHYAN, DORA, URA, HAITEI, NORMAL}
+
+    @Override
+    public String toString() {
+        return "{" + tile +
+                ", position=" + position +
+                ", isShown=" + isShown +
+                ", prop=" + prop +
+                '}';
+    }
 }

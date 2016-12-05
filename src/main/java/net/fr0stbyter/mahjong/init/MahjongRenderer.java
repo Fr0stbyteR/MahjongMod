@@ -120,5 +120,14 @@ public class MahjongRenderer {
         registerRender(itemMjFaces9);
         registerRender(blockMjTable);
         registerRender(itemMjTable);
+        registerRender(itemMjOpOk);
+        registerRender(itemMjOpNo);
+        registerRender(itemMjOpKita);
+        registerRender(itemMjOpChi);
+        registerRender(itemMjOpPeng);
+        registerRender(itemMjOpGang);
+        registerRender(itemMjOpRyuu);
+        registerRender(itemMjOpRii);
+        registerRender(itemMjOpHe);
     }
 }

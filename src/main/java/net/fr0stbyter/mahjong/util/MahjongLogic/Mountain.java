@@ -147,8 +147,8 @@ public class Mountain {
     }
 
     public MountainTile getTile(int tileIndexIn) {
-        if (mountainTilesU.get(tileIndexIn) != null) return mountainTilesU.get(tileIndexIn);
-        if (mountainTilesD.get(tileIndexIn) != null) return mountainTilesD.get(tileIndexIn);
+        if (!mountainTilesU.get(tileIndexIn).isNull()) return mountainTilesU.get(tileIndexIn);
+        if (!mountainTilesD.get(tileIndexIn).isNull()) return mountainTilesD.get(tileIndexIn);
         return null;
     }
 
@@ -161,9 +161,9 @@ public class Mountain {
     }
 
     public Mountain removeNext() {
-        if (mountainTilesU.get(nextIndex) != null) mountainTilesU.set(nextIndex, null);
-        else if (mountainTilesD.get(nextIndex) != null) {
-            mountainTilesD.set(nextIndex, null);
+        if (!mountainTilesU.get(nextIndex).isNull()) mountainTilesU.get(nextIndex).setNull();
+        else if (!mountainTilesD.get(nextIndex).isNull()) {
+            mountainTilesD.get(nextIndex).setNull();
             if (nextIndex == 0) nextIndex = mountainTilesU.size() - 1;
             else nextIndex--;
         }
@@ -185,28 +185,28 @@ public class Mountain {
     }
 
     public MountainTile getTileU(int tileIndexIn) {
-        if (mountainTilesU.get(tileIndexIn) != null) return mountainTilesU.get(tileIndexIn);
+        if (!mountainTilesU.get(tileIndexIn).isNull()) return mountainTilesU.get(tileIndexIn);
         return null;
     }
 
     public MountainTile getTileD(int tileIndexIn) {
-        if (mountainTilesD.get(tileIndexIn) != null) return mountainTilesD.get(tileIndexIn);
+        if (!mountainTilesD.get(tileIndexIn).isNull()) return mountainTilesD.get(tileIndexIn);
         return null;
     }
 
     public Mountain removeTile(int tileIndexIn) {
-        if (mountainTilesU.get(tileIndexIn) != null) mountainTilesU.set(tileIndexIn, null);
-        else if (mountainTilesD.get(tileIndexIn) != null) mountainTilesD.set(tileIndexIn, null);
+        if (!mountainTilesU.get(tileIndexIn).isNull()) mountainTilesU.get(tileIndexIn).setNull();
+        else if (!mountainTilesD.get(tileIndexIn).isNull()) mountainTilesD.get(tileIndexIn).setNull();
         return this;
     }
 
     public Mountain removeTileU(int tileIndexIn) {
-        if (mountainTilesU.get(tileIndexIn) != null) mountainTilesU.set(tileIndexIn, null);
+        if (!mountainTilesU.get(tileIndexIn).isNull()) mountainTilesU.get(tileIndexIn).setNull();
         return this;
     }
 
     public Mountain removeTileD(int tileIndexIn) {
-        if (mountainTilesD.get(tileIndexIn) != null) mountainTilesD.set(tileIndexIn, null);
+        if (!mountainTilesD.get(tileIndexIn).isNull()) mountainTilesD.get(tileIndexIn).setNull();
         return this;
     }
 
@@ -218,10 +218,10 @@ public class Mountain {
     }
 
     public Mountain removeNextRinshyan() {
-        if (getTileU(rinshyanIndex[0]) != null) removeTileU(rinshyanIndex[0]);
-        else if (getTileD(rinshyanIndex[0]) != null) removeTileD(rinshyanIndex[0]);
-        else if (getTileU(rinshyanIndex[1]) != null) removeTileU(rinshyanIndex[1]);
-        else if (getTileD(rinshyanIndex[1]) != null) removeTileD(rinshyanIndex[1]);
+        if (!getTileU(rinshyanIndex[0]).isNull()) removeTileU(rinshyanIndex[0]);
+        else if (!getTileD(rinshyanIndex[0]).isNull()) removeTileD(rinshyanIndex[0]);
+        else if (!getTileU(rinshyanIndex[1]).isNull()) removeTileU(rinshyanIndex[1]);
+        else if (!getTileD(rinshyanIndex[1]).isNull()) removeTileD(rinshyanIndex[1]);
         return this;
     }
 
@@ -257,10 +257,31 @@ public class Mountain {
     public Mountain extraDora() {
         countDora++;
         getTileU(doraIndex[countDora - 1]).setShown(true);
+        game.getUi().newDora();
         return this;
     }
 
     public boolean isDora(EnumTile enumtile) {
         return getDora().contains(enumtile);
+    }
+
+    public int[] getAvailableCount() {
+        int count[] = {0, 0, 0, 0, 0};
+        for (MountainTile mountainTile : mountainTilesU) {
+            if (mountainTile.isNull() || mountainTile.getProp() != MountainTile.Prop.NORMAL) continue;
+            if (mountainTile.getPosition() == EnumPosition.EAST) count[1]++;
+            if (mountainTile.getPosition() == EnumPosition.SOUTH) count[2]++;
+            if (mountainTile.getPosition() == EnumPosition.WEST) count[3]++;
+            if (mountainTile.getPosition() == EnumPosition.NORTH) count[4]++;
+        }
+        for (MountainTile mountainTile : mountainTilesD) {
+            if (mountainTile.isNull() || mountainTile.getProp() != MountainTile.Prop.NORMAL) continue;
+            if (mountainTile.getPosition() == EnumPosition.EAST) count[1]++;
+            if (mountainTile.getPosition() == EnumPosition.SOUTH) count[2]++;
+            if (mountainTile.getPosition() == EnumPosition.WEST) count[3]++;
+            if (mountainTile.getPosition() == EnumPosition.NORTH) count[4]++;
+        }
+        count[0] = count[1] + count[2] + count[3] + count[4];
+        return count;
     }
 }

@@ -43,7 +43,7 @@ public class Game {
         players = new ArrayList<Player>();
         river = new River(this);
         optionsSelected = new HashMap<Player, HashMap<Player.Option, EnumTile>>();
-        seed = 101;
+        seed = 109;
         dices = new Dices(2, seed);
         playersHasOptions = new ArrayList<Player>();
         // sitting down
@@ -185,7 +185,7 @@ public class Game {
                 if (optionsSelected.get(player).containsKey(Player.Option.GANG)) {
                     breakIbbatsu();
                     player.gang(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Option.GANG));
-                    ui.melded();
+                    ui.choosed(player, Player.Option.GANG);
                     return this;
                 }
             }
@@ -193,7 +193,7 @@ public class Game {
                 if (optionsSelected.get(player).containsKey(Player.Option.PENG)) {
                     breakIbbatsu();
                     player.peng(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Option.PENG));
-                    ui.melded();
+                    ui.choosed(player, Player.Option.PENG);
                     return this;
                 }
             }
@@ -201,7 +201,7 @@ public class Game {
                 if (optionsSelected.get(player).containsKey(Player.Option.CHI)) {
                     breakIbbatsu();
                     player.chi(gameState.getCurPlayer(), optionsSelected.get(player).get(Player.Option.CHI));
-                    ui.melded();
+                    ui.choosed(player, Player.Option.CHI);
                     return this;
                 }
             }

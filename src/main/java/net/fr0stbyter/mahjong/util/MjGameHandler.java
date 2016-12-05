@@ -6,7 +6,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MjGameHandler {
@@ -32,10 +31,11 @@ public class MjGameHandler {
         HashMap<String, EnumFacing> playerWaiting = new HashMap<String, EnumFacing>();
         for (EntityPlayer player : gameStatusMap.keySet()) {
             PlayerGameStatus playerGameStatus = gameStatusMap.get(player);
-            if (playerGameStatus.isWaiting()) playerWaiting.put(player.getDisplayNameString(), playerGameStatus.getPosition());
+            if (playerGameStatus.isWaiting()) playerWaiting.put(player.getName(), playerGameStatus.getPosition());
             ///TEST ONLY
             playerWaiting.put("A", playerGameStatus.getPosition().rotateY());
             playerWaiting.put("B", playerGameStatus.getPosition().rotateYCCW());
+            //
             if (playerWaiting.size() == targetPlayerCount) {
                 game.initGame(playerWaiting);
                 playerGameStatus.setInGame(true);

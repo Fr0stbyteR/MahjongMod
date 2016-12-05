@@ -29,6 +29,7 @@ public class River {
     public EnumTile removeWaiting() {
         if (getLast() == null) return null;
         EnumTile tile = getLast().getTile();
+        getLast().setWaiting(false);
         getLast().setShown(false);
         return tile;
     }
