@@ -2,6 +2,7 @@ package net.fr0stbyter.mahjong.gui;
 
 import net.fr0stbyter.mahjong.inventory.ContainerMjTable;
 import net.fr0stbyter.mahjong.tileentity.TileEntityMjTable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;

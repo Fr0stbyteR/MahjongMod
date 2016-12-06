@@ -75,6 +75,7 @@ public class GuiMjTable extends GuiContainer {
             int y = tableInventory.getPos().getY();
             int z = tableInventory.getPos().getZ();
             NetworkHandler.INSTANCE.sendToServer(new MessageMjTable(x, y, z, region, playerCount, length, redDoraCount));
+
         }
     }
 

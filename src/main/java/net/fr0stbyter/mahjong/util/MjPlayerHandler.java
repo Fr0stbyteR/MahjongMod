@@ -1,34 +1,34 @@
 package net.fr0stbyter.mahjong.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
 public class MjPlayerHandler {
-    HashMap<Integer, ArrayList<Integer>> options;
+    int[] gameState; // playersCount, int round, int hand, int extra, int tilesRemaining, int riichibou
+    int curPos;
+    String[] playersName;
+    int[] playersScore;
+    HashMap<Integer, int[]> options;
 
     public MjPlayerHandler() {
-        this.options = new HashMap<Integer, ArrayList<Integer>>();
+        this.options = new HashMap<Integer, int[]>();
+        int[] gameState = new int[6];
     }
 
-    public void add(int option, int indexTile) {
-        if (options.containsKey(option)) options.get(option).add(indexTile);
-        else options.put(option, new ArrayList<Integer>(Collections.singletonList(indexTile)));
+    public void addOption(int option, int[] indexTiles) {
+        options.put(option, indexTiles);
     }
 
-    public void clear() {
+    public void clearOptions() {
         options.clear();
     }
 
-    public HashMap<Integer, ArrayList<Integer>> getOptions() {
-        return options;
+    public void updateState(int[] gameState, String[] playersName, int[] playersScore) {
+        this.gameState = gameState;
+        this.playersName = playersName;
+        this.playersScore = playersScore;
     }
 
-    public ArrayList<Integer> getOptions(int option) {
-        return options.get(option);
-    }
-
-    public void setOptions(HashMap<Integer, ArrayList<Integer>> options) {
-        this.options = options;
+    public void updateCurPos(int curPos) {
+        this.curPos = curPos;
     }
 }

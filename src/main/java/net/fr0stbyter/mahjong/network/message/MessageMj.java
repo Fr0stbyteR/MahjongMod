@@ -39,8 +39,8 @@ public class MessageMj implements IMessage, IMessageHandler<MessageMj, IMessage>
         if (Mahjong.mjGameHandler.isInGame(player)) {
             Game game = Mahjong.mjGameHandler.getGame(player);
             //if (indexOption == -1) game.getUi().discard(game.getPlayer(player.getDisplayNameString()), EnumTile.getTile(indexEnumTile));
-            if (message.indexOption == -1) game.getUi().discard(game.getCurPlayer(), EnumTile.getTile(message.indexEnumTile));
-            else game.getUi().choose(game.getPlayer(player.getDisplayNameString()), Player.Option.getOption(message.indexOption), EnumTile.getTile(message.indexEnumTile));
+            EnumTile enumTile = message.indexEnumTile == -1 ? null : EnumTile.getTile(message.indexEnumTile);
+            game.getUi().chooseInt(game.getPlayer(player.getDisplayNameString()), message.indexOption, enumTile);
         }
         return null;
     }

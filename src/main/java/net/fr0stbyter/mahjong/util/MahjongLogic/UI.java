@@ -22,5 +22,5 @@ public interface UI {
     void gameOver();
     void setPositions(HashMap<String, EnumFacing> playersIn);
     void newDora();
-
+    void chooseInt(Player playerIn, int optionIn, EnumTile tileIn);
 }

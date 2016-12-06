@@ -16,11 +16,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class Mahjong {
     public static final String MODID = "mahjong";
     public static final String NAME = "Mahjong";
-    public static final String VERSION = "0.2.0";
+    public static final String VERSION = "0.9.0";
     public static final String GUI_FACTORY_CLASS = "net.fr0stbyter.mahjong.gui.GuiFactory";
     //@SideOnly(Side.SERVER)
     public static MjGameHandler mjGameHandler;
-    //@SideOnly(Side.CLIENT)
+    @SideOnly(Side.CLIENT)
     public static MjPlayerHandler mjPlayerHandler;
 
     @Mod.Instance(Mahjong.MODID)

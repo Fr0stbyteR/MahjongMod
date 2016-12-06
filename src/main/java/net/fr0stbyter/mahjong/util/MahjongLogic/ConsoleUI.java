@@ -24,6 +24,11 @@ public class ConsoleUI implements UI {
     }
 
     @Override
+    public void chooseInt(Player playerIn, int optionIn, EnumTile tileIn) {
+
+    }
+
+    @Override
     public void setGame(Game gameIn) {
         game = gameIn;
         scanner = new Scanner(System.in);

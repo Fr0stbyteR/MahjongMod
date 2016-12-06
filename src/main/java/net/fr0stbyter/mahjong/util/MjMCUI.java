@@ -1,11 +1,12 @@
 package net.fr0stbyter.mahjong.util;
 
-import net.fr0stbyter.mahjong.blocks.BlockRiichibou;
+import net.fr0stbyter.mahjong.Mahjong;
 import net.fr0stbyter.mahjong.init.NetworkHandler;
-import net.fr0stbyter.mahjong.network.message.MessageMjPlayer;
+import net.fr0stbyter.mahjong.network.message.MessageMjStatus;
 import net.fr0stbyter.mahjong.util.MahjongLogic.*;
 import net.fr0stbyter.mahjong.util.MahjongLogic.Hand.*;
 import net.minecraft.block.Block;
+import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
@@ -15,7 +16,6 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 
@@ -24,7 +24,8 @@ public class MjMCUI implements UI {
     private World world;
     private BlockPos centerPos;
     private HashMap<String, EnumFacing> playerPositions;
-    private static final PropertyDirection12 FACING = PropertyDirection12.create("facing");
+    private static final PropertyDirection12 FACING12 = PropertyDirection12.create("facing");
+    private static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
     private final HashMap<EnumFacing, BlockPos> HANDTILES_POS = new HashMap<EnumFacing, BlockPos>();
     private final HashMap<EnumFacing, BlockPos> RIVER_POS = new HashMap<EnumFacing, BlockPos>();
     private final HashMap<EnumFacing, BlockPos> MOUNTAIN_POS = new HashMap<EnumFacing, BlockPos>();
@@ -32,8 +33,8 @@ public class MjMCUI implements UI {
     public MjMCUI(World world, BlockPos centerPos) {
         this.world = world;
         this.centerPos = centerPos;
-        int[] htRvHeight = new int[]{0, 0, 0};/*
-        for (int i = 0; i < 10; i++) {
+        int[] htRvHeight = new int[]{0, 0, 0};
+    /*    for (int i = 0; i < 10; i++) {
             if (world.getBlockState(centerPos.east(11).south(10).up(i)).getMaterial() == Material.air) break;
             else htRvHeight[0]++;
         }
@@ -76,6 +77,8 @@ public class MjMCUI implements UI {
         uiCheckMountains();
         printGameState();
         printTable();
+        sendGameStateToPlayers();
+        sendCurPosToPlayers();
         discard(game.getCurPlayer());
     }
 
@@ -84,41 +87,128 @@ public class MjMCUI implements UI {
         uiCheckHands();
         uiCheckRivers();
         uiCheckMountains();
+        sendCurPosToPlayers();
         discard(game.getCurPlayer());
     }
 
     @Override
     public void options() {
-        for (Player player : game.getPlayers()) {
-            sendToPlayer(player, -1, -1);
-            if (!player.getOptions().isEmpty()) {
-                for (Player.Option option : player.getOptions().keySet()) {
-                    sendToPlayerChat(player, "Option: " + option.name().toLowerCase() + (player.getOptions().get(option) != null ? player.getOptions().get(option) : ""));
-                    if (player.getOptions().get(option) == null) sendToPlayer(player, option.ordinal(), -1);
-                    else for (EnumTile enumTile : player.getOptions().get(option)) {
-                        sendToPlayer(player, option.ordinal(), enumTile == null ? -1 : enumTile.getIndex());
-                    }
-                    //System.out.print(player.getId() + " option: " + option.name().toLowerCase() + (player.getOptions().get(option) != null ? player.getOptions().get(option) : "") + "\n");
-                }
-            }
-        }
+        sendOptionsToPlayers();
     }
 
     @Override
     public void discard(Player playerIn) {
-        
+        sendToPlayersChat("Now " + playerIn.getId() + "'s turn.");
     }
 
     @Override
+    public void chooseInt(Player playerIn, int optionIn, EnumTile enumTileIn) {
+        boolean canChyankan = playerIn.canChyankan();
+        HashMap<Player.Option, ArrayList<EnumTile>> options = playerIn.getOptions();
+        if (optionIn == 0) {
+            if (options.containsKey(Player.Option.NEXT)) {
+                playerIn.selectOption(Player.Option.NEXT, null, canChyankan);
+            }
+            //else discard(playerIn, enumTileIn);
+            else if (enumTileIn != null) discard(playerIn, enumTileIn);
+            else {
+                for (Player.Option option : options.keySet()) {
+                    if (option != Player.Option.CANCEL) {
+                        playerIn.selectOption(option, options.get(option) == null || options.get(option).size() == 0 ? null : options.get(option).get(0), canChyankan);
+                        return;
+                    }
+                }
+            }
+            return;
+        }
+        if (optionIn == 1) {
+            //TODO TEST
+            //for (Player player : game.getPlayers()) player.selectOption(Player.Option.CANCEL, enumTileIn, playerIn.canChyankan());
+            if (!options.containsKey(Player.Option.CANCEL)) return;
+            playerIn.selectOption(Player.Option.CANCEL, null, canChyankan);
+            return;
+        }
+        if (optionIn == 2) {
+            if (!options.containsKey(Player.Option.KITA)) return;
+            playerIn.selectOption(Player.Option.KITA, EnumTile.F4, canChyankan);
+            return;
+        }
+        if (optionIn == 3) {
+            if (!options.containsKey(Player.Option.CHI) || options.get(Player.Option.CHI).size() == 0) return;
+            if (enumTileIn != null && options.get(Player.Option.CHI).contains(enumTileIn)) playerIn.selectOption(Player.Option.CHI, enumTileIn, canChyankan);
+            else playerIn.selectOption(Player.Option.CHI, options.get(Player.Option.CHI).get(0), canChyankan);
+            return;
+        }
+        if (optionIn == 4) {
+            if (!options.containsKey(Player.Option.PENG) || options.get(Player.Option.PENG).size() == 0) return;
+            if (enumTileIn != null && options.get(Player.Option.PENG).contains(enumTileIn)) playerIn.selectOption(Player.Option.PENG, enumTileIn, canChyankan);
+            else playerIn.selectOption(Player.Option.PENG, options.get(Player.Option.PENG).get(0), canChyankan);
+            return;
+        }
+        if (optionIn == 5) {
+            if (enumTileIn == null) {
+                for (Player.Option option : options.keySet()) {
+                    if (option == Player.Option.ANGANG || option == Player.Option.GANG || option == Player.Option.PLUSGANG) {
+                        if (options.get(option) != null || options.get(option).size() > 0)
+                        playerIn.selectOption(option, options.get(option).get(0), canChyankan);
+                        return;
+                    }
+                }
+            }
+            if (options.containsKey(Player.Option.ANGANG) && options.get(Player.Option.ANGANG).size() > 0) {
+                if (enumTileIn != null && options.get(Player.Option.ANGANG).contains(enumTileIn)) {
+                    playerIn.selectOption(Player.Option.ANGANG, enumTileIn, canChyankan);
+                    return;
+                }
+            }
+            if (options.containsKey(Player.Option.GANG) && options.get(Player.Option.GANG).size() > 0) {
+                if (enumTileIn != null && options.get(Player.Option.GANG).contains(enumTileIn)) {
+                    playerIn.selectOption(Player.Option.GANG, enumTileIn, canChyankan);
+                    return;
+                }
+            }
+            if (options.containsKey(Player.Option.PLUSGANG) && options.get(Player.Option.PLUSGANG).size() > 0) {
+                if (enumTileIn != null && options.get(Player.Option.PLUSGANG).contains(enumTileIn)) {
+                    playerIn.selectOption(Player.Option.PLUSGANG, enumTileIn, canChyankan);
+                    return;
+                }
+            }
+        }
+        if (optionIn == 6) {
+            if (!options.containsKey(Player.Option.KYUUSHYUKYUUHAI)) return;
+            playerIn.selectOption(Player.Option.KYUUSHYUKYUUHAI, null, canChyankan);
+            return;
+        }
+        if (optionIn == 7) {
+            if (!options.containsKey(Player.Option.RIICHI) || options.get(Player.Option.RIICHI).size() == 0) return;
+            if (enumTileIn != null && options.get(Player.Option.RIICHI).contains(enumTileIn)) playerIn.selectOption(Player.Option.RIICHI, enumTileIn, canChyankan);
+            else playerIn.selectOption(Player.Option.RIICHI, options.get(Player.Option.RIICHI).get(0), canChyankan);
+            return;
+        }
+        if (optionIn == 8) {
+            if (options.containsKey(Player.Option.RON) && options.get(Player.Option.RON).size() > 0) {
+                playerIn.selectOption(Player.Option.RON, options.get(Player.Option.RON).get(0), canChyankan);
+                return;
+            }
+            if (options.containsKey(Player.Option.TSUMO) && options.get(Player.Option.TSUMO).size() > 0) {
+                playerIn.selectOption(Player.Option.TSUMO, options.get(Player.Option.TSUMO).get(0), canChyankan);
+                return;
+            }
+        }
+    }
+
+
+    @Override
     public void choose(Player playerIn, Player.Option optionIn, EnumTile enumTileIn) {
-        //TODO testONLY
+ /*       //TODO testONLY
         if (optionIn == Player.Option.CANCEL) {
             for (Player player : game.getPlayers()) player.selectOption(optionIn, enumTileIn, playerIn.canChyankan());
         }
         else if (optionIn != null) {
             playerIn.selectOption(optionIn, enumTileIn, playerIn.canChyankan());
-        }
+        }*/
     }
+
 
     @Override
     public void discard(Player playerIn, EnumTile tileIn) {
@@ -135,6 +225,7 @@ public class MjMCUI implements UI {
         if (optionIn == Player.Option.CHI || optionIn == Player.Option.PENG || optionIn == Player.Option.GANG) uiCheckRivers();
         if (optionIn == Player.Option.KITA || optionIn == Player.Option.ANGANG || optionIn == Player.Option.PLUSGANG || optionIn == Player.Option.GANG) uiCheckMountains();
         printTable();
+        sendCurPosToPlayers();
         uiCheckHand(curPlayer);
         discard(curPlayer);
     }
@@ -164,7 +255,8 @@ public class MjMCUI implements UI {
     public void showReport(Game.Ryuukyoku ryuukyokuIn, HashMap<Player, Integer> scoreChangeIn) {
         sendToPlayersChat("RYUKYOKU: " + ryuukyokuIn.name());
         for (Player player : game.getPlayers()) {
-            sendToPlayersChat(player.getId() + " " + player.getCurWind() + " " + player.getScore() + scoreChangeIn.get(player) + " " + scoreChangeIn.get(player));
+            int scoreChange = scoreChangeIn.get(player);
+            sendToPlayersChat(player.getId() + " " + player.getCurWind() + " " + player.getScore() + (scoreChange > 0 ? " +" : " ") + scoreChange);
         }
     }
 
@@ -179,7 +271,7 @@ public class MjMCUI implements UI {
     public void riichi(Player playerIn) {
         EnumFacing enumFacing = playerPositions.get(playerIn.getId());
         final BlockPos blockPos = centerPos.offset(enumFacing, 2);
-        final IBlockState blockState = Block.getBlockFromName("mahjong:riichibou").getDefaultState().withProperty(FACING, EnumFacing12.byName(enumFacing.getName()));
+        final IBlockState blockState = Block.getBlockFromName("mahjong:riichibou").getDefaultState().withProperty(FACING, enumFacing);
         world.getMinecraftServer().addScheduledTask(new Runnable() {
             @Override
             public void run() {
@@ -191,6 +283,9 @@ public class MjMCUI implements UI {
     @Override
     public void gameOver() {
         uiClearSpace();
+        for (Player player : game.getPlayers()) {
+            Mahjong.mjGameHandler.quitGame(player.getId());
+        }
     }
 
     @Override
@@ -250,7 +345,7 @@ public class MjMCUI implements UI {
             if (handTiles instanceof Handing) {
                 for (EnumTile enumTile : handTiles.getTiles()) {
                     Block block = Block.getBlockFromName("mahjong:mj" + enumTile.name().toLowerCase());
-                    IBlockState blockState = block.getDefaultState().withProperty(FACING, EnumFacing12.byName(enumFacing.getName()));
+                    IBlockState blockState = block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName()));
                     blockStates.put(htPos, blockState);
                     htPos = htPos.offset(enumFacing.rotateYCCW(), 1);
                 }
@@ -258,13 +353,13 @@ public class MjMCUI implements UI {
             if (handTiles instanceof Get) {
                 htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), playerIn.getHand().getHandingCount());
                 Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTile().name().toLowerCase());
-                IBlockState blockState = block.getDefaultState().withProperty(FACING, EnumFacing12.byName(enumFacing.getName()));
+                IBlockState blockState = block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName()));
                 blockStates.put(htPos, blockState);
             }
             if (handTiles instanceof Kita) {
-                htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 20).up(kita);
+                htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 20 - fuuro).up(kita);
                 Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTile().name().toLowerCase());
-                IBlockState blockState = block.getDefaultState().withProperty(FACING, EnumFacing12.byName(enumFacing.getName() + "u"));
+                IBlockState blockState = block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName() + "u"));
                 blockStates.put(htPos, blockState);
                 if (kita == 0) fuuro++;
                 kita++;
@@ -273,7 +368,7 @@ public class MjMCUI implements UI {
                 for (int i = 0; i < 4; i++) {
                     htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 20 - fuuro - i);
                     Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
-                    IBlockState blockState = block.getDefaultState().withProperty(FACING, EnumFacing12.byName(enumFacing.getName() + (i == 0 || i == 3 ? "d" : "u")));
+                    IBlockState blockState = block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName() + (i == 0 || i == 3 ? "d" : "u")));
                     blockStates.put(htPos, blockState);
                 }
                 fuuro += 4;
@@ -286,7 +381,7 @@ public class MjMCUI implements UI {
                         Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                         EnumFacing12 enumFacing12 = EnumFacing12.byName(enumFacing.getName() + "u");
                         if (handTiles.getOrientation() == 3 - i) enumFacing12 = enumFacing12.rotateY();
-                        IBlockState blockState = block.getDefaultState().withProperty(FACING, enumFacing12);
+                        IBlockState blockState = block.getDefaultState().withProperty(FACING12, enumFacing12);
                         blockStates.put(htPos, blockState);
                     }
                     fuuro += 3;
@@ -298,7 +393,7 @@ public class MjMCUI implements UI {
                         if (handTiles.getOrientation() == 1 && i == 3) enumFacing12 = enumFacing12.rotateY();
                         if (handTiles.getOrientation() == 2 && i == 1) enumFacing12 = enumFacing12.rotateY();
                         if (handTiles.getOrientation() == 3 && i == 0) enumFacing12 = enumFacing12.rotateY();
-                        IBlockState blockState = block.getDefaultState().withProperty(FACING, enumFacing12);
+                        IBlockState blockState = block.getDefaultState().withProperty(FACING12, enumFacing12);
                         blockStates.put(htPos, blockState);
                     }
                     fuuro += 4;
@@ -310,7 +405,7 @@ public class MjMCUI implements UI {
                     Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                     EnumFacing12 enumFacing12 = EnumFacing12.byName(enumFacing.getName() + "u");
                     if (handTiles.getOrientation() == 3 - i) enumFacing12 = enumFacing12.rotateY();
-                    IBlockState blockState = block.getDefaultState().withProperty(FACING, enumFacing12);
+                    IBlockState blockState = block.getDefaultState().withProperty(FACING12, enumFacing12);
                     blockStates.put(htPos, blockState);
                 }
                 fuuro += 3;
@@ -321,7 +416,7 @@ public class MjMCUI implements UI {
                     Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                     EnumFacing12 enumFacing12 = EnumFacing12.byName(enumFacing.getName() + "u");
                     if (handTiles.getOrientation() == 3 - i) enumFacing12 = enumFacing12.rotateY();
-                    IBlockState blockState = block.getDefaultState().withProperty(FACING, enumFacing12);
+                    IBlockState blockState = block.getDefaultState().withProperty(FACING12, enumFacing12);
                     blockStates.put(htPos, blockState);
                 }
                 fuuro += 3;
@@ -352,8 +447,8 @@ public class MjMCUI implements UI {
             RiverTile riverTile = tilesFromPosition.get(i);
             Block block = Block.getBlockFromName("mahjong:mj" + riverTile.getTile().name().toLowerCase());
             IBlockState blockState = riverTile.getHorizontal()
-                    ? block.getDefaultState().withProperty(FACING, EnumFacing12.byName(enumFacing.rotateY().getName() + "u"))
-                    : block.getDefaultState().withProperty(FACING, EnumFacing12.byName(enumFacing.getName() + "u"));
+                    ? block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.rotateY().getName() + "u"))
+                    : block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName() + "u"));
             if (riverTile.isShown()) {
                 if (riverTile.getWaiting()) blockStates.put(rvPos.up(1), blockState);
                 else {
@@ -394,7 +489,7 @@ public class MjMCUI implements UI {
                     continue;
                 }
                 Block blockD = Block.getBlockFromName("mahjong:mj" + tileD.getTile().name().toLowerCase());
-                IBlockState blockStateD = blockD.getDefaultState().withProperty(FACING, EnumFacing12.byName(enumFacing.getName() + "d"));
+                IBlockState blockStateD = blockD.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName() + "d"));
                 blockStates.put(MOUNTAIN_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), i), blockStateD);
             }
             for (int i = 0; i < tilesU.size(); i++) {
@@ -405,8 +500,8 @@ public class MjMCUI implements UI {
                 }
                 Block blockU = Block.getBlockFromName("mahjong:mj" + tileU.getTile().name().toLowerCase());
                 IBlockState blockStateU = tileU.isShown()
-                        ? blockU.getDefaultState().withProperty(FACING, EnumFacing12.byName(enumFacing.getName() + "u"))
-                        : blockU.getDefaultState().withProperty(FACING, EnumFacing12.byName(enumFacing.getName() + "d"));
+                        ? blockU.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName() + "u"))
+                        : blockU.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName() + "d"));
                 blockStates.put(MOUNTAIN_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), i).up(1), blockStateU);
             }
         }
@@ -442,15 +537,68 @@ public class MjMCUI implements UI {
         if (player != null) player.addChatComponentMessage(new TextComponentString(stringIn));
     }
 
-    private void sendToPlayers(int optionIn, int indexTile) {
+    private void sendOptionsToPlayers() {
         for (Player player : game.getPlayers()) {
-            sendToPlayer(player, optionIn, indexTile);
+            sendOptionsToPlayer(player);
         }
     }
 
-    private void sendToPlayer(Player playerIn, int optionIn, int indexTile) {
-        EntityPlayerMP player = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
-        if (player != null) NetworkHandler.INSTANCE.sendTo(new MessageMjPlayer(optionIn, indexTile), player);
+    private void sendOptionsToPlayer(Player playerIn) {
+        EntityPlayerMP playerMP = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
+        NetworkHandler.INSTANCE.sendTo(new MessageMjStatus(-1), playerMP);
+        if (!playerIn.getOptions().isEmpty()) {
+            for (Player.Option option : playerIn.getOptions().keySet()) {
+                sendToPlayerChat(playerIn, "Option: " + option.name().toLowerCase() + (playerIn.getOptions().get(option) != null ? playerIn.getOptions().get(option) : ""));
+                if (playerIn.getOptions().get(option) == null)
+                    NetworkHandler.INSTANCE.sendTo(new MessageMjStatus(2, option.ordinal(), 0, new int[0]), playerMP);
+                else {
+                    int[] tiles = new int[playerIn.getOptions().get(option).size()];
+                    ArrayList<EnumTile> enumTiles = playerIn.getOptions().get(option);
+                    for (int i = 0; i < enumTiles.size(); i++) {
+                        EnumTile enumTile = enumTiles.get(i);
+                        tiles[i] = enumTile == null ? -1 : enumTile.getIndex();
+                    }
+                    NetworkHandler.INSTANCE.sendTo(new MessageMjStatus(2, option.ordinal(), tiles.length, tiles), playerMP);
+                }
+            }
+        }
+    }
+
+    private void sendGameStateToPlayers() {
+        for (Player player : game.getPlayers()) {
+            sendGameStateToPlayer(player);
+        }
+    }
+
+    private void sendGameStateToPlayer(Player playerIn) {
+        EntityPlayerMP playerMP = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
+        int[] gameState = new int[5]; // int playersCount, round, hand, extra, tilesRemaining; riichibou
+        gameState[0] = game.getGameType().getPlayerCount();
+        gameState[1] = game.getGameState().getCurRound().ordinal();
+        gameState[2] = game.getGameState().getCurHand();
+        gameState[3] = game.getGameState().getCurExtra();
+        gameState[4] = game.getMountain().getAvailableCount()[0];
+        gameState[5] = game.getGameState().getCountRiichi();
+        String[] players = new String[gameState[0]];
+        int[] scores = new int[gameState[0]];
+        EnumPosition[] values = EnumPosition.values();
+        for (int i = 0; i < values.length; i++) {
+            EnumPosition enumPosition = values[i];
+            players[i] = game.getPlayer(enumPosition).getId();
+            scores[i] = game.getPlayer(enumPosition).getScore();
+        }
+        NetworkHandler.INSTANCE.sendTo(new MessageMjStatus(0, gameState[0], gameState[1], gameState[2], gameState[3], gameState[4], gameState[5], players, scores), playerMP);
+    }
+
+    private void sendCurPosToPlayers() {
+        for (Player player : game.getPlayers()) {
+            sendCurPosToPlayer(player);
+        }
+    }
+
+    private void sendCurPosToPlayer(Player playerIn) {
+        EntityPlayerMP playerMP = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
+        NetworkHandler.INSTANCE.sendTo(new MessageMjStatus(1, game.getGameState().getCurPlayer().ordinal()), playerMP);
     }
 
     private void uiClearSpace() {

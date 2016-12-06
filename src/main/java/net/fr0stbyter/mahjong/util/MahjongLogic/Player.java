@@ -173,7 +173,10 @@ public class Player {
     }
 
     public Player getTileFromMountain() {
-        if (game.getMountain().getNextProp() == MountainTile.Prop.DORA) game.ryuukyoku(this, Game.Ryuukyoku.KOUHAIHEIKYOKU);
+        if (game.getMountain().getNextProp() == MountainTile.Prop.DORA) {
+            game.ryuukyoku(this, Game.Ryuukyoku.KOUHAIHEIKYOKU);
+            return this;
+        }
         getTile(game.getMountain().getNextThenRemove());
         return this;
     }

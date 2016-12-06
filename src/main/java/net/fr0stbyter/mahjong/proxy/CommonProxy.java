@@ -5,7 +5,6 @@ import net.fr0stbyter.mahjong.gui.GuiHandler;
 import net.fr0stbyter.mahjong.init.MahjongRegister;
 import net.fr0stbyter.mahjong.init.NetworkHandler;
 import net.fr0stbyter.mahjong.util.MjGameHandler;
-import net.fr0stbyter.mahjong.util.MjPlayerHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;

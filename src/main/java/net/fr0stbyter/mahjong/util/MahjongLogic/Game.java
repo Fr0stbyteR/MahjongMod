@@ -4,6 +4,7 @@ import net.minecraft.util.EnumFacing;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 public class Game {
     private long seed;
@@ -43,7 +44,8 @@ public class Game {
         players = new ArrayList<Player>();
         river = new River(this);
         optionsSelected = new HashMap<Player, HashMap<Player.Option, EnumTile>>();
-        seed = 109;
+        Random random = new Random();
+        seed = random.nextInt();
         dices = new Dices(2, seed);
         playersHasOptions = new ArrayList<Player>();
         // sitting down
@@ -358,12 +360,22 @@ public class Game {
                 return this;
             } else {
                 int countTen = 0;
+                int tenScore = gameType.getPlayerCount() == 3 ? 2000 : 3000;
                 for (Player player1 : players) {
-                    scoreChange.put(player1, player1.getWaiting().isEmpty() ? 0 : 1000);
                     countTen++;
                 }
-                for (Player player1 : players) {
-                    if (player1.getWaiting().isEmpty()) scoreChange.put(player1, -1000 * countTen);
+                if (countTen == gameType.getPlayerCount() || countTen == 0) {
+                    for (Player player1 : players) {
+                        if (player1.getWaiting().isEmpty()) scoreChange.put(player1, 0);
+                    }
+                } else {
+                    for (Player player1 : players) {
+                        if (player1.getWaiting().isEmpty()) scoreChange.put(player1, -1 * tenScore / (gameType.getPlayerCount() - countTen));
+                        else scoreChange.put(player1, tenScore / countTen);
+                    }
+                }
+                for (Player player : players) {
+                    player.setScore(player.getScore() + scoreChange.get(player));
                 }
                 ui.showReport(ryuukyokuIn, scoreChange);
                 requestConfirm();

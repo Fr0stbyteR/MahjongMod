@@ -453,7 +453,7 @@ public class Hand implements Cloneable {
         for (HandTiles handTiles : tiles) {
             if (handTiles instanceof Handing) all += tilesToString(handTiles.getTiles());
             else if (handTiles instanceof Chi || handTiles instanceof Peng || handTiles instanceof Gang) {
-                String direction = handTiles.getOrientation() == 1 ? ">" : handTiles.getOrientation() == 2 ? "^" : "<";
+                String direction = handTiles.getOrientation() == 1 ? "<" : handTiles.getOrientation() == 2 ? "^" : ">";
                 all += " [" + direction + tilesToString(handTiles.getTiles()) + "]";
             }
             else if (handTiles instanceof Get) {
