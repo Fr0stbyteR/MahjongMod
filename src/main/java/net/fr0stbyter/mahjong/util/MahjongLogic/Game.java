@@ -164,6 +164,7 @@ public class Game {
                     playerAgari.add(player);
                     tileAgari = optionsSelected.get(player).get(Player.Option.RON);
                     if (player.getCurWind() == EnumPosition.EAST) isRenchyan = true;
+                    ui.choosed(player, Player.Option.RON);
                 }
             }
             if (playerAgari.size() == 3) {
@@ -321,6 +322,7 @@ public class Game {
         }
         // return riichibou
         gameState.setCountRiichi(0);
+        ui.agari(playerIn);
         ui.showReport(playerIn, scoreChange);
         requestConfirm();
     }

@@ -11,13 +11,13 @@ import static net.fr0stbyter.mahjong.util.MahjongLogic.EnumWinningHand.*;
 import static net.fr0stbyter.mahjong.util.MahjongLogic.WinningHand.HandStatus.*;
 
 public class Analyze {
-    public static WinningHand analyzeWin(GameType gameType, GameState gameState, Player player, ArrayList<EnumTile> doraIn, ArrayList<EnumTile> uraIn, Hand handIn, EnumTile extraTileIn) {
+    public static WinningHand analyzeWin(Game game, Player player, ArrayList<EnumTile> doraIn, ArrayList<EnumTile> uraIn, Hand handIn, EnumTile extraTileIn) {
         ArrayList<Hand> hands = baseAnalyzeWin(handIn, extraTileIn);
         WinningHand winningHand = null;
         if (!hands.isEmpty()) {
             for (Hand handAnalyzed : hands) {
                 WinningHand tempWinningHand;
-                tempWinningHand = analyzeYaku(gameType, gameState, player, doraIn, uraIn, handIn, extraTileIn, handAnalyzed);
+                tempWinningHand = analyzeYaku(game, player, doraIn, uraIn, handIn, extraTileIn, handAnalyzed);
                 if (winningHand == null) winningHand = tempWinningHand;
                 else if (tempWinningHand != null && tempWinningHand.getScore() > winningHand.getScore()) winningHand = tempWinningHand;
             }
@@ -25,9 +25,11 @@ public class Analyze {
         return winningHand;
     }
 
-    private static WinningHand analyzeYaku(GameType gameType, GameState gameState, Player player, ArrayList<EnumTile> doraIn, ArrayList<EnumTile> uraIn, Hand handIn, EnumTile extraTileIn, Hand handAnalyzed) {
+    private static WinningHand analyzeYaku(Game game, Player player, ArrayList<EnumTile> doraIn, ArrayList<EnumTile> uraIn, Hand handIn, EnumTile extraTileIn, Hand handAnalyzed) {
         boolean isMenzen = handIn.isMenzen();
         boolean isTsumo = handIn.hasGet();
+        GameType gameType = game.getGameType();
+        GameState gameState = game.getGameState();
         // fu
         Fu fu = Fu.analyze(gameState, player, handAnalyzed, extraTileIn != null ? extraTileIn : handIn.getGet(), isTsumo);
         WinningHand winningHand = new WinningHand(gameType, player, handIn, isTsumo, fu);
@@ -48,8 +50,8 @@ public class Analyze {
         winningHand.add(ryuuiisou(handAnalyzed))
                 .add(chinroutou(handAnalyzed))
                 .add(suukantsu(handAnalyzed))
-                .add(tenhou(handAnalyzed, gameState))
-                .add(chiihou(handAnalyzed, gameState));
+                .add(tenhou(handAnalyzed, player, game, isTsumo))
+                .add(chiihou(handAnalyzed, player, game, isTsumo));
         if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.YAKUMAN) return winningHand;
         // 6fan
         winningHand.add(chiniisou(handAnalyzed));
@@ -386,7 +388,7 @@ public class Analyze {
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private static AnalyzeResult tenhou(Hand handAnalyzed, GameState gameState) {
+    private static AnalyzeResult tenhou(Hand handAnalyzed, Player playerIn, Game game, boolean isTsumo) {
         EnumWinningHand winningHand = TENHOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -394,11 +396,11 @@ public class Analyze {
             else return new AnalyzeResult(NOTEN, null, null, 0);
         } else fan = handAnalyzed.isMenzen() ? winningHand.getFan() : winningHand.getNakuFan();
 
-        if (gameState.getCurDeal() == 1 && gameState.getCurPlayer() == EnumPosition.EAST) return new AnalyzeResult(WIN, null, winningHand, fan);
+        if (isTsumo && game.getGameState().getCurDeal() == 1 && game.getRiver().getTilesFromPosition(playerIn.getCurWind()).size() == 0 && playerIn.getCurWind() == EnumPosition.EAST) return new AnalyzeResult(WIN, null, winningHand, fan);
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 
-    private static AnalyzeResult chiihou(Hand handAnalyzed, GameState gameState) {
+    private static AnalyzeResult chiihou(Hand handAnalyzed, Player playerIn, Game game, boolean isTsumo) {
         EnumWinningHand winningHand = CHIIHOU;
         int fan;
         if (winningHand.isMenZenYaku()) {
@@ -406,7 +408,7 @@ public class Analyze {
             else return new AnalyzeResult(NOTEN, null, null, 0);
         } else fan = handAnalyzed.isMenzen() ? winningHand.getFan() : winningHand.getNakuFan();
 
-        if ((gameState.getCurDeal() == 1) && (gameState.getCurPlayer() != EnumPosition.EAST)) return new AnalyzeResult(WIN, null, winningHand, fan);
+        if (isTsumo && game.getGameState().getCurDeal() == 1 && game.getRiver().getTilesFromPosition(playerIn.getCurWind()).size() == 0 && playerIn.getCurWind() != EnumPosition.EAST) return new AnalyzeResult(WIN, null, winningHand, fan);
         return new AnalyzeResult(NOTEN, null, null, 0);
     }
 

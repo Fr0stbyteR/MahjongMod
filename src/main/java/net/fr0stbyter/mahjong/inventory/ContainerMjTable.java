@@ -18,7 +18,6 @@ public class ContainerMjTable extends Container {
                 int index = j + i * 10;
                 if (index == count) break;
                 addSlotToContainer(new SlotMj(mjTableInventoryIn, index, j * 18 + 8, i * 18 + 17));
-                //TODO change offset
             }
         }
         for (int i = 0; i < 3; i++) {

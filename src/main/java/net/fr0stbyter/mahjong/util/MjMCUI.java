@@ -3,6 +3,7 @@ package net.fr0stbyter.mahjong.util;
 import net.fr0stbyter.mahjong.Mahjong;
 import net.fr0stbyter.mahjong.init.NetworkHandler;
 import net.fr0stbyter.mahjong.network.message.MessageMjStatus;
+import net.fr0stbyter.mahjong.tileentity.TileEntityMjTable;
 import net.fr0stbyter.mahjong.util.MahjongLogic.*;
 import net.fr0stbyter.mahjong.util.MahjongLogic.Hand.*;
 import net.minecraft.block.Block;
@@ -10,13 +11,19 @@ import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraft.util.text.translation.I18n;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class MjMCUI implements UI {
@@ -29,6 +36,11 @@ public class MjMCUI implements UI {
     private final HashMap<EnumFacing, BlockPos> HANDTILES_POS = new HashMap<EnumFacing, BlockPos>();
     private final HashMap<EnumFacing, BlockPos> RIVER_POS = new HashMap<EnumFacing, BlockPos>();
     private final HashMap<EnumFacing, BlockPos> MOUNTAIN_POS = new HashMap<EnumFacing, BlockPos>();
+    private ItemStack[] tempItemStack;
+
+    public World getWorld() {
+        return world;
+    }
 
     public MjMCUI(World world, BlockPos centerPos) {
         this.world = world;
@@ -72,6 +84,9 @@ public class MjMCUI implements UI {
 
     @Override
     public void dealOver() {
+        //TODO test
+        //testOnly();
+        clearContainer();
         uiClearSpace();
         uiCheckHands();
         uiCheckMountains();
@@ -80,6 +95,25 @@ public class MjMCUI implements UI {
         sendGameStateToPlayers();
         sendCurPosToPlayers();
         discard(game.getCurPlayer());
+    }
+
+    private void testOnly() {
+        Hand hand = new Hand();
+        hand.addToHanding(EnumTile.S1)
+                .addToHanding(EnumTile.S2)
+                .addToHanding(EnumTile.S3)
+                .addToHanding(EnumTile.M1)
+                .addToHanding(EnumTile.M2)
+                .addToHanding(EnumTile.M3)
+                .addToHanding(EnumTile.P1)
+                .addToHanding(EnumTile.P2)
+                .addToHanding(EnumTile.P3)
+                .addToHanding(EnumTile.F1)
+                .addToHanding(EnumTile.F1)
+                .addToHanding(EnumTile.F1)
+                .addToHanding(EnumTile.D3);
+        game.getPlayers().get(1).setHandTiles(hand);
+        game.getPlayers().get(1).analyzeWaiting();
     }
 
     @Override
@@ -98,7 +132,7 @@ public class MjMCUI implements UI {
 
     @Override
     public void discard(Player playerIn) {
-        sendToPlayersChat("Now " + playerIn.getId() + "'s turn.");
+        //sendToPlayersChat("Now " + playerIn.getId() + "'s turn.");
     }
 
     @Override
@@ -109,11 +143,15 @@ public class MjMCUI implements UI {
             if (options.containsKey(Player.Option.NEXT)) {
                 playerIn.selectOption(Player.Option.NEXT, null, canChyankan);
             }
-            //else discard(playerIn, enumTileIn);
+            //TODO TEST
+            //else if (enumTileIn != null) discard(game.getCurPlayer(), enumTileIn);
             else if (enumTileIn != null) discard(playerIn, enumTileIn);
+            //
             else {
                 for (Player.Option option : options.keySet()) {
                     if (option != Player.Option.CANCEL) {
+                        if (options.containsKey(Player.Option.TSUMO)) playerIn.selectOption(Player.Option.TSUMO, null, canChyankan);
+                        if (options.containsKey(Player.Option.RON)) playerIn.selectOption(Player.Option.RON, null, canChyankan);
                         playerIn.selectOption(option, options.get(option) == null || options.get(option).size() == 0 ? null : options.get(option).get(0), canChyankan);
                         return;
                     }
@@ -126,6 +164,7 @@ public class MjMCUI implements UI {
             //for (Player player : game.getPlayers()) player.selectOption(Player.Option.CANCEL, enumTileIn, playerIn.canChyankan());
             if (!options.containsKey(Player.Option.CANCEL)) return;
             playerIn.selectOption(Player.Option.CANCEL, null, canChyankan);
+            //
             return;
         }
         if (optionIn == 2) {
@@ -197,10 +236,41 @@ public class MjMCUI implements UI {
         }
     }
 
+    @Override
+    public void agari(Player playerIn) {
+        EnumFacing enumFacing = playerPositions.get(playerIn.getId());
+        BlockPos htPos = HANDTILES_POS.get(enumFacing);
+        final HashMap<BlockPos, IBlockState> blockStates = new HashMap<BlockPos, IBlockState>();
+        for (HandTiles handTiles : playerIn.getHand().getTiles()) {
+            if (handTiles instanceof Handing) {
+                for (EnumTile enumTile : handTiles.getTiles()) {
+                    Block block = Block.getBlockFromName("mahjong:mj" + enumTile.name().toLowerCase());
+                    IBlockState blockState = block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName() + "u"));
+                    blockStates.put(htPos, blockState);
+                    htPos = htPos.offset(enumFacing.rotateYCCW(), 1);
+                }
+            }
+            if (handTiles instanceof Get) {
+                htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), playerIn.getHand().getHandingCount());
+                Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTile().name().toLowerCase());
+                IBlockState blockState = block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName() + "u"));
+                blockStates.put(htPos, blockState);
+            }
+        }
+        world.getMinecraftServer().addScheduledTask(new Runnable() {
+            @Override
+            public void run() {
+                for (BlockPos blockPos : blockStates.keySet()) {
+                    world.setBlockState(blockPos, blockStates.get(blockPos));
+                }
+            }
+        });
+    }
+
 
     @Override
     public void choose(Player playerIn, Player.Option optionIn, EnumTile enumTileIn) {
- /*       //TODO testONLY
+ /*       //
         if (optionIn == Player.Option.CANCEL) {
             for (Player player : game.getPlayers()) player.selectOption(optionIn, enumTileIn, playerIn.canChyankan());
         }
@@ -224,8 +294,10 @@ public class MjMCUI implements UI {
         Player curPlayer = game.getPlayer(game.getGameState().getCurPlayer());
         if (optionIn == Player.Option.CHI || optionIn == Player.Option.PENG || optionIn == Player.Option.GANG) uiCheckRivers();
         if (optionIn == Player.Option.KITA || optionIn == Player.Option.ANGANG || optionIn == Player.Option.PLUSGANG || optionIn == Player.Option.GANG) uiCheckMountains();
+        sendToPlayersChat(TextFormatting.BOLD + playerIn.getId() + ":" + I18n.translateToLocal("gui.option." + optionIn.name().toLowerCase()));
         printTable();
         sendCurPosToPlayers();
+        sendOptionsToPlayers();
         uiCheckHand(curPlayer);
         discard(curPlayer);
     }
@@ -236,34 +308,86 @@ public class MjMCUI implements UI {
     }
 
     @Override
-    public void showReport(Player playerIn, HashMap<Player, Integer> scoreChangeIn) {
+    public void showReport(Player playerIn, HashMap<Player, Integer> scoreChangeIn) { //agari
         WinningHand winningHand = playerIn.getWinningHand();
-        sendToPlayersChat("AGARI: ");
-        sendToPlayersChat(playerIn.getId() + " " + playerIn.getCurWind() + " " + playerIn.getHand().toString() + (winningHand.getIsTsumo() ? "" : " +" + game.getRiver().getLast().getTile().name().toLowerCase()));
+        ArrayList<String> strings1 = new ArrayList<String>();
+        final ArrayList<String> strings2 = new ArrayList<String>();
+        sendToPlayersChat(TextFormatting.GOLD.toString() + TextFormatting.BOLD + I18n.translateToLocal("gui.text.agari"));
+        sendToPlayersChat(TextFormatting.GOLD + I18n.translateToLocal("gui.position." + playerIn.getCurWind().getName().toLowerCase()) + ": " + TextFormatting.WHITE + playerIn.getId() + " : " + playerIn.getHand().toString() + (winningHand.getIsTsumo() ? "" : " + " + game.getRiver().getLast().getTile().name().toLowerCase()));
         for (AnalyzeResult analyzeResult : winningHand.getyakuList()) {
-            if (analyzeResult.getHandStatus() == WinningHand.HandStatus.WIN) sendToPlayersChat(analyzeResult.getWinningHand() + " " + analyzeResult.getFan() + "fan");
+            if (analyzeResult.getHandStatus() == WinningHand.HandStatus.WIN) {
+                int fan = analyzeResult.getFan();
+                TextFormatting color;
+                if (fan == 1) color = TextFormatting.WHITE;
+                else if (fan == 2) color = TextFormatting.AQUA;
+                else if (fan == 3) color = TextFormatting.GREEN;
+                else color = TextFormatting.LIGHT_PURPLE;
+                String sFan = fan > 0 ? Integer.toString(fan) + I18n.translateToLocal("gui.text.fan")
+                        : fan == -1 ? I18n.translateToLocal("gui.text.yakuman")
+                        : fan == -2 ? I18n.translateToLocal("gui.text.doubleyakuman")
+                        : "";
+                strings1.add(color + TextFormatting.ITALIC.toString() + TextFormatting.BOLD
+                        + sFan + " " + I18n.translateToLocal("gui.winninghand." + analyzeResult.getWinningHand().name().toLowerCase()));
+            }
         }
-        sendToPlayersChat("DORA:" + game.getMountain().getDora() + "URA:" + game.getMountain().getUra());
-        sendToPlayersChat(winningHand.getFu().getCount() + " fu, " + winningHand.getFan() + " fan");
-        sendToPlayersChat(winningHand.getScoreLevel() + " " + winningHand.getScore());
+        strings2.add(I18n.translateToLocal("gui.text.dora") + ":" + game.getMountain().getDora()
+                + " " + I18n.translateToLocal("gui.text.ura") + ":"  + game.getMountain().getUra());
+        TextFormatting color = TextFormatting.WHITE;
+        if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.MANKAN) color = TextFormatting.AQUA;
+        else if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.HANEMAN) color = TextFormatting.GREEN;
+        else if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.BAIMAN) color = TextFormatting.RED;
+        else if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.SANBAIMAN) color = TextFormatting.LIGHT_PURPLE;
+        else if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.YAKUMAN) color = TextFormatting.GOLD;
+        strings2.add(color + TextFormatting.BOLD.toString() + TextFormatting.UNDERLINE
+                + winningHand.getFu().getCount() + I18n.translateToLocal("gui.text.fu") + winningHand.getFan() + I18n.translateToLocal("gui.text.fan")
+                + (winningHand.getScoreLevel() == null ? "" : I18n.translateToLocal("gui.scorelevel." + winningHand.getScoreLevel().name().toLowerCase()) + " ")
+                + winningHand.getScore() + I18n.translateToLocal("gui.text.points"));
         for (Player player : game.getPlayers()) {
-            sendToPlayersChat(player.getId() + " " + player.getCurWind() + " " + (player.getScore() - scoreChangeIn.get(player)) + " " + scoreChangeIn.get(player));
+            int change = scoreChangeIn.get(player);
+            color = TextFormatting.WHITE;
+            if (change < 0) color = TextFormatting.RED;
+            else if (change > 0) color = TextFormatting.GREEN;
+            strings2.add(color + I18n.translateToLocal("gui.position." + player.getCurWind().getName().toLowerCase()) + " " + player.getId() + " " + Integer.toString(player.getScore() - change) + (change == 0 ? "" : change > 0 ? " +" + change : " " + change));
         }
+
+        winningHand.getyakuList().size();
+        Timer timer = new Timer();
+        for (int i = 0; i < strings1.size(); i++) {
+            final String string = strings1.get(i);
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    sendToPlayersChat(string);
+                }
+            };
+            timer.schedule(task, (i + 1) * 750);
+        }
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                for (String string : strings2) sendToPlayersChat(string);
+            }
+        };
+        timer.schedule(task, (strings1.size() + 1) * 750);
     }
 
     @Override
     public void showReport(Game.Ryuukyoku ryuukyokuIn, HashMap<Player, Integer> scoreChangeIn) {
-        sendToPlayersChat("RYUKYOKU: " + ryuukyokuIn.name());
+        sendToPlayersChat(TextFormatting.GRAY.toString() + TextFormatting.BOLD + I18n.translateToLocal("gui.text.ryuukyoku") + I18n.translateToLocal("gui.ryuukyoku." + ryuukyokuIn.name().toLowerCase()));
         for (Player player : game.getPlayers()) {
-            int scoreChange = scoreChangeIn.get(player);
-            sendToPlayersChat(player.getId() + " " + player.getCurWind() + " " + player.getScore() + (scoreChange > 0 ? " +" : " ") + scoreChange);
+            int change = scoreChangeIn.get(player);
+            TextFormatting color = TextFormatting.WHITE;
+            if (change < 0) color = TextFormatting.RED;
+            else if (change > 0) color = TextFormatting.GREEN;
+            sendToPlayersChat(color + I18n.translateToLocal("gui.position." + player.getCurWind().getName().toLowerCase()) + " " + player.getId() + " " + Integer.toString(player.getScore() - change) + (change == 0 ? "" : change > 0 ? " +" + change : " -" + change));
         }
     }
 
     @Override
-    public void showReport() {
+    public void showReport() { //when gameover
         for (Player player : game.getPlayers()) {
-            sendToPlayersChat(player.getId() + " " + player.getCurWind() + " " + player.getScore());
+            TextFormatting color = TextFormatting.WHITE;
+            sendToPlayersChat(color + I18n.translateToLocal("gui.position." + player.getCurWind().getName()) + " " + player.getId() + " " + player.getScore());
         }
     }
 
@@ -283,9 +407,11 @@ public class MjMCUI implements UI {
     @Override
     public void gameOver() {
         uiClearSpace();
+        refillContainer();
         for (Player player : game.getPlayers()) {
             Mahjong.mjGameHandler.quitGame(player.getId());
         }
+        Mahjong.mjGameHandler.removeGame(this.centerPos.toLong());
     }
 
     @Override
@@ -295,7 +421,7 @@ public class MjMCUI implements UI {
 
     @Override
     public void newDora() {
-        sendToPlayersChat("ドラ: " + game.getMountain().getDora().toString());
+        //sendToPlayersChat("ドラ: " + game.getMountain().getDora().toString());
     }
 
 
@@ -306,19 +432,20 @@ public class MjMCUI implements UI {
     }
 
     private void printTable(Player player) {
-        System.out.println(player.getId() + " " + player.getCurWind() + " " + player.getScore() + (player.isRiichi() ? "riichi" : ""));
-        System.out.println(player.getHand().toString() + "\n");
+        //System.out.println(player.getId() + " " + player.getCurWind() + " " + player.getScore() + (player.isRiichi() ? "riichi" : ""));
+        //System.out.println(player.getHand().toString() + "\n");
     }
 
     private void printGameState() {
-        sendToPlayersChat(game.getGameState().getCurRound().getName() + game.getGameState().getCurHand() + "局 " + game.getGameState().getCurExtra() + "本场");
+        /*sendToPlayersChat(game.getGameState().getCurRound().getName() + game.getGameState().getCurHand() + "局 " + game.getGameState().getCurExtra() + "本场");
         sendToPlayersChat("ドラ: " + game.getMountain().getDora().toString());
+        sendToPlayersChat("里ドラ: " + game.getMountain().getDora().toString());
         for (Player player : game.getPlayers()) {
             for (Player player1 : game.getPlayers()) {
                 sendToPlayerChat(player, player1.getId() + ":" + player1.getCurWind() + ":" + player1.getScore() + (player1.isRiichi() ? " riichi" : ""));
             }
         }
-        System.out.println(game.getGameState().getCurRound().getName() + game.getGameState().getCurHand() + " " + game.getGameState().getCurExtra());
+        System.out.println(game.getGameState().getCurRound().getName() + game.getGameState().getCurHand() + " " + game.getGameState().getCurExtra());*/
     }
 
     private void uiCheckHands() {
@@ -357,16 +484,15 @@ public class MjMCUI implements UI {
                 blockStates.put(htPos, blockState);
             }
             if (handTiles instanceof Kita) {
-                htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 20 - fuuro).up(kita);
+                htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 20).up(kita);
                 Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTile().name().toLowerCase());
                 IBlockState blockState = block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName() + "u"));
                 blockStates.put(htPos, blockState);
-                if (kita == 0) fuuro++;
                 kita++;
             }
             if (handTiles instanceof AnGang) {
                 for (int i = 0; i < 4; i++) {
-                    htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 20 - fuuro - i);
+                    htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - i);
                     Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                     IBlockState blockState = block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName() + (i == 0 || i == 3 ? "d" : "u")));
                     blockStates.put(htPos, blockState);
@@ -376,8 +502,8 @@ public class MjMCUI implements UI {
             if (handTiles instanceof Gang) {
                 if (((Gang) handTiles).getPlusGang()) {
                     for (int i = 0; i < 4; i++) {
-                        if (i == 3) htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 20 - fuuro - 3 + handTiles.getOrientation());
-                        else htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 20 - fuuro - i);
+                        if (i == 3) htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - 3 + handTiles.getOrientation());
+                        else htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - i);
                         Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                         EnumFacing12 enumFacing12 = EnumFacing12.byName(enumFacing.getName() + "u");
                         if (handTiles.getOrientation() == 3 - i) enumFacing12 = enumFacing12.rotateY();
@@ -387,7 +513,7 @@ public class MjMCUI implements UI {
                     fuuro += 3;
                 } else {
                     for (int i = 0; i < 4; i++) {
-                        htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 20 - fuuro - i);
+                        htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - i);
                         Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                         EnumFacing12 enumFacing12 = EnumFacing12.byName(enumFacing.getName() + "u");
                         if (handTiles.getOrientation() == 1 && i == 3) enumFacing12 = enumFacing12.rotateY();
@@ -401,7 +527,7 @@ public class MjMCUI implements UI {
             }
             if (handTiles instanceof Chi) {
                 for (int i = 0; i < 3; i++) {
-                    htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 20 - fuuro - i);
+                    htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - i);
                     Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                     EnumFacing12 enumFacing12 = EnumFacing12.byName(enumFacing.getName() + "u");
                     if (handTiles.getOrientation() == 3 - i) enumFacing12 = enumFacing12.rotateY();
@@ -412,7 +538,7 @@ public class MjMCUI implements UI {
             }
             if (handTiles instanceof Peng) {
                 for (int i = 0; i < 3; i++) {
-                    htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 20 - fuuro - i);
+                    htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - i);
                     Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                     EnumFacing12 enumFacing12 = EnumFacing12.byName(enumFacing.getName() + "u");
                     if (handTiles.getOrientation() == 3 - i) enumFacing12 = enumFacing12.rotateY();
@@ -534,7 +660,11 @@ public class MjMCUI implements UI {
 
     private void sendToPlayerChat(Player playerIn, String stringIn) {
         EntityPlayerMP player = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
-        if (player != null) player.addChatComponentMessage(new TextComponentString(stringIn));
+        if (player == null) {
+            //gameOver();
+            return;
+        }
+        player.addChatComponentMessage(new TextComponentString(stringIn));
     }
 
     private void sendOptionsToPlayers() {
@@ -545,10 +675,14 @@ public class MjMCUI implements UI {
 
     private void sendOptionsToPlayer(Player playerIn) {
         EntityPlayerMP playerMP = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
+        if (playerMP == null) {
+            //gameOver();
+            return;
+        }
         NetworkHandler.INSTANCE.sendTo(new MessageMjStatus(-1), playerMP);
         if (!playerIn.getOptions().isEmpty()) {
             for (Player.Option option : playerIn.getOptions().keySet()) {
-                sendToPlayerChat(playerIn, "Option: " + option.name().toLowerCase() + (playerIn.getOptions().get(option) != null ? playerIn.getOptions().get(option) : ""));
+                //sendToPlayerChat(playerIn, "Option: " + option.name().toLowerCase() + (playerIn.getOptions().get(option) != null ? playerIn.getOptions().get(option) : ""));
                 if (playerIn.getOptions().get(option) == null)
                     NetworkHandler.INSTANCE.sendTo(new MessageMjStatus(2, option.ordinal(), 0, new int[0]), playerMP);
                 else {
@@ -572,7 +706,11 @@ public class MjMCUI implements UI {
 
     private void sendGameStateToPlayer(Player playerIn) {
         EntityPlayerMP playerMP = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
-        int[] gameState = new int[5]; // int playersCount, round, hand, extra, tilesRemaining; riichibou
+        if (playerMP == null) {
+            //gameOver();
+            return;
+        }
+        int[] gameState = new int[6]; // int playersCount, round, hand, extra, tilesRemaining; riichibou
         gameState[0] = game.getGameType().getPlayerCount();
         gameState[1] = game.getGameState().getCurRound().ordinal();
         gameState[2] = game.getGameState().getCurHand();
@@ -581,9 +719,8 @@ public class MjMCUI implements UI {
         gameState[5] = game.getGameState().getCountRiichi();
         String[] players = new String[gameState[0]];
         int[] scores = new int[gameState[0]];
-        EnumPosition[] values = EnumPosition.values();
-        for (int i = 0; i < values.length; i++) {
-            EnumPosition enumPosition = values[i];
+        for (int i = 0; i < gameState[0]; i++) {
+            EnumPosition enumPosition = EnumPosition.values()[i];
             players[i] = game.getPlayer(enumPosition).getId();
             scores[i] = game.getPlayer(enumPosition).getScore();
         }
@@ -598,6 +735,10 @@ public class MjMCUI implements UI {
 
     private void sendCurPosToPlayer(Player playerIn) {
         EntityPlayerMP playerMP = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
+        if (playerMP == null) {
+            //gameOver();
+            return;
+        }
         NetworkHandler.INSTANCE.sendTo(new MessageMjStatus(1, game.getGameState().getCurPlayer().ordinal()), playerMP);
     }
 
@@ -642,5 +783,30 @@ public class MjMCUI implements UI {
                 }
             }
         });
+    }
+
+    private void clearContainer() {
+        TileEntity tileentity = world.getTileEntity(centerPos);
+        TileEntityMjTable tableInventory;
+        if (tileentity instanceof TileEntityMjTable) {
+            tableInventory = (TileEntityMjTable) tileentity;
+            tempItemStack = new ItemStack[tableInventory.getSizeInventory()];
+            for (int i = 0; i < tableInventory.getSizeInventory(); i++) {
+                tempItemStack[i] = tableInventory.getStackInSlot(i);
+            }
+            tableInventory.clear();
+        }
+    }
+
+    private void refillContainer() {
+        if (tempItemStack == null) return;
+        TileEntity tileentity = world.getTileEntity(centerPos);
+        TileEntityMjTable tableInventory;
+        if (tileentity instanceof TileEntityMjTable) {
+            tableInventory = (TileEntityMjTable) tileentity;
+            for (int i = 0; i < tempItemStack.length; i++) {
+                tableInventory.setInventorySlotContents(i, tempItemStack[i]);
+            }
+        }
     }
 }

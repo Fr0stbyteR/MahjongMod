@@ -197,7 +197,7 @@ public class Player {
             if (countYaochyuu >= 9) options.put(Option.KYUUSHYUKYUUHAI, null);
         }
         if (waiting.contains(tile)) {
-            winningHand = Analyze.analyzeWin(game.getGameType(), game.getGameState(), this, game.getMountain().getDora(), game.getMountain().getUra(), hand, null);
+            winningHand = Analyze.analyzeWin(game, this, game.getMountain().getDora(), game.getMountain().getUra(), hand, null);
             if (winningHand != null && winningHand.isWon()) {
                 options.put(Option.TSUMO, null);
             }
@@ -213,7 +213,7 @@ public class Player {
             else if (hand.getGet() == EnumTile.F4) options.put(Option.KITA, null);
         }
         HashMap<EnumTile, ArrayList<EnumTile>> dropWait = analyzeRiichi();
-        if (dropWait != null && !dropWait.isEmpty() && hand.isMenzen() && score >= 1000) {
+        if (!isRiichi && dropWait != null && !dropWait.isEmpty() && hand.isMenzen() && score >= 1000) {
             options.put(Option.RIICHI, new ArrayList<EnumTile>(dropWait.keySet()));
         }
         game.getUi().options();
@@ -246,7 +246,7 @@ public class Player {
         if (tile == hand.getGet()) hand.removeGet();
         else hand.removeFromHanding(tile).addToHandingFromGet();
         analyzeWaiting();
-        resetFuriten();
+        if (!isRiichi) resetFuriten();
         options.clear();
         game.checkOptions(this, tile, false);
         return this;
@@ -285,7 +285,7 @@ public class Player {
 
     public Player analyzeWaiting() {
         ArrayList<EnumTile> analyzeTen = Analyze.baseAnalyzeTen(hand);
-        if (analyzeTen != null) {
+        if (analyzeTen != null && analyzeTen.size() > 0) {
             waiting.clear();
             waiting.addAll(analyzeTen);
         }
@@ -304,7 +304,7 @@ public class Player {
         options.clear();
         if (playerIn == this) return options;
         if (!furiTen && waiting.contains(tileIn)) {
-            winningHand = Analyze.analyzeWin(game.getGameType(), game.getGameState(), this, game.getMountain().getDora(), game.getMountain().getUra(), hand, tileIn);
+            winningHand = Analyze.analyzeWin(game, this, game.getMountain().getDora(), game.getMountain().getUra(), hand, tileIn);
             if (winningHand != null && winningHand.isWon()) {
                 canChyankan = isChyankanIn;
                 options.put(Option.RON, tileIn.toSingletonList());
@@ -348,7 +348,7 @@ public class Player {
             return this;
         }
         if (optionIn == Option.TSUMO) {
-            tsumo(tileIn);
+            tsumo();
             return this;
         }
         if (optionIn == Option.ANGANG) {
@@ -422,10 +422,10 @@ public class Player {
         getTileFromRinshyan();
     }
 
-    public void tsumo(EnumTile tileIn) {
-        if (!waiting.contains(tileIn)) return;
+    public void tsumo() {
+        if (!waiting.contains(hand.getGet())) return;
         else {
-            winningHand = Analyze.analyzeWin(game.getGameType(), game.getGameState(), this, game.getMountain().getDora(), game.getMountain().getUra(), hand, null);
+            winningHand = Analyze.analyzeWin(game, this, game.getMountain().getDora(), game.getMountain().getUra(), hand, null);
             if (winningHand == null) return;
             if (!winningHand.isWon()) return;
         }
@@ -435,7 +435,7 @@ public class Player {
     public void ron(EnumPosition curPlayerIn, EnumTile tileIn) {
         if (furiTen || !waiting.contains(tileIn)) return;
         else {
-            winningHand = Analyze.analyzeWin(game.getGameType(), game.getGameState(), this, game.getMountain().getDora(), game.getMountain().getUra(), hand, tileIn);
+            winningHand = Analyze.analyzeWin(game, this, game.getMountain().getDora(), game.getMountain().getUra(), hand, tileIn);
             if (winningHand == null) return;
             if (!winningHand.isWon()) return;
         }

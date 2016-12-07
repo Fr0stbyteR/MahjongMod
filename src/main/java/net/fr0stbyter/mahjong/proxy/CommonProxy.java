@@ -4,7 +4,10 @@ import net.fr0stbyter.mahjong.Mahjong;
 import net.fr0stbyter.mahjong.gui.GuiHandler;
 import net.fr0stbyter.mahjong.init.MahjongRegister;
 import net.fr0stbyter.mahjong.init.NetworkHandler;
+import net.fr0stbyter.mahjong.util.EventCommonHandler;
 import net.fr0stbyter.mahjong.util.MjGameHandler;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -24,5 +27,7 @@ public class CommonProxy {
 
     public void postInit(FMLPostInitializationEvent event) {
         Mahjong.mjGameHandler = new MjGameHandler();
+        //TODO TEST
+        MinecraftForge.EVENT_BUS.register(new EventCommonHandler());
     }
 }

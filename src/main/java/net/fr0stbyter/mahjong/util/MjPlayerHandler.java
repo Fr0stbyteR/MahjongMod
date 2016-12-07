@@ -3,11 +3,13 @@ package net.fr0stbyter.mahjong.util;
 import java.util.HashMap;
 
 public class MjPlayerHandler {
-    int[] gameState; // playersCount, int round, int hand, int extra, int tilesRemaining, int riichibou
-    int curPos;
-    String[] playersName;
-    int[] playersScore;
-    HashMap<Integer, int[]> options;
+    private int isInGame;
+    private String gameId;
+    private int[] gameState; // playersCount, int round, int hand, int extra, int tilesRemaining, int riichibou
+    private int curPos;
+    private String[] playersName;
+    private int[] playersScore;
+    private HashMap<Integer, int[]> options;
 
     public MjPlayerHandler() {
         this.options = new HashMap<Integer, int[]>();
@@ -30,5 +32,38 @@ public class MjPlayerHandler {
 
     public void updateCurPos(int curPos) {
         this.curPos = curPos;
+    }
+
+    public void setGame(int isInGame, String gameId) {
+        this.isInGame = isInGame;
+        this.gameId = gameId;
+    }
+
+    public int getIsInGame() {
+        return isInGame;
+    }
+
+    public String getGameId() {
+        return gameId;
+    }
+
+    public int[] getGameState() {
+        return gameState;
+    }
+
+    public int getCurPos() {
+        return curPos;
+    }
+
+    public String[] getPlayersName() {
+        return playersName;
+    }
+
+    public int[] getPlayersScore() {
+        return playersScore;
+    }
+
+    public HashMap<Integer, int[]> getOptions() {
+        return options;
     }
 }

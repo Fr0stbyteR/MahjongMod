@@ -296,6 +296,7 @@ public class Hand implements Cloneable {
         for (HandTiles handTiles : tiles) {
             if (handTiles instanceof Get) {
                 tiles.remove(handTiles);
+                hasGet = false;
                 return this;
             }
         }

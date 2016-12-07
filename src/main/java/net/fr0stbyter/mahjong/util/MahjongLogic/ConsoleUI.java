@@ -29,6 +29,11 @@ public class ConsoleUI implements UI {
     }
 
     @Override
+    public void agari(Player playerIn) {
+
+    }
+
+    @Override
     public void setGame(Game gameIn) {
         game = gameIn;
         scanner = new Scanner(System.in);
