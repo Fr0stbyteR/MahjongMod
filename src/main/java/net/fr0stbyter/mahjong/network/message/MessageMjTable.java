@@ -12,13 +12,15 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MessageMjTable implements IMessage, IMessageHandler<MessageMjTable, IMessage> {
+    private boolean isAdd; //false:kick
     private int x, y, z;
     private int region, playerCount, length, redDoraCount;
 
     public MessageMjTable() {
     }
 
-    public MessageMjTable(int x, int y, int z, int region, int playerCount, int length, int redDoraCount) {
+    public MessageMjTable(boolean isAdd, int x, int y, int z, int region, int playerCount, int length, int redDoraCount) {
+        this.isAdd = isAdd;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -28,8 +30,14 @@ public class MessageMjTable implements IMessage, IMessageHandler<MessageMjTable,
         this.redDoraCount = redDoraCount;
     }
 
+    public MessageMjTable(boolean isAdd) {
+        this.isAdd = isAdd;
+    }
+
     @Override
     public void fromBytes(ByteBuf buf) {
+        this.isAdd = buf.readBoolean();
+        if (!this.isAdd) return;
         this.x = buf.readInt();
         this.y = buf.readInt();
         this.z = buf.readInt();
@@ -41,6 +49,8 @@ public class MessageMjTable implements IMessage, IMessageHandler<MessageMjTable,
 
     @Override
     public void toBytes(ByteBuf buf) {
+        buf.writeBoolean(isAdd);
+        if (!isAdd) return;
         buf.writeInt(x);
         buf.writeInt(y);
         buf.writeInt(z);
@@ -54,6 +64,10 @@ public class MessageMjTable implements IMessage, IMessageHandler<MessageMjTable,
     public IMessage onMessage(MessageMjTable message, MessageContext ctx) {
         //World world = ctx.getServerHandler().playerEntity.worldObj;
         EntityPlayer player = ctx.getServerHandler().playerEntity;
+        if (!message.isAdd) {
+            Mahjong.mjGameHandler.kickPlayer(player);
+            return null;
+        }
         BlockPos pos = new BlockPos(message.x, message.y, message.z);
         EnumFacing facing = EnumFacing.EAST;
         int diffX = player.getPosition().getX() - message.x;

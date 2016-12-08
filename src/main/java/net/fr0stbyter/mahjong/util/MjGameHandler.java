@@ -2,7 +2,6 @@ package net.fr0stbyter.mahjong.util;
 
 import net.fr0stbyter.mahjong.init.NetworkHandler;
 import net.fr0stbyter.mahjong.network.message.MessageMjIsInGame;
-import net.fr0stbyter.mahjong.network.message.MessageMjStatus;
 import net.fr0stbyter.mahjong.util.MahjongLogic.Game;
 import net.fr0stbyter.mahjong.util.MahjongLogic.GameType;
 import net.minecraft.entity.player.EntityPlayer;
@@ -26,7 +25,8 @@ public class MjGameHandler {
 
     public void addWaitingPlayer(EntityPlayer playerIn, EnumFacing positionIn, BlockPos mjTablePos, GameType gameType) {
         long gameId = mjTablePos.toLong();
-        if (games.get(gameId) == null) games.put(mjTablePos.toLong(), new Game(gameType, new MjMCUI(playerIn.getEntityWorld(), mjTablePos)));
+        //if (!games.containsKey(gameId) || games.get(gameId) == null)
+        games.put(mjTablePos.toLong(), new Game(gameType, new MjMCUI(playerIn.getEntityWorld(), mjTablePos)));
         gameStatusMap.put(playerIn.getName(), new PlayerGameStatus(false, true, positionIn, mjTablePos.toLong()));
         playerMPs.put(playerIn.getName(), (EntityPlayerMP) playerIn);
         NetworkHandler.INSTANCE.sendTo(new MessageMjIsInGame(1, mjTablePos.toLong()), (EntityPlayerMP) playerIn);
@@ -98,8 +98,9 @@ public class MjGameHandler {
 
     public void kickPlayer(EntityPlayer player) {
         String playerId = player.getName();
-        if (gameStatusMap.get(playerId).isInGame()) games.get(gameStatusMap.get(playerId).getGame()).getUi().gameOver();
+        if (!gameStatusMap.containsKey(playerId)) return;
         if (gameStatusMap.get(playerId).isWaiting()) gameStatusMap.get(playerId).setWaiting(false);
+        if (gameStatusMap.get(playerId).isInGame()) games.get(gameStatusMap.get(playerId).getGame()).getUi().gameOver();
     }
 
     public HashMap<String, PlayerGameStatus> getGameStatusMap() {

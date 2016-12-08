@@ -16,7 +16,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class Mahjong {
     public static final String MODID = "mahjong";
     public static final String NAME = "Mahjong";
-    public static final String VERSION = "0.9.6";
+    public static final String VERSION = "0.9.7";
     public static final String GUI_FACTORY_CLASS = "net.fr0stbyter.mahjong.gui.GuiFactory";
     //@SideOnly(Side.SERVER)
     public static MjGameHandler mjGameHandler;

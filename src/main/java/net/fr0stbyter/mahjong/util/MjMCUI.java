@@ -1,14 +1,17 @@
 package net.fr0stbyter.mahjong.util;
 
 import net.fr0stbyter.mahjong.Mahjong;
+import net.fr0stbyter.mahjong.blocks.BlockMj;
 import net.fr0stbyter.mahjong.init.NetworkHandler;
 import net.fr0stbyter.mahjong.network.message.MessageMjStatus;
 import net.fr0stbyter.mahjong.tileentity.TileEntityMjTable;
 import net.fr0stbyter.mahjong.util.MahjongLogic.*;
 import net.fr0stbyter.mahjong.util.MahjongLogic.Hand.*;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
@@ -37,6 +40,7 @@ public class MjMCUI implements UI {
     private final HashMap<EnumFacing, BlockPos> RIVER_POS = new HashMap<EnumFacing, BlockPos>();
     private final HashMap<EnumFacing, BlockPos> MOUNTAIN_POS = new HashMap<EnumFacing, BlockPos>();
     private ItemStack[] tempItemStack;
+    private BlockPos riverWaitingPos;
 
     public World getWorld() {
         return world;
@@ -46,18 +50,21 @@ public class MjMCUI implements UI {
         this.world = world;
         this.centerPos = centerPos;
         int[] htRvHeight = new int[]{0, 0, 0};
-    /*    for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
             if (world.getBlockState(centerPos.east(11).south(10).up(i)).getMaterial() == Material.air) break;
+            if (world.getBlockState(centerPos.east(11).south(10).up(i)).getBlock().getClass() == BlockMj.class) break;
             else htRvHeight[0]++;
         }
         for (int i = 0; i < 10; i++) {
             if (world.getBlockState(centerPos.east(4).south(3).up(i)).getMaterial() == Material.air) break;
+            if (world.getBlockState(centerPos.east(4).south(3).up(i)).getBlock().getClass() == BlockMj.class) break;
             else htRvHeight[1]++;
         }
         for (int i = 0; i < 10; i++) {
             if (world.getBlockState(centerPos.east(9).south(8).up(i)).getMaterial() == Material.air) break;
+            if (world.getBlockState(centerPos.east(9).south(8).up(i)).getBlock().getClass() == BlockMj.class) break;
             else htRvHeight[2]++;
-        }*/
+        }
         HANDTILES_POS.put(EnumFacing.EAST, centerPos.east(11).south(10).up(htRvHeight[0]));
         HANDTILES_POS.put(EnumFacing.SOUTH, centerPos.south(11).west(10).up(htRvHeight[0]));
         HANDTILES_POS.put(EnumFacing.WEST, centerPos.west(11).north(10).up(htRvHeight[0]));
@@ -95,6 +102,7 @@ public class MjMCUI implements UI {
         sendGameStateToPlayers();
         sendCurPosToPlayers();
         discard(game.getCurPlayer());
+        //gameOver();
     }
 
     private void testOnly() {
@@ -112,8 +120,12 @@ public class MjMCUI implements UI {
                 .addToHanding(EnumTile.F1)
                 .addToHanding(EnumTile.F1)
                 .addToHanding(EnumTile.D3);
-        game.getPlayers().get(1).setHandTiles(hand);
-        game.getPlayers().get(1).analyzeWaiting();
+        for (Player player : game.getPlayers()) {
+            if (!player.getId().equals("A") && !player.getId().equals("B")) {
+                player.setHandTiles(hand);
+                player.analyzeWaiting();
+            }
+        }
     }
 
     @Override
@@ -238,6 +250,7 @@ public class MjMCUI implements UI {
 
     @Override
     public void agari(Player playerIn) {
+        EntityLightningBolt entitybolt = null;
         EnumFacing enumFacing = playerPositions.get(playerIn.getId());
         BlockPos htPos = HANDTILES_POS.get(enumFacing);
         final HashMap<BlockPos, IBlockState> blockStates = new HashMap<BlockPos, IBlockState>();
@@ -255,14 +268,18 @@ public class MjMCUI implements UI {
                 Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTile().name().toLowerCase());
                 IBlockState blockState = block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName() + "u"));
                 blockStates.put(htPos, blockState);
+                entitybolt = new EntityLightningBolt(world, htPos.getX(), htPos.getY(), htPos.getZ(), true);
             }
         }
+        if (entitybolt == null) entitybolt = new EntityLightningBolt(world, riverWaitingPos.getX(), riverWaitingPos.getY(), riverWaitingPos.getZ(), true);
+        final EntityLightningBolt finalEntitybolt = entitybolt;
         world.getMinecraftServer().addScheduledTask(new Runnable() {
             @Override
             public void run() {
                 for (BlockPos blockPos : blockStates.keySet()) {
                     world.setBlockState(blockPos, blockStates.get(blockPos));
                 }
+                world.addWeatherEffect(finalEntitybolt);
             }
         });
     }
@@ -576,7 +593,10 @@ public class MjMCUI implements UI {
                     ? block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.rotateY().getName() + "u"))
                     : block.getDefaultState().withProperty(FACING12, EnumFacing12.byName(enumFacing.getName() + "u"));
             if (riverTile.isShown()) {
-                if (riverTile.getWaiting()) blockStates.put(rvPos.up(1), blockState);
+                if (riverTile.getWaiting()) {
+                    blockStates.put(rvPos.up(1), blockState);
+                    riverWaitingPos = rvPos;
+                }
                 else {
                     blockStates.put(rvPos, blockState);
                     blockStates.put(rvPos.up(1), Blocks.air.getDefaultState());
@@ -715,7 +735,7 @@ public class MjMCUI implements UI {
         gameState[1] = game.getGameState().getCurRound().ordinal();
         gameState[2] = game.getGameState().getCurHand();
         gameState[3] = game.getGameState().getCurExtra();
-        gameState[4] = game.getMountain().getAvailableCount()[0];
+        gameState[4] = game.getGameType().getLength();
         gameState[5] = game.getGameState().getCountRiichi();
         String[] players = new String[gameState[0]];
         int[] scores = new int[gameState[0]];

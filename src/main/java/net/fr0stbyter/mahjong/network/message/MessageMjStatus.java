@@ -9,7 +9,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MessageMjStatus implements IMessage, IMessageHandler<MessageMjStatus, IMessage> {
     private int messageType; //-1 clear options 0 state, 1 curPlayer, 2 options
-    private int playersCount, round, hand, extra, tilesRemaining, riichibou;
+    private int playersCount, round, hand, extra, gameLength, riichibou;
     private String[] playersName;
     private int[] playersScore;
     private int curPos;
@@ -23,14 +23,14 @@ public class MessageMjStatus implements IMessage, IMessageHandler<MessageMjStatu
         this.messageType = messageType;
     }
 
-    public MessageMjStatus(int messageType, int playersCount, int round, int hand, int extra, int tilesRemaining, int riichibou, String[] playersName, int[] playersScore) {
+    public MessageMjStatus(int messageType, int playersCount, int round, int hand, int extra, int gameLength, int riichibou, String[] playersName, int[] playersScore) {
         this.messageType = messageType;
         this.playersCount = playersCount;
         this.round = round;
         this.hand = hand;
         this.extra = extra;
         this.riichibou = riichibou;
-        this.tilesRemaining = tilesRemaining;
+        this.gameLength = gameLength;
         this.playersName = playersName;
         this.playersScore = playersScore;
     }
@@ -54,7 +54,7 @@ public class MessageMjStatus implements IMessage, IMessageHandler<MessageMjStatu
             this.round = buf.readInt();
             this.hand = buf.readInt();
             this.extra = buf.readInt();
-            this.tilesRemaining = buf.readInt();
+            this.gameLength = buf.readInt();
             this.riichibou = buf.readInt();
             this.playersName = new String[playersCount];
             this.playersScore = new int[playersCount];
@@ -86,7 +86,7 @@ public class MessageMjStatus implements IMessage, IMessageHandler<MessageMjStatu
             buf.writeInt(round);
             buf.writeInt(hand);
             buf.writeInt(extra);
-            buf.writeInt(tilesRemaining);
+            buf.writeInt(gameLength);
             buf.writeInt(riichibou);
             for (int i = 0; i < playersCount; i++) {
                 ByteBufUtils.writeUTF8String(buf, playersName[i]);
@@ -114,7 +114,7 @@ public class MessageMjStatus implements IMessage, IMessageHandler<MessageMjStatu
             return null;
         }
         if (message.messageType == 0) {
-            Mahjong.mjPlayerHandler.updateState(new int[]{message.playersCount, message.round, message.hand, message.extra, message.tilesRemaining, message.riichibou}, message.playersName, message.playersScore);
+            Mahjong.mjPlayerHandler.updateState(new int[]{message.playersCount, message.round, message.hand, message.extra, message.gameLength, message.riichibou}, message.playersName, message.playersScore);
             return null;
         }
         if (message.messageType == 1) {

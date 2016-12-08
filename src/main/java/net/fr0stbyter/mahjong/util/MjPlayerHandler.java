@@ -5,7 +5,7 @@ import java.util.HashMap;
 public class MjPlayerHandler {
     private int isInGame;
     private String gameId;
-    private int[] gameState; // playersCount, int round, int hand, int extra, int tilesRemaining, int riichibou
+    private int[] gameState; // playersCount, int round, int hand, int extra, int length, int riichibou
     private int curPos;
     private String[] playersName;
     private int[] playersScore;

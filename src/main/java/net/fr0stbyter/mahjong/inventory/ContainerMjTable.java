@@ -22,11 +22,11 @@ public class ContainerMjTable extends Container {
         }
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; ++j) {
-                addSlotToContainer(new Slot(playerInventoryIn, j + i * 9 + 9, j * 18 + 17, i * 18 + 150));
+                addSlotToContainer(new Slot(playerInventoryIn, j + i * 9 + 9, j * 18 + 17, i * 18 + 152));
             }
         }
         for (int i = 0; i < 9; i++) {
-            addSlotToContainer(new Slot(playerInventoryIn, i, i * 18 + 17, 208));
+            addSlotToContainer(new Slot(playerInventoryIn, i, i * 18 + 17, 210));
         }
     }
 

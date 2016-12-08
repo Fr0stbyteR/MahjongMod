@@ -9,6 +9,7 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
 
 import java.util.HashMap;
@@ -43,7 +44,13 @@ public class GuiMjStatus extends GuiScreen {
         text = I18n.translateToLocal("gui.text.playing") + "#" + Mahjong.mjPlayerHandler.getGameId();
         drawString(fontRenderer, text, x, top, Integer.parseInt("0088FF", 16));
         line++;
-        text = I18n.translateToLocal("gui.position." + EnumPosition.getPosition(gameState[1])) + gameState[2] + I18n.translateToLocal("gui.text.hand") + " " + gameState[3] + I18n.translateToLocal("gui.text.extra");
+        text = (gameState[0] == 3 ? I18n.translateToLocal("gui.text.sanma") : I18n.translateToLocal("gui.text.fourp"))
+                + (gameState[4] == 1 ? I18n.translateToLocal("gui.length.east") : gameState[4] == 2 ? I18n.translateToLocal("gui.length.south") : I18n.translateToLocal("gui.length.all"));
+        drawString(fontRenderer, text, x, top + line * lineWidth, Integer.parseInt("0088FF", 16));
+        line++;
+        text = TextFormatting.BOLD + I18n.translateToLocal("gui.position." + EnumPosition.getPosition(gameState[1])) + gameState[2] + I18n.translateToLocal("gui.text.hand")
+                + " " + gameState[3] + I18n.translateToLocal("gui.text.extra")
+                + " " + I18n.translateToLocal("gui.text.riichibou") + "*" +  gameState[5];
         drawString(fontRenderer, text, x, top + line * lineWidth, Integer.parseInt("0088FF", 16));
         line++;
         String[] names = Mahjong.mjPlayerHandler.getPlayersName();
