@@ -190,7 +190,7 @@ public class Hand implements Cloneable {
         EnumTile last = null;
         if (hasGet) hand.add(getGet().getNormal());
         for (EnumTile tile : hand) {
-            if (last == tile) continue;
+            if (last == tile || found.contains(tile)) continue;
             else last = tile;
             int count = 0;
             for (EnumTile tile1 : hand) {
@@ -217,18 +217,21 @@ public class Hand implements Cloneable {
         ArrayList<EnumTile> found = new ArrayList<EnumTile>();
         for (EnumTile tile : tilePeng) {
             if (getHandingToNormal().contains(tile)) found.add(tile);
+            if (getGet() == tile) found.add(tile);
         }
         return found;
     }
 
-    public Hand plusGang(EnumTile tileGot) {
+    public Hand plusGang(EnumTile tileIn) {
         for (HandTiles handTiles : tiles) {
-            if (handTiles instanceof Peng && handTiles.getTile() == tileGot) {
-                addToHanding(handTiles.getTiles());
-                tiles.remove(handTiles);
-                tilePeng.remove(tileGot.getNormal());
-                gang(tileGot, 0, true);
-                break;
+            if (handTiles instanceof Peng) {
+                if (getGet() == tileIn || getHandingToNormal().contains(tileIn)) {
+                    addToHandingFromGet();
+                    tiles.remove(handTiles);
+                    tilePeng.remove(tileIn.getNormal());
+                    gang(tileIn, 0, true);
+                    break;
+                }
             }
         }
         return this;

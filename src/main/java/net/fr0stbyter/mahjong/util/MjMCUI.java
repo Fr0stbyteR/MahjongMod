@@ -21,7 +21,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraft.util.text.translation.I18n;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,8 +38,10 @@ public class MjMCUI implements UI {
     private final HashMap<EnumFacing, BlockPos> HANDTILES_POS = new HashMap<EnumFacing, BlockPos>();
     private final HashMap<EnumFacing, BlockPos> RIVER_POS = new HashMap<EnumFacing, BlockPos>();
     private final HashMap<EnumFacing, BlockPos> MOUNTAIN_POS = new HashMap<EnumFacing, BlockPos>();
-    private ItemStack[] tempItemStack;
+    private ItemStack[] tempItemStack = null;
     private BlockPos riverWaitingPos;
+    private static HashMap<String, String> translations = new HashMap<String, String>();
+    private Timer[] autoPlayTimer;
 
     public World getWorld() {
         return world;
@@ -77,6 +78,7 @@ public class MjMCUI implements UI {
         MOUNTAIN_POS.put(EnumFacing.SOUTH, centerPos.south(9).west(8).up(htRvHeight[2]));
         MOUNTAIN_POS.put(EnumFacing.WEST, centerPos.west(9).north(8).up(htRvHeight[2]));
         MOUNTAIN_POS.put(EnumFacing.NORTH, centerPos.north(9).east(8).up(htRvHeight[2]));
+        registerLanguageForServer();
     }
 
     @Override
@@ -87,6 +89,10 @@ public class MjMCUI implements UI {
     @Override
     public void setGame(Game gameIn) {
         game = gameIn;
+        autoPlayTimer = new Timer[game.getGameType().getPlayerCount()];
+        for (int i = 0; i < autoPlayTimer.length; i++) {
+            autoPlayTimer[i] = new Timer();
+        }
     }
 
     @Override
@@ -143,12 +149,58 @@ public class MjMCUI implements UI {
     }
 
     @Override
-    public void discard(Player playerIn) {
+    public void discard(final Player playerIn) {
+        if (playerIn.isRiichi() && playerIn.getOptions().size() == 0) { //riichi autoplay
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    discard(playerIn, playerIn.getHand().getGet());
+                }
+            };
+            Timer timer = autoPlayTimer[game.getPlayers().indexOf(playerIn)];
+            if (timer != null) {
+                timer.cancel();
+                timer = new Timer();
+                timer.schedule(task, 1500);
+            }
+            return;
+        }
+        if (playerIn.isOffline()) { //offline autoplay
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    discard(playerIn, playerIn.getHand().getGet());
+                }
+            };
+            Timer timer = autoPlayTimer[game.getPlayers().indexOf(playerIn)];
+            if (timer != null) {
+                timer.cancel();
+                timer = new Timer();
+                timer.schedule(task, 1500);
+            }
+            return;
+        }
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                playerIn.setOffline(true);
+                discard(playerIn, playerIn.getHand().getGet());
+            }
+        };
+        Timer timer = autoPlayTimer[game.getPlayers().indexOf(playerIn)];
+        if (timer != null) {
+            timer.cancel();
+            timer = new Timer();
+            timer.schedule(task, 30000);
+        }
         //sendToPlayersChat("Now " + playerIn.getId() + "'s turn.");
     }
 
     @Override
     public void chooseInt(Player playerIn, int optionIn, EnumTile enumTileIn) {
+        autoPlayTimer[game.getPlayers().indexOf(playerIn)].cancel();
+        autoPlayTimer[game.getPlayers().indexOf(playerIn)] = new Timer();
+        playerIn.setOffline(false);
         boolean canChyankan = playerIn.canChyankan();
         HashMap<Player.Option, ArrayList<EnumTile>> options = playerIn.getOptions();
         if (optionIn == 0) {
@@ -241,8 +293,8 @@ public class MjMCUI implements UI {
                 playerIn.selectOption(Player.Option.RON, options.get(Player.Option.RON).get(0), canChyankan);
                 return;
             }
-            if (options.containsKey(Player.Option.TSUMO) && options.get(Player.Option.TSUMO).size() > 0) {
-                playerIn.selectOption(Player.Option.TSUMO, options.get(Player.Option.TSUMO).get(0), canChyankan);
+            if (options.containsKey(Player.Option.TSUMO)) {
+                playerIn.selectOption(Player.Option.TSUMO, null, canChyankan);
                 return;
             }
         }
@@ -284,6 +336,11 @@ public class MjMCUI implements UI {
         });
     }
 
+    @Override
+    public void hosted(boolean hostedIn, Player playerIn) {
+        sendToPlayersChat((hostedIn ? translations.get("gui.text.hosted") : translations.get("gui.text.unhosted")) + " " + playerIn.getId());
+    }
+
 
     @Override
     public void choose(Player playerIn, Player.Option optionIn, EnumTile enumTileIn) {
@@ -311,7 +368,7 @@ public class MjMCUI implements UI {
         Player curPlayer = game.getPlayer(game.getGameState().getCurPlayer());
         if (optionIn == Player.Option.CHI || optionIn == Player.Option.PENG || optionIn == Player.Option.GANG) uiCheckRivers();
         if (optionIn == Player.Option.KITA || optionIn == Player.Option.ANGANG || optionIn == Player.Option.PLUSGANG || optionIn == Player.Option.GANG) uiCheckMountains();
-        sendToPlayersChat(TextFormatting.BOLD + playerIn.getId() + ":" + I18n.translateToLocal("gui.option." + optionIn.name().toLowerCase()));
+        sendToPlayersChat(TextFormatting.BOLD + playerIn.getId() + ":" + translations.get("gui.option." + optionIn.name().toLowerCase()));
         printTable();
         sendCurPosToPlayers();
         sendOptionsToPlayers();
@@ -329,8 +386,8 @@ public class MjMCUI implements UI {
         WinningHand winningHand = playerIn.getWinningHand();
         ArrayList<String> strings1 = new ArrayList<String>();
         final ArrayList<String> strings2 = new ArrayList<String>();
-        sendToPlayersChat(TextFormatting.GOLD.toString() + TextFormatting.BOLD + I18n.translateToLocal("gui.text.agari"));
-        sendToPlayersChat(TextFormatting.GOLD + I18n.translateToLocal("gui.position." + playerIn.getCurWind().getName().toLowerCase()) + ": " + TextFormatting.WHITE + playerIn.getId() + " : " + playerIn.getHand().toString() + (winningHand.getIsTsumo() ? "" : " + " + game.getRiver().getLast().getTile().name().toLowerCase()));
+        sendToPlayersChat(TextFormatting.GOLD.toString() + TextFormatting.BOLD + translations.get("gui.text.agari"));
+        sendToPlayersChat(TextFormatting.GOLD + translations.get("gui.position." + playerIn.getCurWind().getName().toLowerCase()) + ": " + TextFormatting.WHITE + playerIn.getId() + " : " + playerIn.getHand().toString() + (winningHand.getIsTsumo() ? "" : " + " + game.getRiver().getLast().getTile().name().toLowerCase()));
         for (AnalyzeResult analyzeResult : winningHand.getyakuList()) {
             if (analyzeResult.getHandStatus() == WinningHand.HandStatus.WIN) {
                 int fan = analyzeResult.getFan();
@@ -339,16 +396,16 @@ public class MjMCUI implements UI {
                 else if (fan == 2) color = TextFormatting.AQUA;
                 else if (fan == 3) color = TextFormatting.GREEN;
                 else color = TextFormatting.LIGHT_PURPLE;
-                String sFan = fan > 0 ? Integer.toString(fan) + I18n.translateToLocal("gui.text.fan")
-                        : fan == -1 ? I18n.translateToLocal("gui.text.yakuman")
-                        : fan == -2 ? I18n.translateToLocal("gui.text.doubleyakuman")
+                String sFan = fan > 0 ? Integer.toString(fan) + translations.get("gui.text.fan")
+                        : fan == -1 ? translations.get("gui.text.yakuman")
+                        : fan == -2 ? translations.get("gui.text.doubleyakuman")
                         : "";
                 strings1.add(color + TextFormatting.ITALIC.toString() + TextFormatting.BOLD
-                        + sFan + " " + I18n.translateToLocal("gui.winninghand." + analyzeResult.getWinningHand().name().toLowerCase()));
+                        + sFan + " " + translations.get("gui.winninghand." + analyzeResult.getWinningHand().name().toLowerCase()));
             }
         }
-        strings2.add(I18n.translateToLocal("gui.text.dora") + ":" + game.getMountain().getDora()
-                + " " + I18n.translateToLocal("gui.text.ura") + ":"  + game.getMountain().getUra());
+        strings2.add(translations.get("gui.text.dora") + ":" + game.getMountain().getDora()
+                + " " + translations.get("gui.text.ura") + ":"  + game.getMountain().getUra());
         TextFormatting color = TextFormatting.WHITE;
         if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.MANKAN) color = TextFormatting.AQUA;
         else if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.HANEMAN) color = TextFormatting.GREEN;
@@ -356,15 +413,15 @@ public class MjMCUI implements UI {
         else if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.SANBAIMAN) color = TextFormatting.LIGHT_PURPLE;
         else if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.YAKUMAN) color = TextFormatting.GOLD;
         strings2.add(color + TextFormatting.BOLD.toString() + TextFormatting.UNDERLINE
-                + winningHand.getFu().getCount() + I18n.translateToLocal("gui.text.fu") + winningHand.getFan() + I18n.translateToLocal("gui.text.fan")
-                + (winningHand.getScoreLevel() == null ? "" : I18n.translateToLocal("gui.scorelevel." + winningHand.getScoreLevel().name().toLowerCase()) + " ")
-                + winningHand.getScore() + I18n.translateToLocal("gui.text.points"));
+                + winningHand.getFu().getCount() + translations.get("gui.text.fu") + winningHand.getFan() + translations.get("gui.text.fan")
+                + (winningHand.getScoreLevel() == null ? "" : translations.get("gui.scorelevel." + winningHand.getScoreLevel().name().toLowerCase()) + " ")
+                + winningHand.getScore() + translations.get("gui.text.points"));
         for (Player player : game.getPlayers()) {
             int change = scoreChangeIn.get(player);
             color = TextFormatting.WHITE;
             if (change < 0) color = TextFormatting.RED;
             else if (change > 0) color = TextFormatting.GREEN;
-            strings2.add(color + I18n.translateToLocal("gui.position." + player.getCurWind().getName().toLowerCase()) + " " + player.getId() + " " + Integer.toString(player.getScore() - change) + (change == 0 ? "" : change > 0 ? " +" + change : " " + change));
+            strings2.add(color + translations.get("gui.position." + player.getCurWind().getName().toLowerCase()) + " " + player.getId() + " " + Integer.toString(player.getScore() - change) + (change == 0 ? "" : change > 0 ? " +" + change : " " + change));
         }
 
         winningHand.getyakuList().size();
@@ -390,13 +447,13 @@ public class MjMCUI implements UI {
 
     @Override
     public void showReport(Game.Ryuukyoku ryuukyokuIn, HashMap<Player, Integer> scoreChangeIn) {
-        sendToPlayersChat(TextFormatting.GRAY.toString() + TextFormatting.BOLD + I18n.translateToLocal("gui.text.ryuukyoku") + I18n.translateToLocal("gui.ryuukyoku." + ryuukyokuIn.name().toLowerCase()));
+        sendToPlayersChat(TextFormatting.GRAY.toString() + TextFormatting.BOLD + translations.get("gui.text.ryuukyoku") + ": " + translations.get("gui.ryuukyoku." + ryuukyokuIn.name().toLowerCase()));
         for (Player player : game.getPlayers()) {
             int change = scoreChangeIn.get(player);
             TextFormatting color = TextFormatting.WHITE;
             if (change < 0) color = TextFormatting.RED;
             else if (change > 0) color = TextFormatting.GREEN;
-            sendToPlayersChat(color + I18n.translateToLocal("gui.position." + player.getCurWind().getName().toLowerCase()) + " " + player.getId() + " " + Integer.toString(player.getScore() - change) + (change == 0 ? "" : change > 0 ? " +" + change : " -" + change));
+            sendToPlayersChat(color + translations.get("gui.position." + player.getCurWind().getName().toLowerCase()) + " " + player.getId() + " " + Integer.toString(player.getScore() - change) + (change == 0 ? " " : change > 0 ? "+" + change : change));
         }
     }
 
@@ -404,7 +461,7 @@ public class MjMCUI implements UI {
     public void showReport() { //when gameover
         for (Player player : game.getPlayers()) {
             TextFormatting color = TextFormatting.WHITE;
-            sendToPlayersChat(color + I18n.translateToLocal("gui.position." + player.getCurWind().getName()) + " " + player.getId() + " " + player.getScore());
+            sendToPlayersChat(color + translations.get("gui.position." + player.getCurWind().getName()) + " " + player.getId() + " " + player.getScore());
         }
     }
 
@@ -423,6 +480,7 @@ public class MjMCUI implements UI {
 
     @Override
     public void gameOver() {
+        for (Timer timer : autoPlayTimer) timer.cancel();
         uiClearSpace();
         refillContainer();
         for (Player player : game.getPlayers()) {
@@ -519,11 +577,11 @@ public class MjMCUI implements UI {
             if (handTiles instanceof Gang) {
                 if (((Gang) handTiles).getPlusGang()) {
                     for (int i = 0; i < 4; i++) {
-                        if (i == 3) htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - 3 + handTiles.getOrientation());
+                        if (i == 3) htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - 3 + handTiles.getOrientation()).offset(enumFacing.getOpposite(), 1);
                         else htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - i);
                         Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                         EnumFacing12 enumFacing12 = EnumFacing12.byName(enumFacing.getName() + "u");
-                        if (handTiles.getOrientation() == 3 - i) enumFacing12 = enumFacing12.rotateY();
+                        if (handTiles.getOrientation() == 3 - i || i == 3) enumFacing12 = enumFacing12.rotateY();
                         IBlockState blockState = block.getDefaultState().withProperty(FACING12, enumFacing12);
                         blockStates.put(htPos, blockState);
                     }
@@ -681,7 +739,7 @@ public class MjMCUI implements UI {
     private void sendToPlayerChat(Player playerIn, String stringIn) {
         EntityPlayerMP player = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
         if (player == null) {
-            //gameOver();
+            //playerIn.setOffline(true);
             return;
         }
         player.addChatComponentMessage(new TextComponentString(stringIn));
@@ -693,10 +751,12 @@ public class MjMCUI implements UI {
         }
     }
 
-    private void sendOptionsToPlayer(Player playerIn) {
+    private void sendOptionsToPlayer(final Player playerIn) {
         EntityPlayerMP playerMP = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
         if (playerMP == null) {
-            //gameOver();
+            if (playerIn.getOptions().containsKey(Player.Option.CANCEL)) playerIn.selectOption(Player.Option.CANCEL, null, playerIn.canChyankan());
+            else playerIn.selectOption(Player.Option.NEXT, null, playerIn.canChyankan());
+            playerIn.setOffline(true);
             return;
         }
         NetworkHandler.INSTANCE.sendTo(new MessageMjStatus(-1), playerMP);
@@ -716,6 +776,22 @@ public class MjMCUI implements UI {
                 }
             }
         }
+
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                if (playerIn.getOptions().containsKey(Player.Option.CANCEL)) playerIn.selectOption(Player.Option.CANCEL, null, playerIn.canChyankan());
+                else playerIn.selectOption(Player.Option.NEXT, null, playerIn.canChyankan());
+                playerIn.setOffline(true);
+            }
+        };
+        Timer timer = autoPlayTimer[game.getPlayers().indexOf(playerIn)];
+        if (timer != null) {
+            timer.cancel();
+            timer = new Timer();
+            timer.schedule(task, playerIn.isOffline() ? 1500 : 20000);
+        }
+
     }
 
     private void sendGameStateToPlayers() {
@@ -727,7 +803,7 @@ public class MjMCUI implements UI {
     private void sendGameStateToPlayer(Player playerIn) {
         EntityPlayerMP playerMP = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
         if (playerMP == null) {
-            //gameOver();
+            playerIn.setOffline(true);
             return;
         }
         int[] gameState = new int[6]; // int playersCount, round, hand, extra, tilesRemaining; riichibou
@@ -756,7 +832,7 @@ public class MjMCUI implements UI {
     private void sendCurPosToPlayer(Player playerIn) {
         EntityPlayerMP playerMP = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
         if (playerMP == null) {
-            //gameOver();
+            playerIn.setOffline(true);
             return;
         }
         NetworkHandler.INSTANCE.sendTo(new MessageMjStatus(1, game.getGameState().getCurPlayer().ordinal()), playerMP);
@@ -806,6 +882,7 @@ public class MjMCUI implements UI {
     }
 
     private void clearContainer() {
+        if (tempItemStack != null) return;
         TileEntity tileentity = world.getTileEntity(centerPos);
         TileEntityMjTable tableInventory;
         if (tileentity instanceof TileEntityMjTable) {
@@ -828,5 +905,155 @@ public class MjMCUI implements UI {
                 tableInventory.setInventorySlotContents(i, tempItemStack[i]);
             }
         }
+    }
+
+
+    public static void registerLanguageForServer() {
+        translations.put("gui.position.east", "东");
+        translations.put("gui.position.south", "南");
+        translations.put("gui.position.west", "西");
+        translations.put("gui.position.north", "北");
+        translations.put("gui.text.waiting", "等待中");
+        translations.put("gui.text.playing", "游戏中");
+        translations.put("gui.text.riichibou", "立直棒");
+        translations.put("gui.text.hand", "局");
+        translations.put("gui.text.extra", "本场");
+        translations.put("gui.text.start", "预约");
+        translations.put("gui.text.sanma", "三麻");
+        translations.put("gui.text.fourp", "四麻");
+        translations.put("gui.length.east", "东风战");
+        translations.put("gui.length.south", "东南战");
+        translations.put("gui.length.all", "一庄战");
+        translations.put("gui.text.playerscount", "人数");
+        translations.put("gui.text.akadora", "赤宝牌");
+        translations.put("gui.text.cancelwaiting", "取消预约");
+        translations.put("gui.text.stopgame", "终止游戏");
+        translations.put("gui.text.tilesnotenough", "麻将牌不齐全");
+        translations.put("gui.text.hosted", "托管");
+        translations.put("gui.text.unhosted", "取消托管");
+        translations.put("gui.option.has", "选项：");
+        translations.put("gui.option.kyuushyukyuuhai", "流局");
+        translations.put("gui.option.riichi", "立直");
+        translations.put("gui.option.kita", "拨北");
+        translations.put("gui.option.angang", "暗杠");
+        translations.put("gui.option.gang", "杠");
+        translations.put("gui.option.plusgang", "加杠");
+        translations.put("gui.option.peng", "碰");
+        translations.put("gui.option.chi", "吃");
+        translations.put("gui.option.ron", "食和");
+        translations.put("gui.option.tsumo", "自摸");
+        translations.put("gui.option.cancel", "取消");
+        translations.put("gui.option.next", "继续");
+        translations.put("gui.text.agari", "和牌");
+        translations.put("gui.text.fu", "符");
+        translations.put("gui.text.fan", "番");
+        translations.put("gui.text.yakuman", "役满");
+        translations.put("gui.text.doubleyakuman", "双役满");
+        translations.put("gui.text.dora", "宝牌");
+        translations.put("gui.text.ura", "里宝牌");
+        translations.put("gui.text.points", "分");
+        translations.put("gui.text.ryuukyoku", "流局");
+        translations.put("gui.tile.m1", "一万");
+        translations.put("gui.tile.m2", "二万");
+        translations.put("gui.tile.m3", "三万");
+        translations.put("gui.tile.m4", "四万");
+        translations.put("gui.tile.m5", "五万");
+        translations.put("gui.tile.m5r", "赤五万");
+        translations.put("gui.tile.m6", "六万");
+        translations.put("gui.tile.m7", "七万");
+        translations.put("gui.tile.m8", "八万");
+        translations.put("gui.tile.m9", "九万");
+        translations.put("gui.tile.p1", "一饼");
+        translations.put("gui.tile.p2", "二饼");
+        translations.put("gui.tile.p3", "三饼");
+        translations.put("gui.tile.p4", "四饼");
+        translations.put("gui.tile.p5", "五饼");
+        translations.put("gui.tile.p5r", "赤五饼");
+        translations.put("gui.tile.p6", "六饼");
+        translations.put("gui.tile.p7", "七饼");
+        translations.put("gui.tile.p8", "八饼");
+        translations.put("gui.tile.p9", "九饼");
+        translations.put("gui.tile.s1", "一索");
+        translations.put("gui.tile.s2", "二索");
+        translations.put("gui.tile.s3", "三索");
+        translations.put("gui.tile.s4", "四索");
+        translations.put("gui.tile.s5", "五索");
+        translations.put("gui.tile.s5r", "赤五索");
+        translations.put("gui.tile.s6", "六索");
+        translations.put("gui.tile.s7", "七索");
+        translations.put("gui.tile.s8", "八索");
+        translations.put("gui.tile.s9", "九索");
+        translations.put("gui.tile.chun", "春");
+        translations.put("gui.tile.xia", "夏");
+        translations.put("gui.tile.qiu", "秋");
+        translations.put("gui.tile.dong", "冬");
+        translations.put("gui.tile.mei", "梅");
+        translations.put("gui.tile.lan", "兰");
+        translations.put("gui.tile.zhu", "竹");
+        translations.put("gui.tile.ju", "菊");
+        translations.put("gui.tile.east", "东");
+        translations.put("gui.tile.south", "南");
+        translations.put("gui.tile.west", "西");
+        translations.put("gui.tile.north", "北");
+        translations.put("gui.tile.bai", "白");
+        translations.put("gui.tile.fa", "发");
+        translations.put("gui.tile.zhong", "中");
+        translations.put("gui.ryuukyoku.kouhaiheikyoku", "荒牌流局");
+        translations.put("gui.ryuukyoku.kyuushyukyuuhai", "九种九牌");
+        translations.put("gui.ryuukyoku.suufonrenta", "四风连打");
+        translations.put("gui.ryuukyoku.suukansanra", "四杠散了");
+        translations.put("gui.ryuukyoku.suuchyariichi", "四家立直");
+        translations.put("gui.ryuukyoku.sanchyahou", "三家和");
+        translations.put("gui.ryuukyoku.nagashimankan", "流局满贯");
+        translations.put("gui.scorelevel.mankan", "满贯");
+        translations.put("gui.scorelevel.haneman", "跳满");
+        translations.put("gui.scorelevel.baiman", "倍满");
+        translations.put("gui.scorelevel.sanbaiman", "三倍满");
+        translations.put("gui.scorelevel.yakuman", "役满");
+        translations.put("gui.winninghand.gokushimusou", "国士无双");
+        translations.put("gui.winninghand.gokushimusou13", "国士无双十三面听");
+        translations.put("gui.winninghand.suuankou", "四暗刻");
+        translations.put("gui.winninghand.suuankoudanki", "四暗刻单骑");
+        translations.put("gui.winninghand.daisangen", "大三元");
+        translations.put("gui.winninghand.tsuuiisou", "字一色");
+        translations.put("gui.winninghand.shyousuushii", "小四喜");
+        translations.put("gui.winninghand.daisuushii", "大四喜");
+        translations.put("gui.winninghand.ryuuiisou", "绿一色");
+        translations.put("gui.winninghand.chinroutou", "清老头");
+        translations.put("gui.winninghand.suukantsu", "四杠子");
+        translations.put("gui.winninghand.chyuurenpoutou", "九莲宝灯");
+        translations.put("gui.winninghand.chyuurenpoutou9", "纯正九莲宝灯");
+        translations.put("gui.winninghand.tenhou", "天和");
+        translations.put("gui.winninghand.chiihou", "地和");
+        translations.put("gui.winninghand.chiniisou", "清一色");
+        translations.put("gui.winninghand.honiisou", "混一色");
+        translations.put("gui.winninghand.jyunchyantaiyaochyuu", "纯全带幺九");
+        translations.put("gui.winninghand.ryanbeekou", "两杯口");
+        translations.put("gui.winninghand.sanshyokudoujyun", "三色同顺");
+        translations.put("gui.winninghand.ikkitsuukan", "一气通贯");
+        translations.put("gui.winninghand.honchyantaiyaochyuu", "混全带幺九");
+        translations.put("gui.winninghand.chiitoitsu", "七对子");
+        translations.put("gui.winninghand.toitoihou", "对对和");
+        translations.put("gui.winninghand.sanankou", "三暗刻");
+        translations.put("gui.winninghand.honroutou", "混老头");
+        translations.put("gui.winninghand.sanshyokudoukou", "三色同刻");
+        translations.put("gui.winninghand.sankantsu", "三杠子");
+        translations.put("gui.winninghand.shyousangen", "小三元");
+        translations.put("gui.winninghand.dabururiichi", "两立直");
+        translations.put("gui.winninghand.riichi", "立直");
+        translations.put("gui.winninghand.ibbatsu", "一发");
+        translations.put("gui.winninghand.menzenchintsumohou", "门前清自摸和");
+        translations.put("gui.winninghand.danyaochyuu", "断幺九");
+        translations.put("gui.winninghand.binhu", "平和");
+        translations.put("gui.winninghand.iibeekou", "一杯口");
+        translations.put("gui.winninghand.yakuhai", "役牌");
+        translations.put("gui.winninghand.rinshyankaihou", "岭上开花");
+        translations.put("gui.winninghand.chyankan", "抢杠");
+        translations.put("gui.winninghand.haiteimouyue", "海底摸月");
+        translations.put("gui.winninghand.houteiraoyui", "河底捞鱼");
+        translations.put("gui.winninghand.kita", "北宝牌");
+        translations.put("gui.winninghand.aka", "赤宝牌");
+        translations.put("gui.winninghand.dora", "宝牌");
+        translations.put("gui.winninghand.ura", "里宝牌");
     }
 }

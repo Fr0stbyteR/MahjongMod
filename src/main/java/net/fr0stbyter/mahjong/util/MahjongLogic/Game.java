@@ -21,14 +21,14 @@ public class Game {
 
     public Game(GameType gameTypeIn, UI uiIn) {
         ui = uiIn;
-        ui.setGame(this);
         gameType = gameTypeIn;
+        ui.setGame(this);
     }
 
     public Game(HashMap<String, EnumFacing> playersIn, GameType gameTypeIn, UI uiIn) {
         ui = uiIn;
-        ui.setGame(this);
         gameType = gameTypeIn;
+        ui.setGame(this);
         initGame(playersIn);
     }
 
@@ -95,6 +95,7 @@ public class Game {
 
     public Game deal() {
         // create mountain
+        isRenchyan = false;
         mountain = new Mountain(this, seed);
         int openPositionIndex = (dices.roll().getSum() - 1) % gameType.getPlayerCount();
         mountain.open(EnumPosition.getPosition(openPositionIndex), dices.getSum() - 1);
@@ -119,7 +120,10 @@ public class Game {
 
     public Game nextDeal() {
         river.cancelWaiting();
-        if (mountain.getNextProp() == MountainTile.Prop.DORA) ryuukyoku(getPlayer(gameState.getCurPlayer()), Ryuukyoku.KOUHAIHEIKYOKU);
+        if (mountain.getNextProp() == MountainTile.Prop.DORA) {
+            ryuukyoku(getPlayer(gameState.getCurPlayer()), Ryuukyoku.KOUHAIHEIKYOKU);
+            return this;
+        }
         while (getMountain().getCountDora() < getCountGang() + 1) {
             getMountain().extraDora();
         }
@@ -158,12 +162,10 @@ public class Game {
         if (playersHasOptions.isEmpty()) {
             ArrayList<Player> playerAgari = new ArrayList<Player>();
             EnumTile tileAgari = null;
-            isRenchyan = false;
             for (Player player : optionsSelected.keySet()) {
                 if (optionsSelected.get(player).containsKey(Player.Option.RON)) {
                     playerAgari.add(player);
                     tileAgari = optionsSelected.get(player).get(Player.Option.RON);
-                    if (player.getCurWind() == EnumPosition.EAST) isRenchyan = true;
                     ui.choosed(player, Player.Option.RON);
                 }
             }
@@ -227,7 +229,24 @@ public class Game {
         playerIn.clearOptions();
         playersHasOptions.remove(playerIn);
         if (!playersHasOptions.isEmpty()) return this;
-        if (gameState.getPhase() == GameState.Phase.GAME_OVER) gameOver();
+        if (gameState.getPhase() == GameState.Phase.GAME_OVER) {
+            gameOver();
+            return this;
+        }
+        if (gameState.getPhase() == GameState.Phase.DRAW) {
+            if (!isRenchyan && gameState.isAllLast()) {
+                for (Player player : players) {
+                    if (player.getScore() > (gameType.getPlayerCount() == 4 ? 30000 : 40000)) {
+                        gameState.setPhase(GameState.Phase.GAME_OVER);
+                        showGameOver();
+                        requestConfirm();
+                        return this;
+                    }
+                }
+            }
+            nextPlay();
+            return this;
+        }
         if (gameState.getPhase() == GameState.Phase.AGARI) {
             if (!optionsSelected.isEmpty()) {
                 for (Player player : optionsSelected.keySet()) {
@@ -254,6 +273,7 @@ public class Game {
                         if (player.getScore() > (gameType.getPlayerCount() == 4 ? 30000 : 40000)) {
                             gameState.setPhase(GameState.Phase.GAME_OVER);
                             showGameOver();
+                            requestConfirm();
                             return this;
                         }
                     }
@@ -291,6 +311,7 @@ public class Game {
 
     public void agari(Player playerIn, Player fromPlayerIn, WinningHand winningHandIn) {
         gameState.setPhase(GameState.Phase.AGARI);
+        if (playerIn.getCurWind() == EnumPosition.EAST) isRenchyan = true;
         optionsSelected.remove(playerIn);
         HashMap<Player, Integer> scoreChange = new HashMap<Player, Integer>();
         int scoreGet = winningHandIn.getScore();
@@ -298,18 +319,18 @@ public class Game {
         // calc lost player score
         for (Player player : players) {
             scoreChange.put(player, player == playerIn
-                    ? scoreGet + gameState.getCountRiichi() * 1000
+                    ? scoreGet + gameState.getCountRiichi() * 1000 //win
                     : player == fromPlayerIn
-                        ? scoreGet * -1
-                        : fromPlayerIn == null
+                        ? scoreGet * -1 //ron lose
+                        : fromPlayerIn == null //tsumo
                             ? (int) (Math.ceil(((double) (scoreGet
-                                / (gameType.getPlayerCount() + (playerIn.isOya() ? 0 : 1))
+                                / (gameType.getPlayerCount() - (playerIn.isOya() ? 1 : 0))
                                 * (player.isOya() ? 2 : 1)
-                                - (gameType.getPlayerCount() == 3 ? 1000 : 0))) / 100) * 100) * -1
+                                + (gameType.getPlayerCount() == 3 ? 1000 : 0))) / 100) * 100) * -1
                             : 0);
         }
         // recalc winning player score
-        if (fromPlayerIn != null) {
+        if (fromPlayerIn == null) {
             scoreGet = 0;
             for (Player player : players) {
                 if (player != playerIn) scoreGet += scoreChange.get(player) * -1;
@@ -336,7 +357,6 @@ public class Game {
             }
             boolean isNagashimankan = true;
             for (Player player : players) {
-                isNagashimankan = true;
                 for (RiverTile tile : river.getTilesFromPosition(player.getCurWind())) {
                     if (!TileGroup.yaochyuu.contains(tile.getTile()) || !tile.isShown()) {
                         isNagashimankan = false;
@@ -364,7 +384,7 @@ public class Game {
                 int countTen = 0;
                 int tenScore = gameType.getPlayerCount() == 3 ? 2000 : 3000;
                 for (Player player1 : players) {
-                    countTen++;
+                    if (!player1.getWaiting().isEmpty()) countTen++;
                 }
                 if (countTen == gameType.getPlayerCount() || countTen == 0) {
                     for (Player player1 : players) {
@@ -422,9 +442,11 @@ public class Game {
 
     public Game checkRiichibou() {
         for (Player player : players) {
-            if (player.isRiichi()) {
+            if (player.isRiichiing()) {
                 player.setScore(player.getScore() - 1000);
                 gameState.newRiichi();
+                player.setRiichi(true);
+                player.setRiichiing(false);
                 ui.riichi(player);
             }
         }

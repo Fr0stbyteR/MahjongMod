@@ -12,12 +12,12 @@ public class EventCommonHandler {
     @SubscribeEvent
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         EntityPlayer player = event.player;
-        Mahjong.mjGameHandler.kickPlayer(player);
+        Mahjong.mjGameHandler.hostPlayer(player);
     }
 
     @SubscribeEvent
     public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         EntityPlayer player = event.player;
-        Mahjong.mjGameHandler.kickPlayer(player);
+        Mahjong.mjGameHandler.hostPlayer(player);
     }
 }

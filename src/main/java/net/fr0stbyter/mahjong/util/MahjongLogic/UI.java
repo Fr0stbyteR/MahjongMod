@@ -25,4 +25,6 @@ public interface UI {
     void chooseInt(Player playerIn, int optionIn, EnumTile tileIn);
 
     void agari(Player playerIn);
+
+    void hosted(boolean hostIn, Player playerIn);
 }

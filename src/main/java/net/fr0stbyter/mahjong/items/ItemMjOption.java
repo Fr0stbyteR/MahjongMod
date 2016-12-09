@@ -40,6 +40,7 @@ public class ItemMjOption extends Item {
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(ItemStack itemStackIn, World worldIn, EntityPlayer playerIn, EnumHand hand) {
+        if (worldIn.isRemote) return new ActionResult(EnumActionResult.FAIL, itemStackIn);
         int optionInt = -1;
         for (int i = 0; i < options.length; i++) {
             if (options[i].equals(option)) optionInt = i;
@@ -55,6 +56,7 @@ public class ItemMjOption extends Item {
 
     @Override
     public EnumActionResult onItemUse(ItemStack stack, EntityPlayer playerIn, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        if (worldIn.isRemote) return EnumActionResult.FAIL;
         Block block = worldIn.getBlockState(pos).getBlock();
         int indexTile = -1;
         if (block instanceof BlockMj) indexTile = ((BlockMj) block).getEnumTile().getIndex();

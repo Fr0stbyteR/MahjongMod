@@ -211,9 +211,10 @@ public class Mountain {
     }
 
     public EnumTile getNextRinshyan() {
-        for (int i = 0; i < 4; i++) {
-            if (getRinshyan().get(i) != null) return getRinshyan().get(i);
-        }
+        if (!getTileU(rinshyanIndex[0]).isNull()) return getTileU(rinshyanIndex[0]).getTile();
+        if (!getTileD(rinshyanIndex[0]).isNull()) return getTileD(rinshyanIndex[0]).getTile();
+        if (!getTileU(rinshyanIndex[1]).isNull()) return getTileU(rinshyanIndex[1]).getTile();
+        if (!getTileD(rinshyanIndex[1]).isNull()) return getTileD(rinshyanIndex[1]).getTile();
         return null;
     }
 
@@ -223,15 +224,6 @@ public class Mountain {
         else if (!getTileU(rinshyanIndex[1]).isNull()) removeTileU(rinshyanIndex[1]);
         else if (!getTileD(rinshyanIndex[1]).isNull()) removeTileD(rinshyanIndex[1]);
         return this;
-    }
-
-    public ArrayList<EnumTile> getRinshyan() {
-        ArrayList<EnumTile> tiles = new ArrayList<EnumTile>();
-        tiles.add(getTileU(rinshyanIndex[0]).getTile());
-        tiles.add(getTileD(rinshyanIndex[0]).getTile());
-        tiles.add(getTileU(rinshyanIndex[1]).getTile());
-        tiles.add(getTileD(rinshyanIndex[1]).getTile());
-        return tiles;
     }
 
     public int getCountDora() {

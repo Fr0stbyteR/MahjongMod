@@ -10,6 +10,7 @@ public class Player {
     private EnumPosition curWind;
     private int score;
     private boolean isMenzen;
+    private boolean riichiing;
     private boolean isRiichi;
     private boolean isDoubleRiichi;
     private boolean canIbbatsu;
@@ -21,6 +22,7 @@ public class Player {
     private WinningHand winningHand;
     private ArrayList<EnumTile> waiting;
     private HashMap<Option, ArrayList<EnumTile>> options;
+    private boolean offline;
 
     public Player(Game gameIn, String idIn, EnumPosition curWindIn) {
         game = gameIn;
@@ -30,6 +32,7 @@ public class Player {
         score = 0;
         isMenzen = true;
         isRiichi = false;
+        riichiing = false;
         isDoubleRiichi = false;
         canIbbatsu = false;
         canRinshyan = false;
@@ -38,12 +41,14 @@ public class Player {
         winningHand = null;
         waiting = new ArrayList<EnumTile>();
         options = new HashMap<Option, ArrayList<EnumTile>>();
+        offline = false;
     }
 
     public Player reset() {
         hand = new Hand();
         isMenzen = true;
         isRiichi = false;
+        riichiing = false;
         isDoubleRiichi = false;
         canIbbatsu = false;
         canRinshyan = false;
@@ -52,6 +57,7 @@ public class Player {
         winningHand = null;
         waiting = new ArrayList<EnumTile>();
         options = new HashMap<Option, ArrayList<EnumTile>>();
+        offline = false;
         return this;
     }
 
@@ -328,6 +334,7 @@ public class Player {
         if (!options.containsKey(optionIn) || (options.get(optionIn) != null && !options.get(optionIn).contains(tileIn))) return null;
         options.clear();
         if (optionIn == Option.NEXT) {
+            game.getUi().choosed(this, optionIn);
             confirm();
             return this;
         }
@@ -343,11 +350,15 @@ public class Player {
                 for (EnumTile yaochyuu : TileGroup.yaochyuu) {
                     if (hand.getAll().contains(yaochyuu)) countYaochyuu++;
                 }
-                if (countYaochyuu >= 9) game.ryuukyoku(this, Game.Ryuukyoku.KYUUSHYUKYUUHAI);
+                if (countYaochyuu >= 9) {
+                    game.getUi().choosed(this, optionIn);
+                    game.ryuukyoku(this, Game.Ryuukyoku.KYUUSHYUKYUUHAI);
+                }
             }
             return this;
         }
         if (optionIn == Option.TSUMO) {
+            game.getUi().choosed(this, optionIn);
             tsumo();
             return this;
         }
@@ -391,7 +402,7 @@ public class Player {
         if (game.getCountRiichi() == 3) game.ryuukyoku(this, Game.Ryuukyoku.SUUCHYARIICHI);
         HashMap<EnumTile, ArrayList<EnumTile>> dropWait = analyzeRiichi();
         if (dropWait == null || dropWait.isEmpty()) return;
-        isRiichi = true;
+        riichiing = true;
         if (game.getGameState().getCurDeal() == 1) isDoubleRiichi = true;
         canIbbatsu = true;
         discardforRiichi(tileIn);
@@ -484,6 +495,24 @@ public class Player {
     public Player confirm() {
         game.confirm(this);
         return this;
+    }
+
+    public boolean isOffline() {
+        return offline;
+    }
+
+    public void setOffline(boolean offline) {
+        if (!this.offline && offline) game.getUi().hosted(true, this);
+        if (this.offline && !offline) game.getUi().hosted(false, this);
+        this.offline = offline;
+    }
+
+    public boolean isRiichiing() {
+        return riichiing;
+    }
+
+    public void setRiichiing(boolean riichiing) {
+        this.riichiing = riichiing;
     }
 
     public enum Option {

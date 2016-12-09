@@ -1,5 +1,6 @@
 package net.fr0stbyter.mahjong.util.MahjongLogic;
 
+import net.fr0stbyter.mahjong.util.MahjongLogic.Hand.Hand;
 import net.minecraft.util.EnumFacing;
 
 import java.util.*;
@@ -34,6 +35,11 @@ public class ConsoleUI implements UI {
     }
 
     @Override
+    public void hosted(boolean hostedIn, Player playerIn) {
+
+    }
+
+    @Override
     public void setGame(Game gameIn) {
         game = gameIn;
         scanner = new Scanner(System.in);
@@ -51,19 +57,7 @@ public class ConsoleUI implements UI {
         GameState gameState = game.getGameState();
         Player player = game.getPlayers().get(1);
         Hand hand = new Hand();
-        hand.addToHanding(EnumTile.S1)
-                .addToHanding(EnumTile.S2)
-                .addToHanding(EnumTile.S3)
-                .addToHanding(EnumTile.M1)
-                .addToHanding(EnumTile.M2)
-                .addToHanding(EnumTile.M3)
-                .addToHanding(EnumTile.P1)
-                .addToHanding(EnumTile.P2)
-                .addToHanding(EnumTile.P3)
-                .addToHanding(EnumTile.F1)
-                .addToHanding(EnumTile.F1)
-                .addToHanding(EnumTile.F1)
-                .addToHanding(EnumTile.D3);
+
         //HashMap<EnumTile, ArrayList<EnumTile>> ten = baseAnalyzeTen(hand, EnumTile.S1);
         //hand.peng(EnumTile.F2, game.getPlayers().get(0));
         hand.addToHanding(EnumTile.F4).kita();
@@ -89,6 +83,23 @@ public class ConsoleUI implements UI {
 
     @Override
     public void dealOver() {
+        Hand hand = new Hand();
+        hand.addToHanding(EnumTile.S1)
+                .addToHanding(EnumTile.S2)
+                .addToHanding(EnumTile.S3)
+                .addToHanding(EnumTile.M1)
+                .addToHanding(EnumTile.M2)
+                .addToHanding(EnumTile.M3)
+                .addToHanding(EnumTile.P1)
+                .addToHanding(EnumTile.P2)
+                .addToHanding(EnumTile.P3)
+                .addToHanding(EnumTile.F1)
+                .addToHanding(EnumTile.F1)
+                .addToHanding(EnumTile.F1)
+                .addToHanding(EnumTile.D3);
+        game.getPlayer(EnumPosition.EAST).setHandTiles(hand);
+        game.getPlayer(EnumPosition.EAST).analyzeWaiting();
+        game.getPlayer(EnumPosition.EAST).getTile(EnumTile.D3);
         printGameState();
         printTable();
         discard(game.getPlayer(game.getGameState().getCurPlayer()));
@@ -96,13 +107,16 @@ public class ConsoleUI implements UI {
 
     @Override
     public void nextDealOver() {
-        dealOver();
+        printGameState();
+        printTable();
+        discard(game.getPlayer(game.getGameState().getCurPlayer()));
     }
 
     @Override
     public void options() {
         for (Player player : game.getPlayers()) {
             if (!player.getOptions().isEmpty()) {
+                printTable(player);
                 for (Player.Option option : player.getOptions().keySet()) {
                     System.out.print(player.getId() + " option: " + option.name().toLowerCase() + (player.getOptions().get(option) != null ? player.getOptions().get(option) : "") + "\n");
                 }
@@ -123,9 +137,6 @@ public class ConsoleUI implements UI {
 
     @Override
     public void choosed(Player playerIn, Player.Option optionIn) {
-        Player player = game.getPlayer(game.getGameState().getCurPlayer());
-        printTable(player);
-        discard(player);
     }
 
     @Override

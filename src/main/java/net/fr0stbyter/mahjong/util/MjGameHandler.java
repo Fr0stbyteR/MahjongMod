@@ -42,8 +42,10 @@ public class MjGameHandler {
             PlayerGameStatus playerGameStatus = gameStatusMap.get(player);
             if (playerGameStatus.isWaiting() && playerGameStatus.getGame() == gameIdIn) playerWaiting.put(playerGameStatus.getPosition(), player);
             //TODO TEST ONLY
-            //playerWaiting.put(playerGameStatus.getPosition().rotateY(), "A");
-            //playerWaiting.put(playerGameStatus.getPosition().rotateYCCW(), "B");
+            if (playerMPs.get(player).getEntityWorld().getMinecraftServer().getCurrentPlayerCount() == 1) {
+                playerWaiting.put(playerGameStatus.getPosition().rotateY(), "A");
+                playerWaiting.put(playerGameStatus.getPosition().rotateYCCW(), "B");
+            }
             //
             if (playerWaiting.size() == targetPlayerCount) {
                 for (String player1 : gameStatusMap.keySet()) {
@@ -99,8 +101,12 @@ public class MjGameHandler {
     public void kickPlayer(EntityPlayer player) {
         String playerId = player.getName();
         if (!gameStatusMap.containsKey(playerId)) return;
-        if (gameStatusMap.get(playerId).isWaiting()) gameStatusMap.get(playerId).setWaiting(false);
+        if (gameStatusMap.get(playerId).isWaiting()) {
+            NetworkHandler.INSTANCE.sendTo(new MessageMjIsInGame(0), playerMPs.get(playerId));
+            gameStatusMap.get(playerId).setWaiting(false);
+        }
         if (gameStatusMap.get(playerId).isInGame()) games.get(gameStatusMap.get(playerId).getGame()).getUi().gameOver();
+
     }
 
     public HashMap<String, PlayerGameStatus> getGameStatusMap() {
@@ -113,5 +119,11 @@ public class MjGameHandler {
 
     public void removeGame(long gameId) {
         games.remove(gameId);
+    }
+
+    public void hostPlayer(EntityPlayer player) {
+        String playerId = player.getName();
+        if (!gameStatusMap.containsKey(playerId)) return;
+        if (gameStatusMap.get(playerId).isInGame()) games.get(gameStatusMap.get(playerId).getGame()).getPlayer(playerId).setOffline(true);
     }
 }
