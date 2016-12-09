@@ -126,4 +126,10 @@ public class MjGameHandler {
         if (!gameStatusMap.containsKey(playerId)) return;
         if (gameStatusMap.get(playerId).isInGame()) games.get(gameStatusMap.get(playerId).getGame()).getPlayer(playerId).setOffline(true);
     }
+
+    public void unhostPlayer(EntityPlayer player) {
+        String playerId = player.getName();
+        if (!gameStatusMap.containsKey(playerId)) return;
+        if (gameStatusMap.get(playerId).isInGame()) games.get(gameStatusMap.get(playerId).getGame()).getPlayer(playerId).setOffline(false);
+    }
 }

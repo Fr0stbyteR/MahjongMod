@@ -1101,8 +1101,18 @@ public class Analyze {
             e.printStackTrace();
         }
 
-        while (hand.getHanding().size() > 1) {
-            if (hand.getHanding().get(0).getNormal() == hand.getHanding().get(1).getNormal()) hand.eye(hand.getHanding().get(0));
+        ArrayList<EnumTile> normal = hand.getHandingToNormal();
+        if (normal.size() != 14) return null;
+        ArrayList<EnumTile> diff = new ArrayList<EnumTile>();
+        for (EnumTile tile : normal) {
+            if (!diff.contains(tile)) diff.add(tile);
+        }
+        if (diff.size() != 7) return null;
+        for (EnumTile tile : diff) {
+            normal.remove(tile);
+        }
+        for (EnumTile tile : diff) {
+            if (normal.contains(tile)) normal.remove(tile);
             else return null;
         }
         hand.setChiitoitsu(true);
@@ -1124,24 +1134,32 @@ public class Analyze {
         if (extraTileIn != null && !hand.hasGet()) hand.get(extraTileIn);
         hand.addToHandingFromGet();
 
-        while (hand.getHanding().size() > 0) {
-            if (hand.getHanding().size() > 1 && hand.getHanding().get(0).getNormal() == hand.getHanding().get(1).getNormal()) hand.eye(hand.getHanding().get(0));
-            else if (single.size() <= 2) {
-                single.add(hand.getHanding().get(0));
-                hand.removeFromHanding(hand.getHanding().get(0));
-            } else return null;
+        ArrayList<EnumTile> normal = hand.getHandingToNormal();
+        if (normal.size() != 14) return null;
+        ArrayList<EnumTile> diff = new ArrayList<EnumTile>();
+        for (EnumTile tile : normal) {
+            if (!diff.contains(tile)) diff.add(tile);
         }
-        if (single.size() == 0) {
-            for (int i = 0; i < 14; i++) {
-                dropWait.put(hand.getHanding().get(i), hand.getHanding().get(i).getNormal().toSingletonList());
-            }
+        if (diff.size() < 8 || diff.size() > 9) return null;
+        for (EnumTile tile : diff) {
+            normal.remove(tile);
+        }
+        for (EnumTile tile : diff) {
+            if (normal.contains(tile)) normal.remove(tile);
+            else single.add(tile);
+            if (single.size() > 2) return null;
+        }
+        if (normal.size() == 1 && single.size() == 1) dropWait.put(normal.get(0), single);
+        else if (normal.size() == 0 && single.size() == 2) {
+            dropWait.put(single.get(1), single.get(0).getNormal().toSingletonList());
+            dropWait.put(single.get(0), single.get(1).getNormal().toSingletonList());
         }
         dropWait.put(single.get(1), single.get(0).getNormal().toSingletonList());
         dropWait.put(single.get(0), single.get(1).getNormal().toSingletonList());
         return dropWait;
     }
 
-    public static HashMap<EnumTile, ArrayList<EnumTile>> baseAnalyzeTen(Hand handIn, EnumTile extraTileIn) {
+        public static HashMap<EnumTile, ArrayList<EnumTile>> baseAnalyzeTen(Hand handIn, EnumTile extraTileIn) {
         if (extraTileIn == null && !handIn.hasGet()) return null; // 14 tiles analyze
         AnalyzeResult gokushimusou13 = gokushimusou13(handIn, extraTileIn);
         if (gokushimusou13.getHandStatus() == TEN) return gokushimusou13.getDropWait();
@@ -1224,18 +1242,22 @@ public class Analyze {
         }
         waits.clear();
 
-        boolean chiitoitsuFlag = true; //chiitoitsu
-        if (handIn.isMenzen()) {
-            for (int i = 0; i < 11; i++) {
-                if (handIn.getHanding().get(i).getNormal() == handIn.getHanding().get(i + 1).getNormal()) i++;
-                else if (waits.isEmpty()) waits.add(handIn.getHanding().get(i));
-                else {
-                    chiitoitsuFlag = false;
-                    break;
-                }
-                if (i == 11 && waits.isEmpty()) waits.add(handIn.getHanding().get(12));
+        ArrayList<EnumTile> normal = handIn.getHandingToNormal();
+        if (handIn.isMenzen() && normal.size() == 13) {
+            ArrayList<EnumTile> diff = new ArrayList<EnumTile>();
+            for (EnumTile tile : normal) {
+                if (!diff.contains(tile)) diff.add(tile);
             }
-            if (chiitoitsuFlag) return waits;
+            if (diff.size() == 7) {
+                for (EnumTile tile : diff) {
+                    normal.remove(tile);
+                }
+                for (EnumTile tile : diff) {
+                    if (normal.contains(tile)) normal.remove(tile);
+                    else waits.add(tile);
+                }
+                if (waits.size() == 1) return waits;
+            }
         }
         waits.clear();
 

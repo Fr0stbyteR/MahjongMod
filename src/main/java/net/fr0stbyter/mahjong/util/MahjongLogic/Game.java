@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class Game {
-    private long seed;
+    private Random seed;
     private UI ui;
     private GameState gameState;
     private GameType gameType;
@@ -44,9 +44,8 @@ public class Game {
         players = new ArrayList<Player>();
         river = new River(this);
         optionsSelected = new HashMap<Player, HashMap<Player.Option, EnumTile>>();
-        Random random = new Random();
-        seed = random.nextInt();
-        dices = new Dices(2, seed);
+        seed = new Random();
+        dices = new Dices(2, seed.nextLong());
         playersHasOptions = new ArrayList<Player>();
         // sitting down
         // decide oya with dices
@@ -72,8 +71,8 @@ public class Game {
         players = new ArrayList<Player>();
         river = new River(this);
         optionsSelected = new HashMap<Player, HashMap<Player.Option, EnumTile>>();
-        seed = 101;
-        dices = new Dices(2, seed);
+        seed = new Random();
+        dices = new Dices(2, seed.nextLong());
         playersHasOptions = new ArrayList<Player>();
         // sitting down
         // decide oya with dices
@@ -96,7 +95,7 @@ public class Game {
     public Game deal() {
         // create mountain
         isRenchyan = false;
-        mountain = new Mountain(this, seed);
+        mountain = new Mountain(this, seed.nextLong());
         int openPositionIndex = (dices.roll().getSum() - 1) % gameType.getPlayerCount();
         mountain.open(EnumPosition.getPosition(openPositionIndex), dices.getSum() - 1);
         // first deal

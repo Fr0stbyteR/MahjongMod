@@ -242,6 +242,7 @@ public class Player {
         if (isRiichi) {
             if (tile != hand.getGet()) return this;
             canIbbatsu = false;
+            if (waiting.contains(tile)) furiTen = true;
             for (RiverTile riverTile : getRiver()) {
                 if (riverTile.getHorizontal() && riverTile.isShown()) hasHorizontal = true;
             }
@@ -331,7 +332,11 @@ public class Player {
     }
 
     public Player selectOption(Option optionIn, EnumTile tileIn, boolean isChyankanIn) {
+        if (game.getGameState().getPhase() == GameState.Phase.GAME_OVER) return null;
         if (!options.containsKey(optionIn) || (options.get(optionIn) != null && !options.get(optionIn).contains(tileIn))) return null;
+        if (optionIn == Option.CANCEL) {
+            if (options.containsKey(Option.TSUMO) || options.containsKey(Option.RON)) furiTen = true;
+        }
         options.clear();
         if (optionIn == Option.NEXT) {
             game.getUi().choosed(this, optionIn);

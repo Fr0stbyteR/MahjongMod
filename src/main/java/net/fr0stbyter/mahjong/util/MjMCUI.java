@@ -18,8 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.*;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -78,7 +77,7 @@ public class MjMCUI implements UI {
         MOUNTAIN_POS.put(EnumFacing.SOUTH, centerPos.south(9).west(8).up(htRvHeight[2]));
         MOUNTAIN_POS.put(EnumFacing.WEST, centerPos.west(9).north(8).up(htRvHeight[2]));
         MOUNTAIN_POS.put(EnumFacing.NORTH, centerPos.north(9).east(8).up(htRvHeight[2]));
-        registerLanguageForServer();
+        //registerLanguageForServer();
     }
 
     @Override
@@ -113,19 +112,19 @@ public class MjMCUI implements UI {
 
     private void testOnly() {
         Hand hand = new Hand();
-        hand.addToHanding(EnumTile.S1)
-                .addToHanding(EnumTile.S2)
+        hand.addToHanding(EnumTile.S3)
                 .addToHanding(EnumTile.S3)
-                .addToHanding(EnumTile.M1)
-                .addToHanding(EnumTile.M2)
-                .addToHanding(EnumTile.M3)
-                .addToHanding(EnumTile.P1)
-                .addToHanding(EnumTile.P2)
-                .addToHanding(EnumTile.P3)
-                .addToHanding(EnumTile.F1)
-                .addToHanding(EnumTile.F1)
-                .addToHanding(EnumTile.F1)
-                .addToHanding(EnumTile.D3);
+                .addToHanding(EnumTile.S3)
+                .addToHanding(EnumTile.S9)
+                .addToHanding(EnumTile.S9)
+                .addToHanding(EnumTile.P5)
+                .addToHanding(EnumTile.P6)
+                .addToHanding(EnumTile.P6)
+                .addToHanding(EnumTile.P7)
+                .addToHanding(EnumTile.P7)
+                .addToHanding(EnumTile.P7)
+                .addToHanding(EnumTile.P8)
+                .addToHanding(EnumTile.P9);
         for (Player player : game.getPlayers()) {
             if (!player.getId().equals("A") && !player.getId().equals("B")) {
                 player.setHandTiles(hand);
@@ -157,11 +156,11 @@ public class MjMCUI implements UI {
                     discard(playerIn, playerIn.getHand().getGet());
                 }
             };
-            Timer timer = autoPlayTimer[game.getPlayers().indexOf(playerIn)];
-            if (timer != null) {
-                timer.cancel();
-                timer = new Timer();
-                timer.schedule(task, 1500);
+            int timerNo = game.getPlayers().indexOf(playerIn);
+            if (autoPlayTimer[timerNo] != null) {
+                autoPlayTimer[timerNo].cancel();
+                autoPlayTimer[timerNo] = new Timer();
+                autoPlayTimer[timerNo].schedule(task, 1500);
             }
             return;
         }
@@ -172,11 +171,11 @@ public class MjMCUI implements UI {
                     discard(playerIn, playerIn.getHand().getGet());
                 }
             };
-            Timer timer = autoPlayTimer[game.getPlayers().indexOf(playerIn)];
-            if (timer != null) {
-                timer.cancel();
-                timer = new Timer();
-                timer.schedule(task, 1500);
+            int timerNo = game.getPlayers().indexOf(playerIn);
+            if (autoPlayTimer[timerNo] != null) {
+                autoPlayTimer[timerNo].cancel();
+                autoPlayTimer[timerNo] = new Timer();
+                autoPlayTimer[timerNo].schedule(task, 1500);
             }
             return;
         }
@@ -187,19 +186,17 @@ public class MjMCUI implements UI {
                 discard(playerIn, playerIn.getHand().getGet());
             }
         };
-        Timer timer = autoPlayTimer[game.getPlayers().indexOf(playerIn)];
-        if (timer != null) {
-            timer.cancel();
-            timer = new Timer();
-            timer.schedule(task, 30000);
+        int timerNo = game.getPlayers().indexOf(playerIn);
+        if (autoPlayTimer[timerNo] != null) {
+            autoPlayTimer[timerNo].cancel();
+            autoPlayTimer[timerNo] = new Timer();
+            autoPlayTimer[timerNo].schedule(task, 30000);
         }
         //sendToPlayersChat("Now " + playerIn.getId() + "'s turn.");
     }
 
     @Override
     public void chooseInt(Player playerIn, int optionIn, EnumTile enumTileIn) {
-        autoPlayTimer[game.getPlayers().indexOf(playerIn)].cancel();
-        autoPlayTimer[game.getPlayers().indexOf(playerIn)] = new Timer();
         playerIn.setOffline(false);
         boolean canChyankan = playerIn.canChyankan();
         HashMap<Player.Option, ArrayList<EnumTile>> options = playerIn.getOptions();
@@ -338,7 +335,9 @@ public class MjMCUI implements UI {
 
     @Override
     public void hosted(boolean hostedIn, Player playerIn) {
-        sendToPlayersChat((hostedIn ? translations.get("gui.text.hosted") : translations.get("gui.text.unhosted")) + " " + playerIn.getId());
+        sendToPlayersChat((hostedIn
+                ? new TextComponentTranslation("gui.text.hosted")
+                : new TextComponentTranslation(("gui.text.unhosted"))).appendSibling(new TextComponentString(" " + playerIn.getId())));
     }
 
 
@@ -368,7 +367,11 @@ public class MjMCUI implements UI {
         Player curPlayer = game.getPlayer(game.getGameState().getCurPlayer());
         if (optionIn == Player.Option.CHI || optionIn == Player.Option.PENG || optionIn == Player.Option.GANG) uiCheckRivers();
         if (optionIn == Player.Option.KITA || optionIn == Player.Option.ANGANG || optionIn == Player.Option.PLUSGANG || optionIn == Player.Option.GANG) uiCheckMountains();
-        sendToPlayersChat(TextFormatting.BOLD + playerIn.getId() + ":" + translations.get("gui.option." + optionIn.name().toLowerCase()));
+        sendToPlayersChat(
+                new TextComponentString(TextFormatting.BOLD + playerIn.getId() + ":")
+                .appendSibling(
+                        new TextComponentTranslation("gui.option." + optionIn.name().toLowerCase())
+                                .setChatStyle(new Style().setColor(TextFormatting.BOLD))));
         printTable();
         sendCurPosToPlayers();
         sendOptionsToPlayers();
@@ -384,10 +387,11 @@ public class MjMCUI implements UI {
     @Override
     public void showReport(Player playerIn, HashMap<Player, Integer> scoreChangeIn) { //agari
         WinningHand winningHand = playerIn.getWinningHand();
-        ArrayList<String> strings1 = new ArrayList<String>();
-        final ArrayList<String> strings2 = new ArrayList<String>();
-        sendToPlayersChat(TextFormatting.GOLD.toString() + TextFormatting.BOLD + translations.get("gui.text.agari"));
-        sendToPlayersChat(TextFormatting.GOLD + translations.get("gui.position." + playerIn.getCurWind().getName().toLowerCase()) + ": " + TextFormatting.WHITE + playerIn.getId() + " : " + playerIn.getHand().toString() + (winningHand.getIsTsumo() ? "" : " + " + game.getRiver().getLast().getTile().name().toLowerCase()));
+        ArrayList<ITextComponent> strings1 = new ArrayList<ITextComponent>();
+        final ArrayList<ITextComponent> strings2 = new ArrayList<ITextComponent>();
+        sendToPlayersChat(new TextComponentTranslation("gui.text.agari").setChatStyle(new Style().setBold(true).setColor(TextFormatting.GOLD)));
+        sendToPlayersChat(new TextComponentTranslation("gui.position." + playerIn.getCurWind().getName().toLowerCase()).setChatStyle(new Style().setColor(TextFormatting.GOLD))
+                .appendSibling(new TextComponentString(TextFormatting.WHITE + ": " + playerIn.getId() + " : " + playerIn.getHand().toString() + (winningHand.getIsTsumo() ? "" : " + " + game.getRiver().getLast().getTile().name().toLowerCase()))));
         for (AnalyzeResult analyzeResult : winningHand.getyakuList()) {
             if (analyzeResult.getHandStatus() == WinningHand.HandStatus.WIN) {
                 int fan = analyzeResult.getFan();
@@ -396,38 +400,48 @@ public class MjMCUI implements UI {
                 else if (fan == 2) color = TextFormatting.AQUA;
                 else if (fan == 3) color = TextFormatting.GREEN;
                 else color = TextFormatting.LIGHT_PURPLE;
-                String sFan = fan > 0 ? Integer.toString(fan) + translations.get("gui.text.fan")
-                        : fan == -1 ? translations.get("gui.text.yakuman")
-                        : fan == -2 ? translations.get("gui.text.doubleyakuman")
-                        : "";
-                strings1.add(color + TextFormatting.ITALIC.toString() + TextFormatting.BOLD
-                        + sFan + " " + translations.get("gui.winninghand." + analyzeResult.getWinningHand().name().toLowerCase()));
+                ITextComponent sFan = fan > 0 ? new TextComponentString(Integer.toString(fan)).setChatStyle(new Style().setColor(color).setBold(true).setItalic(true))
+                        .appendSibling(new TextComponentTranslation("gui.text.fan").setChatStyle(new Style().setColor(color).setBold(true).setItalic(true)))
+                        : fan == -1 ? new TextComponentTranslation("gui.text.yakuman").setChatStyle(new Style().setColor(color).setBold(true).setItalic(true))
+                        : fan == -2 ? new TextComponentTranslation("gui.text.doubleyakuman").setChatStyle(new Style().setColor(color).setBold(true).setItalic(true))
+                        : new TextComponentString("");
+                strings1.add(sFan.appendSibling(new TextComponentString(" ")).setChatStyle(new Style().setColor(color).setBold(true).setItalic(true))
+                        .appendSibling(new TextComponentTranslation("gui.winninghand." + analyzeResult.getWinningHand().name().toLowerCase()).setChatStyle(new Style().setColor(color).setBold(true).setItalic(true))));
             }
         }
-        strings2.add(translations.get("gui.text.dora") + ":" + game.getMountain().getDora()
-                + " " + translations.get("gui.text.ura") + ":"  + game.getMountain().getUra());
+        strings2.add(new TextComponentTranslation("gui.text.dora")
+                .appendSibling(new TextComponentString(":" + game.getMountain().getDora() + " "))
+                .appendSibling(new TextComponentTranslation("gui.text.ura"))
+                .appendSibling(new TextComponentString(":"  + game.getMountain().getUra())));
         TextFormatting color = TextFormatting.WHITE;
         if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.MANKAN) color = TextFormatting.AQUA;
         else if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.HANEMAN) color = TextFormatting.GREEN;
         else if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.BAIMAN) color = TextFormatting.RED;
         else if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.SANBAIMAN) color = TextFormatting.LIGHT_PURPLE;
         else if (winningHand.getScoreLevel() == WinningHand.ScoreLevel.YAKUMAN) color = TextFormatting.GOLD;
-        strings2.add(color + TextFormatting.BOLD.toString() + TextFormatting.UNDERLINE
-                + winningHand.getFu().getCount() + translations.get("gui.text.fu") + winningHand.getFan() + translations.get("gui.text.fan")
-                + (winningHand.getScoreLevel() == null ? "" : translations.get("gui.scorelevel." + winningHand.getScoreLevel().name().toLowerCase()) + " ")
-                + winningHand.getScore() + translations.get("gui.text.points"));
+        strings2.add(new TextComponentString(Integer.toString(winningHand.getFu().getCount())).setChatStyle(new Style().setBold(true).setUnderlined(true).setColor(color))
+                .appendSibling(new TextComponentTranslation("gui.text.fu").setChatStyle(new Style().setBold(true).setUnderlined(true).setColor(color)))
+                .appendSibling(new TextComponentString(Integer.toString(winningHand.getFan())).setChatStyle(new Style().setBold(true).setUnderlined(true).setColor(color)))
+                .appendSibling(new TextComponentTranslation("gui.text.fan").setChatStyle(new Style().setBold(true).setUnderlined(true).setColor(color)))
+                .appendSibling(new TextComponentString(" ").setChatStyle(new Style().setBold(true).setUnderlined(true).setColor(color)))
+                .appendSibling(winningHand.getScoreLevel() == null
+                        ? new TextComponentString("")
+                        : new TextComponentTranslation("gui.scorelevel." + winningHand.getScoreLevel().name().toLowerCase()).setChatStyle(new Style().setBold(true).setUnderlined(true).setColor(color)))
+                .appendSibling(new TextComponentString(color + TextFormatting.BOLD.toString() + TextFormatting.UNDERLINE + winningHand.getScore()))
+                .appendSibling(new TextComponentTranslation("gui.text.points").setChatStyle(new Style().setBold(true).setUnderlined(true).setColor(color))));
         for (Player player : game.getPlayers()) {
             int change = scoreChangeIn.get(player);
             color = TextFormatting.WHITE;
             if (change < 0) color = TextFormatting.RED;
             else if (change > 0) color = TextFormatting.GREEN;
-            strings2.add(color + translations.get("gui.position." + player.getCurWind().getName().toLowerCase()) + " " + player.getId() + " " + Integer.toString(player.getScore() - change) + (change == 0 ? "" : change > 0 ? " +" + change : " " + change));
+            strings2.add(new TextComponentTranslation("gui.position." + player.getCurWind().getName().toLowerCase()).setChatStyle(new Style().setColor(color))
+                    .appendSibling(new TextComponentString(color + " " + player.getId() + " " + Integer.toString(player.getScore() - change) + (change == 0 ? "" : change > 0 ? " +" + change : " " + change))));
         }
 
         winningHand.getyakuList().size();
         Timer timer = new Timer();
         for (int i = 0; i < strings1.size(); i++) {
-            final String string = strings1.get(i);
+            final ITextComponent string = strings1.get(i);
             TimerTask task = new TimerTask() {
                 @Override
                 public void run() {
@@ -439,7 +453,7 @@ public class MjMCUI implements UI {
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                for (String string : strings2) sendToPlayersChat(string);
+                for (ITextComponent string : strings2) sendToPlayersChat(string);
             }
         };
         timer.schedule(task, (strings1.size() + 1) * 750);
@@ -447,13 +461,16 @@ public class MjMCUI implements UI {
 
     @Override
     public void showReport(Game.Ryuukyoku ryuukyokuIn, HashMap<Player, Integer> scoreChangeIn) {
-        sendToPlayersChat(TextFormatting.GRAY.toString() + TextFormatting.BOLD + translations.get("gui.text.ryuukyoku") + ": " + translations.get("gui.ryuukyoku." + ryuukyokuIn.name().toLowerCase()));
+        sendToPlayersChat(new TextComponentTranslation("gui.text.ryuukyoku").setChatStyle(new Style().setColor(TextFormatting.GRAY).setBold(true))
+                .appendSibling(new TextComponentString(": ").setChatStyle(new Style().setColor(TextFormatting.GRAY).setBold(true)))
+                .appendSibling(new TextComponentTranslation("gui.ryuukyoku." + ryuukyokuIn.name().toLowerCase()).setChatStyle(new Style().setColor(TextFormatting.GRAY).setBold(true))));
         for (Player player : game.getPlayers()) {
             int change = scoreChangeIn.get(player);
             TextFormatting color = TextFormatting.WHITE;
             if (change < 0) color = TextFormatting.RED;
             else if (change > 0) color = TextFormatting.GREEN;
-            sendToPlayersChat(color + translations.get("gui.position." + player.getCurWind().getName().toLowerCase()) + " " + player.getId() + " " + Integer.toString(player.getScore() - change) + (change == 0 ? " " : change > 0 ? "+" + change : change));
+            sendToPlayersChat(new TextComponentTranslation("gui.position." + player.getCurWind().getName().toLowerCase()).setChatStyle(new Style().setColor(color))
+                    .appendSibling(new TextComponentString(color + " " + player.getId() + " " + Integer.toString(player.getScore() - change) + (change == 0 ? "" : change > 0 ? " +" + change : " " + change))));
         }
     }
 
@@ -461,7 +478,8 @@ public class MjMCUI implements UI {
     public void showReport() { //when gameover
         for (Player player : game.getPlayers()) {
             TextFormatting color = TextFormatting.WHITE;
-            sendToPlayersChat(color + translations.get("gui.position." + player.getCurWind().getName()) + " " + player.getId() + " " + player.getScore());
+            sendToPlayersChat(new TextComponentTranslation("gui.position." + player.getCurWind().getName().toLowerCase()).setChatStyle(new Style().setColor(color))
+                    .appendSibling(new TextComponentString(color + " " + player.getId() + " " + Integer.toString(player.getScore()))));
         }
     }
 
@@ -481,6 +499,7 @@ public class MjMCUI implements UI {
     @Override
     public void gameOver() {
         for (Timer timer : autoPlayTimer) timer.cancel();
+        game.getGameState().setPhase(GameState.Phase.GAME_OVER);
         uiClearSpace();
         refillContainer();
         for (Player player : game.getPlayers()) {
@@ -736,6 +755,21 @@ public class MjMCUI implements UI {
         }
     }
 
+    private void sendToPlayerChat(Player playerIn, ITextComponent chatComponent) {
+        EntityPlayerMP player = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
+        if (player == null) {
+            //playerIn.setOffline(true);
+            return;
+        }
+        player.addChatComponentMessage(chatComponent);
+    }
+
+    private void sendToPlayersChat(ITextComponent chatComponent) {
+        for (Player player : game.getPlayers()) {
+            sendToPlayerChat(player, chatComponent);
+        }
+    }
+
     private void sendToPlayerChat(Player playerIn, String stringIn) {
         EntityPlayerMP player = (EntityPlayerMP) world.getPlayerEntityByName(playerIn.getId());
         if (player == null) {
@@ -776,22 +810,31 @@ public class MjMCUI implements UI {
                 }
             }
         }
-
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                if (playerIn.getOptions().containsKey(Player.Option.CANCEL)) playerIn.selectOption(Player.Option.CANCEL, null, playerIn.canChyankan());
-                else playerIn.selectOption(Player.Option.NEXT, null, playerIn.canChyankan());
-                playerIn.setOffline(true);
-            }
-        };
-        Timer timer = autoPlayTimer[game.getPlayers().indexOf(playerIn)];
-        if (timer != null) {
-            timer.cancel();
-            timer = new Timer();
-            timer.schedule(task, playerIn.isOffline() ? 1500 : 20000);
+        TimerTask task;
+        if (playerIn.isOffline()) {
+            task = new TimerTask() {
+                @Override
+                public void run() {
+                    if (playerIn.getOptions().containsKey(Player.Option.CANCEL)) playerIn.selectOption(Player.Option.CANCEL, null, playerIn.canChyankan());
+                    else playerIn.selectOption(Player.Option.NEXT, null, playerIn.canChyankan());
+                }
+            };
+        } else {
+            task = new TimerTask() {
+                @Override
+                public void run() {
+                    if (playerIn.getOptions().containsKey(Player.Option.CANCEL)) playerIn.selectOption(Player.Option.CANCEL, null, playerIn.canChyankan());
+                    else playerIn.selectOption(Player.Option.NEXT, null, playerIn.canChyankan());
+                    playerIn.setOffline(true);
+                }
+            };
         }
-
+        int timerNo = game.getPlayers().indexOf(playerIn);
+        if (autoPlayTimer[timerNo] != null) {
+            autoPlayTimer[timerNo].cancel();
+            autoPlayTimer[timerNo] = new Timer();
+            autoPlayTimer[timerNo].schedule(task, playerIn.isOffline() ? 1500 : 20000);
+        }
     }
 
     private void sendGameStateToPlayers() {
@@ -907,7 +950,7 @@ public class MjMCUI implements UI {
         }
     }
 
-
+/*
     public static void registerLanguageForServer() {
         translations.put("gui.position.east", "东");
         translations.put("gui.position.south", "南");
@@ -1055,5 +1098,5 @@ public class MjMCUI implements UI {
         translations.put("gui.winninghand.aka", "赤宝牌");
         translations.put("gui.winninghand.dora", "宝牌");
         translations.put("gui.winninghand.ura", "里宝牌");
-    }
+    }*/
 }

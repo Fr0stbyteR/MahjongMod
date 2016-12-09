@@ -16,6 +16,12 @@ public class EventCommonHandler {
     }
 
     @SubscribeEvent
+    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        EntityPlayer player = event.player;
+        Mahjong.mjGameHandler.unhostPlayer(player);
+    }
+
+    @SubscribeEvent
     public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         EntityPlayer player = event.player;
         Mahjong.mjGameHandler.hostPlayer(player);
