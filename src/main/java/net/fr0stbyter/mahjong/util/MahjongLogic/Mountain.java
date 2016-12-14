@@ -185,13 +185,11 @@ public class Mountain {
     }
 
     public MountainTile getTileU(int tileIndexIn) {
-        if (!mountainTilesU.get(tileIndexIn).isNull()) return mountainTilesU.get(tileIndexIn);
-        return null;
+        return mountainTilesU.get(tileIndexIn);
     }
 
     public MountainTile getTileD(int tileIndexIn) {
-        if (!mountainTilesD.get(tileIndexIn).isNull()) return mountainTilesD.get(tileIndexIn);
-        return null;
+        return mountainTilesD.get(tileIndexIn);
     }
 
     public Mountain removeTile(int tileIndexIn) {

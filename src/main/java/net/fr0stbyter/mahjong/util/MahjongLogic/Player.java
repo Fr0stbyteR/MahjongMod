@@ -486,7 +486,7 @@ public class Player {
         if (game.getGameType().getPlayerCount() != 4 || getCurWind() != curPlayerIn.getNext() || hand.findChi(tileIn).isEmpty()) return;
         EnumTile tileGot = game.getRiver().removeWaiting();
         game.getGameState().setCurPlayer(curWind).nextDeal();
-        hand.chi(tileIn, getCurWind().getRelation(curPlayerIn), tileGot);
+        hand.chi(tileIn, tileGot);
         game.checkRiichibou();
         game.getGameState().setPhase(GameState.Phase.WAIT_DISCARD);
     }

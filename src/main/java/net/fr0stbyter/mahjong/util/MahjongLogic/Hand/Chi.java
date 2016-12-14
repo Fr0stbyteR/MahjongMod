@@ -9,12 +9,13 @@ import java.util.Arrays;
 public class Chi implements HandTiles, Cloneable {
     private ArrayList<EnumTile> tiles;
     private EnumTile tileGot;
-    private int orientation; // 1 right, 2 opposite, 3 left
 
-    public Chi(EnumTile tileIn1, EnumTile tileIn2, EnumTile tileIn3, int orientationIn, EnumTile tileGotIn) {
-        tiles = new ArrayList<EnumTile>(Arrays.asList(tileIn1, tileIn2, tileIn3));
-        orientation = orientationIn;
+    public Chi(EnumTile tileIn1, EnumTile tileIn2, EnumTile tileIn3, EnumTile tileGotIn) {
         tileGot = tileGotIn;
+        tiles = new ArrayList<EnumTile>(Arrays.asList(tileIn3, tileIn2, tileIn1));
+        EnumTile temp = tiles.get(2);
+        tiles.set(tiles.indexOf(tileGotIn), temp);
+        tiles.set(2, tileGotIn);
     }
 
     @Override
@@ -32,12 +33,12 @@ public class Chi implements HandTiles, Cloneable {
     }
 
     @Override
-    public int getOrientation() {
-        return orientation;
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
     @Override
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
+    public int getOrientation() {
+        return 1;
     }
 }

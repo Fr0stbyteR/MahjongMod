@@ -169,7 +169,7 @@ public class Hand implements Cloneable {
         return found;
     }
 
-    public Hand chi(EnumTile tile1, int orientationIn, EnumTile tileGotIn) {
+    public Hand chi(EnumTile tile1, EnumTile tileGotIn) {
         EnumTile tile2 = tile1.getNext();
         if (tile2 == null) return null;
         EnumTile tile3 = tile1.getNext().getNext();
@@ -179,7 +179,7 @@ public class Hand implements Cloneable {
         if (tileGotIn != tile1) removeFromHanding(tile1);
         if (tileGotIn != tile2) removeFromHanding(tile2);
         if (tileGotIn != tile3) removeFromHanding(tile3);
-        tiles.add(new Chi(tile1, tile2, tile3, orientationIn, tileGotIn));
+        tiles.add(new Chi(tile1, tile2, tile3, tileGotIn));
         tileChi.add(tile1.getNormal());
         return this;
     }
@@ -223,13 +223,15 @@ public class Hand implements Cloneable {
     }
 
     public Hand plusGang(EnumTile tileIn) {
-        for (HandTiles handTiles : tiles) {
+        for (int i = 0; i < tiles.size(); i++) {
+            HandTiles handTiles = tiles.get(i);
             if (handTiles instanceof Peng) {
                 if (getGet() == tileIn || getHandingToNormal().contains(tileIn)) {
                     addToHandingFromGet();
-                    tiles.remove(handTiles);
+                    removeFromHanding(tileIn);
                     tilePeng.remove(tileIn.getNormal());
-                    gang(tileIn, 0, true);
+                    tiles.set(i, new Gang(handTiles.getTiles().get(0), handTiles.getTiles().get(1), handTiles.getTiles().get(2), tileIn, handTiles.getOrientation(), true));
+                    tileGang.add(tileIn.getNormal());
                     break;
                 }
             }

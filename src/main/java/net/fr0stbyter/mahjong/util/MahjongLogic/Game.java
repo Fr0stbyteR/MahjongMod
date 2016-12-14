@@ -25,7 +25,7 @@ public class Game {
         ui.setGame(this);
     }
 
-    public Game(HashMap<String, EnumFacing> playersIn, GameType gameTypeIn, UI uiIn) {
+    public Game(HashMap<EnumFacing, String> playersIn, GameType gameTypeIn, UI uiIn) {
         ui = uiIn;
         gameType = gameTypeIn;
         ui.setGame(this);
@@ -39,7 +39,7 @@ public class Game {
         initGame(playersIdIn);
     }
 
-    public void initGame(HashMap<String, EnumFacing> playersIn) {
+    public void initGame(HashMap<EnumFacing, String> playersIn) {
         gameState = new GameState(this);
         players = new ArrayList<Player>();
         river = new River(this);
@@ -51,7 +51,12 @@ public class Game {
         // decide oya with dices
         //Collections.shuffle(playersIdIn);
         ui.setPositions(playersIn);
-        ArrayList<String> playersIdIn = new ArrayList<String>(playersIn.keySet());
+        ArrayList<String> playersIdIn = new ArrayList<String>();
+        EnumFacing facing = EnumFacing.NORTH;
+        for (int i = 0; i < 4; i++) {
+            if (playersIn.containsKey(facing)) playersIdIn.add(playersIn.get(facing));
+            facing = facing.rotateYCCW();
+        }
         int oyaIndex = (dices.roll().getSum() - 1) % gameType.getPlayerCount(); // roll temp Oya
         oyaIndex = (oyaIndex + dices.roll().getSum() - 1) % gameType.getPlayerCount(); // Oya roll
         for (int i = 0; i < gameType.getPlayerCount(); i++) {
@@ -268,6 +273,13 @@ public class Game {
                     return this;
                 }
                 if (!isRenchyan && gameState.isAllLast()) {
+                    if (gameState.getCurRound() == EnumPosition.getPosition(gameType.getLength() - 1).getNext()
+                            && gameState.getCurHand() == gameType.getPlayerCount()) {
+                        gameState.setPhase(GameState.Phase.GAME_OVER);
+                        showGameOver();
+                        requestConfirm();
+                        return this;
+                    }
                     for (Player player : players) {
                         if (player.getScore() > (gameType.getPlayerCount() == 4 ? 30000 : 40000)) {
                             gameState.setPhase(GameState.Phase.GAME_OVER);

@@ -10,6 +10,7 @@ public class MjPlayerHandler {
     private String[] playersName;
     private int[] playersScore;
     private HashMap<Integer, int[]> options;
+    private boolean furiTen;
 
     public MjPlayerHandler() {
         this.options = new HashMap<Integer, int[]>();
@@ -65,5 +66,13 @@ public class MjPlayerHandler {
 
     public HashMap<Integer, int[]> getOptions() {
         return options;
+    }
+
+    public boolean isFuriTen() {
+        return furiTen;
+    }
+
+    public void setFuriTen(boolean furiTen) {
+        this.furiTen = furiTen;
     }
 }

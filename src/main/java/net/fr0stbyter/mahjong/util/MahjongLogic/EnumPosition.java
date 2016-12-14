@@ -24,7 +24,7 @@ public enum EnumPosition {
 
     public static EnumPosition getPosition(int indexIn) {
         for (EnumPosition position : values()) {
-            if (indexIn == position.index) return position;
+            if (indexIn == position.index % 4) return position;
         }
         return null;
     }

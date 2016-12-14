@@ -17,15 +17,31 @@ import java.util.HashMap;
 public class GuiMjStatus extends GuiScreen {
     private final Minecraft mc;
     private final FontRenderer fontRenderer;
+    private final int isInGame;
+    private final String gameId;
+    private final int[] gameState;
+    private final int[] scores;
+    private final String[] names;
+    private final boolean isFuriten;
+    private final int curPos;
+    private final HashMap<Integer, int[]> options;
 
     public GuiMjStatus(Minecraft mc) {
         this.mc = mc;
         this.fontRenderer = mc.fontRendererObj;
+        this.isInGame = Mahjong.mjPlayerHandler.getIsInGame();
+        this.gameId = Mahjong.mjPlayerHandler.getGameId();
+        this.gameState = Mahjong.mjPlayerHandler.getGameState();
+        this.names = Mahjong.mjPlayerHandler.getPlayersName();
+        this.scores = Mahjong.mjPlayerHandler.getPlayersScore();
+        this.isFuriten = Mahjong.mjPlayerHandler.isFuriTen();
+        this.curPos = Mahjong.mjPlayerHandler.getCurPos();
+        this.options = Mahjong.mjPlayerHandler.getOptions();
         draw();
     }
 
     public void draw() {
-        if (Mahjong.mjPlayerHandler.getIsInGame() == 0) return;
+        if (isInGame == 0) return;
         int top = 60;
         int lineWidth = 10;
         int line = 0;
@@ -33,15 +49,14 @@ public class GuiMjStatus extends GuiScreen {
         ScaledResolution scaled = new ScaledResolution(this.mc);
         int x = scaled.getScaledWidth() - 100;
 
-        if (Mahjong.mjPlayerHandler.getIsInGame() == 1) {
-            text = I18n.translateToLocal("gui.text.waiting") + "#" + Mahjong.mjPlayerHandler.getGameId();
+        if (isInGame == 1) {
+            text = I18n.translateToLocal("gui.text.waiting") + "#" + gameId;
             drawString(fontRenderer, text, x, top, Integer.parseInt("0088FF", 16));
             line++;
             //drawRect(x, top, scaled.getScaledWidth(), top + line * lineWidth, Integer.MIN_VALUE);
             return;
         }
-        int[] gameState = Mahjong.mjPlayerHandler.getGameState();
-        text = I18n.translateToLocal("gui.text.playing") + "#" + Mahjong.mjPlayerHandler.getGameId();
+        text = I18n.translateToLocal("gui.text.playing") + "#" + gameId;
         drawString(fontRenderer, text, x, top, Integer.parseInt("0088FF", 16));
         line++;
         text = (gameState[0] == 3 ? I18n.translateToLocal("gui.text.sanma") : I18n.translateToLocal("gui.text.fourp"))
@@ -53,15 +68,16 @@ public class GuiMjStatus extends GuiScreen {
                 + " " + I18n.translateToLocal("gui.text.riichibou") + "*" +  gameState[5];
         drawString(fontRenderer, text, x, top + line * lineWidth, Integer.parseInt("0088FF", 16));
         line++;
-        String[] names = Mahjong.mjPlayerHandler.getPlayersName();
-        int[] scores = Mahjong.mjPlayerHandler.getPlayersScore();
         for (int i = 0; i < gameState[0]; i++) {
             text = I18n.translateToLocal("gui.position." + EnumPosition.getPosition(i)) + " " + names[i] + " " + scores[i];
-            boolean isCur = Mahjong.mjPlayerHandler.getCurPos() == i;
+            boolean isCur = curPos == i;
             drawString(fontRenderer, text, x, top + line * lineWidth, Integer.parseInt(isCur ? "FF9900" : "FFFFFF", 16));
             line++;
         }
-        HashMap<Integer, int[]> options = Mahjong.mjPlayerHandler.getOptions();
+        if (isFuriten) {
+            drawString(fontRenderer, I18n.translateToLocal("gui.text.furiten"), x, top + line * lineWidth, Integer.parseInt("FFFF00", 16));
+            line++;
+        }
         if (options.size() > 0) {
             drawString(fontRenderer, I18n.translateToLocal("gui.option.has"), x, top + line * lineWidth, Integer.parseInt("FF0000", 16));
             line++;

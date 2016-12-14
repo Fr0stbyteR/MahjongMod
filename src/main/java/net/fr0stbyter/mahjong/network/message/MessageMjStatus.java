@@ -8,13 +8,14 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MessageMjStatus implements IMessage, IMessageHandler<MessageMjStatus, IMessage> {
-    private int messageType; //-1 clear options 0 state, 1 curPlayer, 2 options
+    private int messageType; //-1 clear options 0 state, 1 curPlayer, 2 options, 3 furiten
     private int playersCount, round, hand, extra, gameLength, riichibou;
     private String[] playersName;
     private int[] playersScore;
     private int curPos;
     private int option, tilesCount;
     private int[] tiles;
+    private boolean furiTen;
 
     public MessageMjStatus() {
     }
@@ -38,6 +39,11 @@ public class MessageMjStatus implements IMessage, IMessageHandler<MessageMjStatu
     public MessageMjStatus(int messageType, int curPos) {
         this.messageType = messageType;
         this.curPos = curPos;
+    }
+
+    public MessageMjStatus(int messageType, boolean furiTenIn) {
+        this.messageType = messageType;
+        this.furiTen = furiTenIn;
     }
 
     public MessageMjStatus(int messageType, int option, int tilesCount, int[] tiles) {
@@ -75,6 +81,10 @@ public class MessageMjStatus implements IMessage, IMessageHandler<MessageMjStatu
             for (int i = 0; i < tilesCount; i++) {
                 this.tiles[i] = buf.readInt();
             }
+            return;
+        }
+        if (messageType == 3) {
+            this.furiTen = buf.readBoolean();
         }
     }
 
@@ -104,6 +114,10 @@ public class MessageMjStatus implements IMessage, IMessageHandler<MessageMjStatu
             for (int i = 0; i < tilesCount; i++) {
                 buf.writeInt(tiles[i]);
             }
+            return;
+        }
+        if (messageType == 3) {
+            buf.writeBoolean(furiTen);
         }
     }
 
@@ -123,6 +137,10 @@ public class MessageMjStatus implements IMessage, IMessageHandler<MessageMjStatu
         }
         if (message.messageType == 2) {
             Mahjong.mjPlayerHandler.addOption(message.option, message.tiles);
+            return null;
+        }
+        if (message.messageType == 3) {
+            Mahjong.mjPlayerHandler.setFuriTen(message.furiTen);
             return null;
         }
         return null;

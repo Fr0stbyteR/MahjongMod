@@ -509,8 +509,11 @@ public class MjMCUI implements UI {
     }
 
     @Override
-    public void setPositions(HashMap<String, EnumFacing> playersIn) {
-        playerPositions = playersIn;
+    public void setPositions(HashMap<EnumFacing, String> playersIn) {
+        playerPositions = new HashMap<String, EnumFacing>();
+        for (EnumFacing facing : playersIn.keySet()) {
+            playerPositions.put(playersIn.get(facing), facing);
+        }
     }
 
     @Override
@@ -596,11 +599,11 @@ public class MjMCUI implements UI {
             if (handTiles instanceof Gang) {
                 if (((Gang) handTiles).getPlusGang()) {
                     for (int i = 0; i < 4; i++) {
-                        if (i == 3) htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - 3 + handTiles.getOrientation()).offset(enumFacing.getOpposite(), 1);
+                        if (i == 3) htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - handTiles.getOrientation() + 1).offset(enumFacing.getOpposite(), 1);
                         else htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - i);
                         Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                         EnumFacing12 enumFacing12 = EnumFacing12.byName(enumFacing.getName() + "u");
-                        if (handTiles.getOrientation() == 3 - i || i == 3) enumFacing12 = enumFacing12.rotateY();
+                        if (handTiles.getOrientation() == i + 1 || i == 3) enumFacing12 = enumFacing12.rotateY();
                         IBlockState blockState = block.getDefaultState().withProperty(FACING12, enumFacing12);
                         blockStates.put(htPos, blockState);
                     }
@@ -610,9 +613,9 @@ public class MjMCUI implements UI {
                         htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - i);
                         Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                         EnumFacing12 enumFacing12 = EnumFacing12.byName(enumFacing.getName() + "u");
-                        if (handTiles.getOrientation() == 1 && i == 3) enumFacing12 = enumFacing12.rotateY();
+                        if (handTiles.getOrientation() == 1 && i == 0) enumFacing12 = enumFacing12.rotateY();
                         if (handTiles.getOrientation() == 2 && i == 1) enumFacing12 = enumFacing12.rotateY();
-                        if (handTiles.getOrientation() == 3 && i == 0) enumFacing12 = enumFacing12.rotateY();
+                        if (handTiles.getOrientation() == 3 && i == 3) enumFacing12 = enumFacing12.rotateY();
                         IBlockState blockState = block.getDefaultState().withProperty(FACING12, enumFacing12);
                         blockStates.put(htPos, blockState);
                     }
@@ -624,7 +627,7 @@ public class MjMCUI implements UI {
                     htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - i);
                     Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                     EnumFacing12 enumFacing12 = EnumFacing12.byName(enumFacing.getName() + "u");
-                    if (handTiles.getOrientation() == 3 - i) enumFacing12 = enumFacing12.rotateY();
+                    if (i == 2) enumFacing12 = enumFacing12.rotateY();
                     IBlockState blockState = block.getDefaultState().withProperty(FACING12, enumFacing12);
                     blockStates.put(htPos, blockState);
                 }
@@ -635,7 +638,7 @@ public class MjMCUI implements UI {
                     htPos = HANDTILES_POS.get(enumFacing).offset(enumFacing.rotateYCCW(), 19 - fuuro - i);
                     Block block = Block.getBlockFromName("mahjong:mj" + handTiles.getTiles().get(i).name().toLowerCase());
                     EnumFacing12 enumFacing12 = EnumFacing12.byName(enumFacing.getName() + "u");
-                    if (handTiles.getOrientation() == 3 - i) enumFacing12 = enumFacing12.rotateY();
+                    if (handTiles.getOrientation() == i + 1) enumFacing12 = enumFacing12.rotateY();
                     IBlockState blockState = block.getDefaultState().withProperty(FACING12, enumFacing12);
                     blockStates.put(htPos, blockState);
                 }
@@ -794,6 +797,7 @@ public class MjMCUI implements UI {
             return;
         }
         NetworkHandler.INSTANCE.sendTo(new MessageMjStatus(-1), playerMP);
+        NetworkHandler.INSTANCE.sendTo(new MessageMjStatus(3, playerIn.getFuriTen()), playerMP);
         if (!playerIn.getOptions().isEmpty()) {
             for (Player.Option option : playerIn.getOptions().keySet()) {
                 //sendToPlayerChat(playerIn, "Option: " + option.name().toLowerCase() + (playerIn.getOptions().get(option) != null ? playerIn.getOptions().get(option) : ""));

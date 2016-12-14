@@ -15,11 +15,6 @@ public class ConsoleUI implements UI {
     }
 
     @Override
-    public void setPositions(HashMap<String, EnumFacing> playersIn) {
-
-    }
-
-    @Override
     public void newDora() {
 
     }
@@ -182,6 +177,11 @@ public class ConsoleUI implements UI {
 
     @Override
     public void gameOver() {
+
+    }
+
+    @Override
+    public void setPositions(HashMap<EnumFacing, String> playersIn) {
 
     }
 

@@ -20,7 +20,7 @@ public interface UI {
     void showReport();
     void riichi(Player playerIn);
     void gameOver();
-    void setPositions(HashMap<String, EnumFacing> playersIn);
+    void setPositions(HashMap<EnumFacing, String> playersIn);
     void newDora();
     void chooseInt(Player playerIn, int optionIn, EnumTile tileIn);
 

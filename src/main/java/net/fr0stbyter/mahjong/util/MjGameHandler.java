@@ -41,12 +41,11 @@ public class MjGameHandler {
         for (String player : gameStatusMap.keySet()) {
             PlayerGameStatus playerGameStatus = gameStatusMap.get(player);
             if (playerGameStatus.isWaiting() && playerGameStatus.getGame() == gameIdIn) playerWaiting.put(playerGameStatus.getPosition(), player);
-            //TODO TEST ONLY
             if (playerMPs.get(player).getEntityWorld().getMinecraftServer().getCurrentPlayerCount() == 1) {
                 playerWaiting.put(playerGameStatus.getPosition().rotateY(), "A");
                 playerWaiting.put(playerGameStatus.getPosition().rotateYCCW(), "B");
+                if (targetPlayerCount == 4) playerWaiting.put(playerGameStatus.getPosition().getOpposite(), "C");
             }
-            //
             if (playerWaiting.size() == targetPlayerCount) {
                 for (String player1 : gameStatusMap.keySet()) {
                     if (((MjMCUI)game.getUi()).getWorld().getPlayerEntityByName(player1) == null) {
@@ -59,11 +58,7 @@ public class MjGameHandler {
                     gameStatusMap.get(player1).setInGame(true);
                     gameStatusMap.get(player1).setWaiting(false);
                 }
-                HashMap<String, EnumFacing> playersIn = new HashMap<String, EnumFacing>();
-                for (EnumFacing enumFacing : playerWaiting.keySet()) {
-                    playersIn.put(playerWaiting.get(enumFacing), enumFacing);
-                }
-                game.initGame(playersIn);
+                game.initGame(playerWaiting);
                 return true;
             }
         }
