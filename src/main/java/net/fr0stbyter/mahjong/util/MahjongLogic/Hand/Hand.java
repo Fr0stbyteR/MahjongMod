@@ -161,7 +161,7 @@ public class Hand implements Cloneable {
                 && handing.contains(tileIn.getPrev()) && handing.contains(tileIn.getNext()))
             found.add(tileIn.getPrev());
         if (tileIn.getNext() != null && tileIn.getNext().getNext()  != null
-                && handing.contains(tileIn.getNext()) && handing.contains(tileIn.getNext().getNext() ))
+                && handing.contains(tileIn.getNext()) && handing.contains(tileIn.getNext().getNext()))
             found.add(tileIn);
         for (int i = 0; i < found.size(); i++) {
             if (getHanding().contains(found.get(i).getRed())) found.set(i, found.get(i).getRed());

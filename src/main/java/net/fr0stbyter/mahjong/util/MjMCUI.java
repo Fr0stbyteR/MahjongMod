@@ -39,7 +39,6 @@ public class MjMCUI implements UI {
     private final HashMap<EnumFacing, BlockPos> MOUNTAIN_POS = new HashMap<EnumFacing, BlockPos>();
     private ItemStack[] tempItemStack = null;
     private BlockPos riverWaitingPos;
-    private static HashMap<String, String> translations = new HashMap<String, String>();
     private Timer[] autoPlayTimer;
 
     public World getWorld() {

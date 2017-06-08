@@ -36,7 +36,7 @@ public class GuiMjStatus extends GuiScreen {
         this.scores = Mahjong.mjPlayerHandler.getPlayersScore();
         this.isFuriten = Mahjong.mjPlayerHandler.isFuriTen();
         this.curPos = Mahjong.mjPlayerHandler.getCurPos();
-        this.options = Mahjong.mjPlayerHandler.getOptions();
+        this.options = (HashMap<Integer, int[]>) Mahjong.mjPlayerHandler.getOptions().clone();
         draw();
     }
 

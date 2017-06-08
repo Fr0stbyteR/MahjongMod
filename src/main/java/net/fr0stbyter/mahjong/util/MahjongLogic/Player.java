@@ -483,8 +483,8 @@ public class Player {
     }
 
     public void chi(EnumPosition curPlayerIn, EnumTile tileIn) {
-        if (game.getGameType().getPlayerCount() != 4 || getCurWind() != curPlayerIn.getNext() || hand.findChi(tileIn).isEmpty()) return;
         EnumTile tileGot = game.getRiver().removeWaiting();
+        if (game.getGameType().getPlayerCount() != 4 || getCurWind() != curPlayerIn.getNext() || hand.findChi(tileGot).isEmpty()) return;
         game.getGameState().setCurPlayer(curWind).nextDeal();
         hand.chi(tileIn, tileGot);
         game.checkRiichibou();

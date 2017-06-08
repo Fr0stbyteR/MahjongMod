@@ -330,5 +330,15 @@ public class MahjongRegister {
         GameRegistry.addShapelessRecipe(new ItemStack(itemMjh7, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.POPPY.getMeta()));
         GameRegistry.addShapelessRecipe(new ItemStack(itemMjh8, 1), blockMjBlank, new ItemStack(Blocks.red_flower, 1, BlockFlower.EnumFlowerType.OXEYE_DAISY.getMeta()));
         GameRegistry.addRecipe(new ItemStack(itemRiichibou, 1), new Object[] { "BCB", "AAA", "   ",'A', Items.stick, 'B', new ItemStack(Items.dye, 1, EnumDyeColor.WHITE.getDyeDamage()), 'C', new ItemStack(Items.dye, 1, EnumDyeColor.RED.getDyeDamage())});
+        GameRegistry.addRecipe(new ItemStack(itemMjTable, 1), new Object[] { "AAA", "BBB", " C ", 'A', new ItemStack(Blocks.wool, 1, EnumDyeColor.GREEN.getMetadata()), 'B', Blocks.piston, 'C', Blocks.log});
+        GameRegistry.addRecipe(new ItemStack(itemMjOpOk, 1), new Object[] { "A  ", "   ", "   ", 'A', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjOpNo, 1), new Object[] { " A ", "   ", "   ", 'A', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjOpKita, 1), new Object[] { "  A", "   ", "   ", 'A', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjOpChi, 1), new Object[] { "   ", "A  ", "   ", 'A', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjOpPeng, 1), new Object[] { "   ", " A ", "   ", 'A', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjOpGang, 1), new Object[] { "   ", "  A", "   ", 'A', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjOpRyuu, 1), new Object[] { "   ", "   ", "A  ", 'A', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjOpRii, 1), new Object[] { "   ", "   ", " A ", 'A', itemMjBlank});
+        GameRegistry.addRecipe(new ItemStack(itemMjOpHe, 1), new Object[] { "   ", "   ", "  A", 'A', itemMjBlank});
     }
 }
