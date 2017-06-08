@@ -264,22 +264,17 @@ public class Game {
                     if (player.getScore() < 0) {
                         gameState.setPhase(GameState.Phase.GAME_OVER);
                         showGameOver();
+                        requestConfirm();
                         return this;
                     }
                 }
                 if (isRenchyan && gameState.isAllLast() && getTopPlayer() == getPlayer(gameState.getCurPlayer())) {
                     gameState.setPhase(GameState.Phase.GAME_OVER);
                     showGameOver();
+                    requestConfirm();
                     return this;
                 }
                 if (!isRenchyan && gameState.isAllLast()) {
-                    if (gameState.getCurRound() == EnumPosition.getPosition(gameType.getLength() - 1).getNext()
-                            && gameState.getCurHand() == gameType.getPlayerCount()) {
-                        gameState.setPhase(GameState.Phase.GAME_OVER);
-                        showGameOver();
-                        requestConfirm();
-                        return this;
-                    }
                     for (Player player : players) {
                         if (player.getScore() > (gameType.getPlayerCount() == 4 ? 30000 : 40000)) {
                             gameState.setPhase(GameState.Phase.GAME_OVER);

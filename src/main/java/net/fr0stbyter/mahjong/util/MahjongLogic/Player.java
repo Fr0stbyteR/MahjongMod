@@ -332,7 +332,7 @@ public class Player {
     }
 
     public Player selectOption(Option optionIn, EnumTile tileIn, boolean isChyankanIn) {
-        if (game.getGameState().getPhase() == GameState.Phase.GAME_OVER) return null;
+        if (game.getGameState().getPhase() == GameState.Phase.GAME_OVER && optionIn != Option.NEXT) return null;
         if (!options.containsKey(optionIn) || (options.get(optionIn) != null && !options.get(optionIn).contains(tileIn))) return null;
         if (optionIn == Option.CANCEL) {
             if (options.containsKey(Option.TSUMO) || options.containsKey(Option.RON)) furiTen = true;

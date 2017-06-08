@@ -27,7 +27,6 @@ public class CommonProxy {
 
     public void postInit(FMLPostInitializationEvent event) {
         Mahjong.mjGameHandler = new MjGameHandler();
-        //TODO TEST
         MinecraftForge.EVENT_BUS.register(new EventCommonHandler());
     }
 }

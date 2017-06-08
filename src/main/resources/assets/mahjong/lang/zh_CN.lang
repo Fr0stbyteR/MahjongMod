@@ -75,6 +75,7 @@ gui.text.start=预约
 gui.text.sanma=三麻
 gui.text.fourp=四麻
 gui.text.furiten=振听
+gui.length.one=一局战
 gui.length.east=东风战
 gui.length.south=东南战
 gui.length.all=一庄战

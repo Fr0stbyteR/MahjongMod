@@ -11,7 +11,7 @@ public class GameType {
     public enum GameRegion {JAPAN}
     private GameRegion region;
     private int playerCount; // 3 4
-    private int length; // 1 2 4
+    private int length; // 0 1 2 4
     private int redDoraCount; // 1-4
     public static final HashMap<EnumTile, Integer> TILESJ3R = GameType.getTilesCount(GameType.GameRegion.JAPAN, 3, 2);
     public static final HashMap<EnumTile, Integer> TILESJ3 = GameType.getTilesCount(GameType.GameRegion.JAPAN, 3, 0);

@@ -20,7 +20,7 @@ public class GameState {
         curDeal = 1;
         curPlayer = EnumPosition.EAST;
         isHaitei = false;
-        allLast = false;
+        allLast = game.getGameType().getLength() == 0;
         phase = Phase.SHUFFLE;
         countRiichi = 0;
     }
@@ -75,7 +75,8 @@ public class GameState {
         isHaitei = false;
         curExtra = 0;
         curDeal = 1;
-        if (curRound.getIndex() + 1 == game.getGameType().getLength() && curHand == game.getGameType().getPlayerCount()) allLast = true;
+        if (game.getGameType().getLength() == 0) allLast = true;
+        else if (curRound.getIndex() + 1 == game.getGameType().getLength() && curHand == game.getGameType().getPlayerCount()) allLast = true;
         if (curHand > game.getGameType().getPlayerCount()) nextRound();
         return this;
     }

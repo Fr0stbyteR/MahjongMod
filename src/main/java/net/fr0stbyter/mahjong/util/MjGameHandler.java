@@ -93,6 +93,12 @@ public class MjGameHandler {
         }
     }
 
+    public void removeAll() {
+        for (Long gameID : games.keySet()) {
+            games.get(gameID).getUi().gameOver();
+        }
+    }
+
     public void kickPlayer(EntityPlayer player) {
         String playerId = player.getName();
         if (!gameStatusMap.containsKey(playerId)) return;

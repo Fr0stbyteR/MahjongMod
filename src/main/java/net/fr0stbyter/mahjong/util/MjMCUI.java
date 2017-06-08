@@ -95,7 +95,7 @@ public class MjMCUI implements UI {
 
     @Override
     public void dealOver() {
-        //TODO test
+        //test
         //testOnly();
         clearContainer();
         uiClearSpace();
@@ -203,7 +203,7 @@ public class MjMCUI implements UI {
             if (options.containsKey(Player.Option.NEXT)) {
                 playerIn.selectOption(Player.Option.NEXT, null, canChyankan);
             }
-            //TODO TEST
+            //TEST
             //else if (enumTileIn != null) discard(game.getCurPlayer(), enumTileIn);
             else if (enumTileIn != null) discard(playerIn, enumTileIn);
             //
@@ -220,7 +220,7 @@ public class MjMCUI implements UI {
             return;
         }
         if (optionIn == 1) {
-            //TODO TEST
+            //TEST
             //for (Player player : game.getPlayers()) player.selectOption(Player.Option.CANCEL, enumTileIn, playerIn.canChyankan());
             if (!options.containsKey(Player.Option.CANCEL)) return;
             playerIn.selectOption(Player.Option.CANCEL, null, canChyankan);
@@ -355,7 +355,7 @@ public class MjMCUI implements UI {
     @Override
     public void discard(Player playerIn, EnumTile tileIn) {
         if (tileIn == null) return;
-        System.out.print(playerIn.getId() + " discards " + tileIn + "\n");
+        //System.out.print(playerIn.getId() + " discards " + tileIn + "\n");
         playerIn.discard(tileIn);
         uiCheckHand(playerIn);
         uiCheckRiver(playerIn);

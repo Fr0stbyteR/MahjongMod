@@ -51,7 +51,7 @@ public class GuiMjTable extends GuiContainer {
         fontRendererObj.drawString(I18n.translateToLocal("tile.mahjong_table.name") + " #" + Long.toHexString(tableInventory.getPos().toLong()), 8, 6, 4210752);
         fontRendererObj.drawString(playerInventory.getDisplayName().getUnformattedText(), 17, this.ySize - 93, 4210752);
         if (isInGame == 2) fontRendererObj.drawString(TextFormatting.BOLD + I18n.translateToLocal("gui.text.playing"), 97, 90, 4210752);
-        else if (length == 0 || playerCount == 0) fontRendererObj.drawString(TextFormatting.BOLD + I18n.translateToLocal("gui.text.tilesnotenough"), 97, 90, 4210752);
+        else if (playerCount == 0) fontRendererObj.drawString(TextFormatting.BOLD + I18n.translateToLocal("gui.text.tilesnotenough"), 97, 90, 4210752);
         else fontRendererObj.drawString(TextFormatting.BOLD + I18n.translateToLocal("gui.text.playerscount") + ": " + playerCount
                 + " " + I18n.translateToLocal("gui.text.akadora") + ": " + redDoraCount, 97, 90, 4210752);
     }
@@ -94,12 +94,17 @@ public class GuiMjTable extends GuiContainer {
             int y = tableInventory.getPos().getY();
             int z = tableInventory.getPos().getZ();
             if (isInGame == 0) {
-                if (length == 0 || playerCount == 0) return;
+                if (playerCount == 0) return;
                 else NetworkHandler.INSTANCE.sendToServer(new MessageMjTable(true, x, y, z, region, playerCount, length, redDoraCount));
             } else NetworkHandler.INSTANCE.sendToServer(new MessageMjTable(false));
             return;
         }
         if (guiButton.id == 1) {
+            if (length == 0) {
+                buttonLength.displayString = I18n.translateToLocal("gui.length.east");
+                length = 1;
+                return;
+            }
             if (length == 1) {
                 buttonLength.displayString = I18n.translateToLocal("gui.length.south");
                 length = 2;
@@ -111,8 +116,8 @@ public class GuiMjTable extends GuiContainer {
                 return;
             }
             if (length == 4) {
-                buttonLength.displayString = I18n.translateToLocal("gui.length.east");
-                length = 1;
+                buttonLength.displayString = I18n.translateToLocal("gui.length.one");
+                length = 0;
             }
         }
     }
