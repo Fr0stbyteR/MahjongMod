@@ -54,39 +54,39 @@ public class GuiMjStatus extends GuiScreen {
 
         if (isInGame == 1) {
             text = I18n.translateToLocal("gui.text.waiting") + "#" + gameId;
-            drawString(fontRenderer, text, left, top, Integer.parseInt("0088FF", 16));
+            drawString(fontRenderer, text, left, top, 0x0088FF);
             line++;
-            drawRect(left - 2, top - 2, scaled.getScaledWidth(), top + line * lineWidth + 2, 0.0F, 0.0F, 0.0F, -0.9F);
+            drawGradientRect(left - 2, top - 2, scaled.getScaledWidth(), top + line * lineWidth + 2, 0x04000000, 0x04000000);
             return;
         }
         if (gameState == null) return;
         text = I18n.translateToLocal("gui.text.playing") + "#" + gameId;
-        drawString(fontRenderer, text, left, top, Integer.parseInt("0088FF", 16));
+        drawString(fontRenderer, text, left, top, 0x0088FF);
         line++;
         text = (gameState[0] == 3 ? I18n.translateToLocal("gui.text.sanma") : I18n.translateToLocal("gui.text.fourp"))
                 + (gameState[4] == 0 ? I18n.translateToLocal("gui.length.one")
                 : gameState[4] == 1 ? I18n.translateToLocal("gui.length.east")
                 : gameState[4] == 2 ? I18n.translateToLocal("gui.length.south")
                 : I18n.translateToLocal("gui.length.all"));
-        drawString(fontRenderer, text, left, top + line * lineWidth, Integer.parseInt("0088FF", 16));
+        drawString(fontRenderer, text, left, top + line * lineWidth, 0x0088FF);
         line++;
         text = TextFormatting.BOLD + I18n.translateToLocal("gui.position." + EnumPosition.getPosition(gameState[1])) + gameState[2] + I18n.translateToLocal("gui.text.hand")
                 + (gameState[3] > 0 ? " " + gameState[3] + I18n.translateToLocal("gui.text.extra") : "")
                 + (gameState[5] > 0 ? " " + I18n.translateToLocal("gui.text.riichibou") + "*" + gameState[5] : "");
-        drawString(fontRenderer, text, left, top + line * lineWidth, Integer.parseInt("0088FF", 16));
+        drawString(fontRenderer, text, left, top + line * lineWidth, 0x0088FF);
         line++;
         for (int i = 0; i < gameState[0]; i++) {
             text = I18n.translateToLocal("gui.position." + EnumPosition.getPosition(i)) + " " + names[i] + " " + scores[i];
             boolean isCur = curPos == i;
-            drawString(fontRenderer, text, left, top + line * lineWidth, Integer.parseInt(isCur ? "FF9900" : "FFFFFF", 16));
+            drawString(fontRenderer, text, left, top + line * lineWidth, isCur ? 0xFF9900 : 0xFFFFFF);
             line++;
         }
         if (isFuriten) {
-            drawString(fontRenderer, I18n.translateToLocal("gui.text.furiten"), left, top + line * lineWidth, Integer.parseInt("FFFF00", 16));
+            drawString(fontRenderer, I18n.translateToLocal("gui.text.furiten"), left, top + line * lineWidth, 0xFFFF00);
             line++;
         }
         if (options.size() > 0) {
-            drawString(fontRenderer, I18n.translateToLocal("gui.option.has"), left, top + line * lineWidth, Integer.parseInt("FF0000", 16));
+            drawString(fontRenderer, I18n.translateToLocal("gui.option.has"), left, top + line * lineWidth, 0xFF0000);
             line++;
             for (Integer option : options.keySet()) {
                 text = I18n.translateToLocal("gui.option." + Player.Option.getOption(option).name().toLowerCase());
@@ -95,7 +95,7 @@ public class GuiMjStatus extends GuiScreen {
                         if (indexTile > 0) text += " " + I18n.translateToLocal("gui.tile." + EnumTile.getTile(indexTile).getName());
                     }
                 }
-                drawString(fontRenderer, text, left, top + line * lineWidth, Integer.parseInt("FF0000", 16));
+                drawString(fontRenderer, text, left, top + line * lineWidth, 0xFF0000);
                 line++;
             }
         }
@@ -105,10 +105,10 @@ public class GuiMjStatus extends GuiScreen {
         GlStateManager.disableAlpha();
         GlStateManager.disableBlend();*/
 
-        drawRect(left - 2, top - 2, scaled.getScaledWidth(), top + line * lineWidth + 2, 0.0F, 0.0F, 0.0F, -0.9F);
+        drawGradientRect(left - 2, top - 2, scaled.getScaledWidth(), top + line * lineWidth + 2, 0x04000000, 0x04000000);
 
     }
-
+/*
     private static void drawRect(int left, int top, int right, int bottom, float r, float g, float b, float a)
     {
         if (left < right) {
@@ -136,5 +136,5 @@ public class GuiMjStatus extends GuiScreen {
         tessellator.draw();
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
-    }
+    }*/
 }
