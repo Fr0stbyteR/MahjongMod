@@ -97,5 +97,32 @@ public class GuiMjStatus extends GuiScreen {
         drawRect(x, top, scaled.getScaledWidth(), top + line * lineWidth, -1873784752);
         GlStateManager.disableAlpha();
         GlStateManager.disableBlend();*/
+        
+        GlStateManager.enableBlend();
+        GlStateManager.disableAlpha();
+        Tessellator tessellator = Tessellator.getInstance();
+        VertexBuffer vertexbuffer = tessellator.getBuffer();
+        /*------------------------------------------------------------*/
+        GlStateManager.disableTexture2D();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, 
+        		  							  GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, 
+        		  							  GlStateManager.SourceFactor.ONE, 
+        		  							  GlStateManager.DestFactor.ZERO);
+        /*------------------------------------------------------------*/
+        vertexbuffer.begin(7, DefaultVertexFormats.POSITION_COLOR);
+        int gwidth = scaled.getScaledWidth();
+        int gheight = top + line * lineWidth;
+        vertexbuffer.pos(x , gheight, 0).color(0.0F,0.0F,0.0F,-0.9F).endVertex();
+        vertexbuffer.pos(gwidth, gheight, 0).color(0.0F,0.0F,0.0F,-0.9F).endVertex();
+        vertexbuffer.pos(gwidth, top    , 0).color(0.0F,0.0F,0.0F,-0.9F).endVertex();
+        vertexbuffer.pos(x , top     , 0).color(0.0F,0.0F,0.0F,-0.9F).endVertex();
+        tessellator.draw();
+        /*------------------------------------------------------------*/
+        GlStateManager.enableTexture2D();
+        /*------------------------------------------------------------*/
+        GlStateManager.disableBlend();
+        GlStateManager.enableAlpha();
+        
+        
     }
 }
