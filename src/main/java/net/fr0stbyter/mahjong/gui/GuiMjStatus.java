@@ -9,6 +9,9 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
 
@@ -47,39 +50,43 @@ public class GuiMjStatus extends GuiScreen {
         int line = 0;
         String text;
         ScaledResolution scaled = new ScaledResolution(this.mc);
-        int x = scaled.getScaledWidth() - 100;
+        int left = scaled.getScaledWidth() - 98;
 
         if (isInGame == 1) {
             text = I18n.translateToLocal("gui.text.waiting") + "#" + gameId;
-            drawString(fontRenderer, text, x, top, Integer.parseInt("0088FF", 16));
+            drawString(fontRenderer, text, left, top, Integer.parseInt("0088FF", 16));
             line++;
-            //drawRect(x, top, scaled.getScaledWidth(), top + line * lineWidth, Integer.MIN_VALUE);
+            drawRect(left - 2, top - 2, scaled.getScaledWidth(), top + line * lineWidth + 2, 0.0F, 0.0F, 0.0F, -0.9F);
             return;
         }
+        if (gameState == null) return;
         text = I18n.translateToLocal("gui.text.playing") + "#" + gameId;
-        drawString(fontRenderer, text, x, top, Integer.parseInt("0088FF", 16));
+        drawString(fontRenderer, text, left, top, Integer.parseInt("0088FF", 16));
         line++;
         text = (gameState[0] == 3 ? I18n.translateToLocal("gui.text.sanma") : I18n.translateToLocal("gui.text.fourp"))
-                + (gameState[4] == 1 ? I18n.translateToLocal("gui.length.east") : gameState[4] == 2 ? I18n.translateToLocal("gui.length.south") : I18n.translateToLocal("gui.length.all"));
-        drawString(fontRenderer, text, x, top + line * lineWidth, Integer.parseInt("0088FF", 16));
+                + (gameState[4] == 0 ? I18n.translateToLocal("gui.length.one")
+                : gameState[4] == 1 ? I18n.translateToLocal("gui.length.east")
+                : gameState[4] == 2 ? I18n.translateToLocal("gui.length.south")
+                : I18n.translateToLocal("gui.length.all"));
+        drawString(fontRenderer, text, left, top + line * lineWidth, Integer.parseInt("0088FF", 16));
         line++;
         text = TextFormatting.BOLD + I18n.translateToLocal("gui.position." + EnumPosition.getPosition(gameState[1])) + gameState[2] + I18n.translateToLocal("gui.text.hand")
-                + " " + gameState[3] + I18n.translateToLocal("gui.text.extra")
-                + " " + I18n.translateToLocal("gui.text.riichibou") + "*" +  gameState[5];
-        drawString(fontRenderer, text, x, top + line * lineWidth, Integer.parseInt("0088FF", 16));
+                + (gameState[3] > 0 ? " " + gameState[3] + I18n.translateToLocal("gui.text.extra") : "")
+                + (gameState[5] > 0 ? " " + I18n.translateToLocal("gui.text.riichibou") + "*" + gameState[5] : "");
+        drawString(fontRenderer, text, left, top + line * lineWidth, Integer.parseInt("0088FF", 16));
         line++;
         for (int i = 0; i < gameState[0]; i++) {
             text = I18n.translateToLocal("gui.position." + EnumPosition.getPosition(i)) + " " + names[i] + " " + scores[i];
             boolean isCur = curPos == i;
-            drawString(fontRenderer, text, x, top + line * lineWidth, Integer.parseInt(isCur ? "FF9900" : "FFFFFF", 16));
+            drawString(fontRenderer, text, left, top + line * lineWidth, Integer.parseInt(isCur ? "FF9900" : "FFFFFF", 16));
             line++;
         }
         if (isFuriten) {
-            drawString(fontRenderer, I18n.translateToLocal("gui.text.furiten"), x, top + line * lineWidth, Integer.parseInt("FFFF00", 16));
+            drawString(fontRenderer, I18n.translateToLocal("gui.text.furiten"), left, top + line * lineWidth, Integer.parseInt("FFFF00", 16));
             line++;
         }
         if (options.size() > 0) {
-            drawString(fontRenderer, I18n.translateToLocal("gui.option.has"), x, top + line * lineWidth, Integer.parseInt("FF0000", 16));
+            drawString(fontRenderer, I18n.translateToLocal("gui.option.has"), left, top + line * lineWidth, Integer.parseInt("FF0000", 16));
             line++;
             for (Integer option : options.keySet()) {
                 text = I18n.translateToLocal("gui.option." + Player.Option.getOption(option).name().toLowerCase());
@@ -88,41 +95,46 @@ public class GuiMjStatus extends GuiScreen {
                         if (indexTile > 0) text += " " + I18n.translateToLocal("gui.tile." + EnumTile.getTile(indexTile).getName());
                     }
                 }
-                drawString(fontRenderer, text, x, top + line * lineWidth, Integer.parseInt("FF0000", 16));
+                drawString(fontRenderer, text, left, top + line * lineWidth, Integer.parseInt("FF0000", 16));
                 line++;
             }
         }
         /*
         GlStateManager.enableAlpha();
-        drawRect(x, top, scaled.getScaledWidth(), top + line * lineWidth, -1873784752);
+        drawRect(left, top, scaled.getScaledWidth(), top + line * lineWidth, -1873784752);
         GlStateManager.disableAlpha();
         GlStateManager.disableBlend();*/
-        
-        GlStateManager.enableBlend();
-        GlStateManager.disableAlpha();
+
+        drawRect(left - 2, top - 2, scaled.getScaledWidth(), top + line * lineWidth + 2, 0.0F, 0.0F, 0.0F, -0.9F);
+
+    }
+
+    private static void drawRect(int left, int top, int right, int bottom, float r, float g, float b, float a)
+    {
+        if (left < right) {
+            int i = left;
+            left = right;
+            right = i;
+        }
+
+        if (top < bottom) {
+            int j = top;
+            top = bottom;
+            bottom = j;
+        }
+
         Tessellator tessellator = Tessellator.getInstance();
         VertexBuffer vertexbuffer = tessellator.getBuffer();
-        /*------------------------------------------------------------*/
+        GlStateManager.enableBlend();
         GlStateManager.disableTexture2D();
-        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, 
-        		  							  GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, 
-        		  							  GlStateManager.SourceFactor.ONE, 
-        		  							  GlStateManager.DestFactor.ZERO);
-        /*------------------------------------------------------------*/
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         vertexbuffer.begin(7, DefaultVertexFormats.POSITION_COLOR);
-        int gwidth = scaled.getScaledWidth();
-        int gheight = top + line * lineWidth;
-        vertexbuffer.pos(x , gheight, 0).color(0.0F,0.0F,0.0F,-0.9F).endVertex();
-        vertexbuffer.pos(gwidth, gheight, 0).color(0.0F,0.0F,0.0F,-0.9F).endVertex();
-        vertexbuffer.pos(gwidth, top    , 0).color(0.0F,0.0F,0.0F,-0.9F).endVertex();
-        vertexbuffer.pos(x , top     , 0).color(0.0F,0.0F,0.0F,-0.9F).endVertex();
+        vertexbuffer.pos((double)left, (double)bottom, 0.0D).color(r, g, b, a).endVertex();
+        vertexbuffer.pos((double)right, (double)bottom, 0.0D).color(r, g, b, a).endVertex();
+        vertexbuffer.pos((double)right, (double)top, 0.0D).color(r, g, b, a).endVertex();
+        vertexbuffer.pos((double)left, (double)top, 0.0D).color(r, g, b, a).endVertex();
         tessellator.draw();
-        /*------------------------------------------------------------*/
         GlStateManager.enableTexture2D();
-        /*------------------------------------------------------------*/
         GlStateManager.disableBlend();
-        GlStateManager.enableAlpha();
-        
-        
     }
 }
